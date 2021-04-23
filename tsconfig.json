@@ -1,0 +1,35 @@
+{
+	"compilerOptions" : {
+		"jsx" : "react" ,
+		"allowJs" : true ,
+		"target" : "ES6" ,
+		"module" : "ESNext" ,
+		"checkJs" : false ,
+		"skipLibCheck" : true ,
+		"esModuleInterop" : true ,
+		"noImplicitAny" : false ,
+		"sourceMap" : true ,
+		
+		"strict" : false ,
+		"allowUmdGlobalAccess" : true ,
+		"allowUnusedLabels" : true ,
+		"noImplicitOverride" : false ,
+		"noImplicitReturns" : false ,
+		"noImplicitThis" : false ,
+		"noImplicitUseStrict" : false ,
+		"allowUnreachableCode" : true ,
+		"noUnusedLocals" : false ,
+		"experimentalDecorators" : true ,
+		"noUnusedParameters" : false ,
+		"baseUrl" : "." ,
+		"outDir" : "dist" ,
+		"moduleResolution" : "node" ,
+		"resolveJsonModule" : true ,
+		"paths" : {
+			"*" : [ "node_modules/*" ] ,
+			"@assets/*" : [ "./assets/*" ] ,
+			"@src/*" : [ "./src/*" ]
+		}
+	} ,
+	"include" : [ "src/**/*" , "tools/**/*" ]
+}

@@ -1,0 +1,75 @@
+body, html {
+	height: 100%;
+	margin: 0;
+}
+.public-DraftEditor-content{
+	overflow-y: auto;
+}
+.public-DraftEditor-content::-webkit-scrollbar {
+	display: inline-block;
+	width: 2px;
+	height: 4px;
+}
+.public-DraftEditor-content::-webkit-scrollbar-thumb {
+	background: #9c9a9a;
+	border-radius: 4px;
+	width: 2px;
+	height: 4px;
+}
+
+.public-DraftEditor-content::-webkit-scrollbar-thumb:hover {
+	background: #555;
+}
+.editor-container{
+	overflow-y: scroll;
+}
+.editor-container::-webkit-scrollbar {
+	display: inline-block;
+	width: 2px;
+	height: 4px;
+}
+.editor-container::-webkit-scrollbar-thumb {
+	background: #9c9a9a;
+	border-radius: 4px;
+	width: 2px;
+	height: 4px;
+}
+.rich-text-options{
+	display: flex;
+	flex-flow: row nowrap;
+	height: 30px;
+	width: 50%;
+	align-items: center;
+}
+.rich-text-options button{
+	background-color: white;
+	outline: unset;
+	border: unset;
+	margin-right: 4px;
+	cursor: pointer;
+	user-select: unset;
+	box-sizing: border-box;
+	height: 30px;
+	width: 36px;
+}
+.rich-text-options button:hover{
+	background-color: #e6e5e5;
+	border-radius: 4px;
+	
+}
+.align-left {
+	text-align: left;
+}
+
+.align-center {
+	text-align: center;
+}
+
+.align-right {
+	text-align: right;
+}
+
+.align-justify {
+	text-align: justify;
+}
+

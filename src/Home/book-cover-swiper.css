@@ -1,0 +1,60 @@
+/* book-cover.css */
+.book-swiper {
+	position: relative;
+	width: 100%;
+	height: fit-content;
+	margin: auto;
+}
+.swiper{
+	height: fit-content;
+	overflow: hidden;
+}
+.swiper-slide{
+	padding: 0;
+	overflow: visible;
+}
+
+.swiper-slide-content {
+	width: fit-content;
+	height: fit-content;
+	display: grid;
+	grid-template-columns: repeat(3,1fr);
+	gap: 10px;
+}
+
+.book-item {
+	width: 100%; /* 每个封面图片占 30% 宽度，这样每行展示 3 本 */
+	height: 100%;
+	margin: 5px;
+}
+
+.book-item img {
+	object-fit: cover;
+	border-radius: 4px;
+	box-shadow: 2px 2px 4px #919090;
+}
+
+.swiper-button-prev,
+.swiper-button-next {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	background-color: rgba(0, 0, 0, 0.5);
+	color: white;
+	border: none;
+	cursor: pointer;
+	font-size: 16px;
+	z-index: 10;
+}
+
+.swiper-button-prev {
+	left: 10px;
+}
+
+.swiper-button-next {
+	right: 10px;
+}
+
+.swiper-button-prev, .swiper-button-next {
+	z-index: 10;  /* 确保按钮在最上层 */
+}

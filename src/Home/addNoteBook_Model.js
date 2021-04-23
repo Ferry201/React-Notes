@@ -1,0 +1,166 @@
+import React , { useState , useRef , useEffect } from 'react';
+import { Button , Modal , Input } from 'antd';
+import './note.css';
+import BookCoverSwiper from './bookCoverSwiper';
+import { Swiper } from 'swiper/react';
+import coverBlue from './img-collection/cover-blue.png';
+import coverGray from './img-collection/cover-gray.png';
+import coverGreen from './img-collection/cover-green.png';
+import coverYellow from './img-collection/cover-yellow.png';
+import coverRed from './img-collection/cover-red.png';
+import coverPurple from './img-collection/cover-purple.png';
+
+const books = [
+	{ cover : coverGray } ,
+	{ cover : coverBlue } ,
+	{ cover : coverGreen } ,
+	{ cover : coverYellow } ,
+	{ cover : coverRed } ,
+	{ cover : coverPurple } ,
+];
+const AddNoteBookModal = () => {
+	const [isModalOpen , setIsModalOpen] = useState(false);
+	const [imagePreview , setImagePreview] = useState(null); // 用来存储图片预览的 URL
+	const [titlePreview , setTitlePreview] = useState('');
+	const inputTitleRef = useRef(null);
+	const notebookArray = JSON.parse(localStorage.getItem('notebook-array')) === null ? [] : JSON.parse(localStorage.getItem('notebook-array'));
+	
+	const handleAfterOpen = () => {
+		if ( inputTitleRef.current ) {
+			inputTitleRef.current.focus();
+		}
+	};
+	const showModal = () => {
+		setIsModalOpen(true);
+		localStorage.removeItem('notebook-array');
+	};
+	
+	const handleCancel = () => {
+		setIsModalOpen(false);
+		setImagePreview(null); // 清空图片预览
+		setTitlePreview('');
+	};
+	
+	const handleOk = () => {
+		if ( imagePreview && titlePreview ) {
+			const noteBookDate = {
+				cover : imagePreview ,
+				title : titlePreview ,
+			};
+			notebookArray.unshift(noteBookDate);
+			localStorage.setItem('notebook-array' , JSON.stringify(notebookArray));
+			setIsModalOpen(false);
+			setImagePreview(null); // 清空图片预览
+			setTitlePreview('');
+		} else {
+			if ( titlePreview === '' ) {
+				alert('输入标题');
+			}
+			if ( imagePreview === null ) {
+				alert('选择封面');
+			}
+		}
+	};
+	
+	// 处理图片文件上传
+	const handleFileChange = (e) => {
+		const file = e.target.files[0]; // 获取上传的文件
+		
+		if ( file ) {
+			const reader = new FileReader();
+			reader.onloadend = () => {
+				setImagePreview(reader.result); // 将读取到的图片数据设置为预览图
+				
+			};
+			reader.readAsDataURL(file); // 将文件转换为 base64 URL
+		}
+	};
+	const handleCoverClick = (coverSrc) => {
+		setImagePreview(coverSrc); // 点击默认封面时更新预览图
+	};
+	const handleInputTitle = (e) => {
+		setTitlePreview(e.target.value);//输入标题时更新预览标题
+	};
+	return (
+		<>
+			<div onClick = { showModal }>
+				新建笔记本
+			</div>
+			
+			<Modal
+				title = "新建笔记本"
+				open = { isModalOpen }
+				onOk = { handleOk }
+				onCancel = { handleCancel }
+				cancelText = "取消"
+				okText = "创建"
+				width = { 450 }
+				style = { {
+					top : 20 ,
+				} }
+				destroyOnClose = { true }
+				keyboard = { true }
+				afterOpenChange = { handleAfterOpen }
+			>
+				<div className = "add-NB-modal-content">
+					<div className = "edit-NB-info">
+						<p>输入标题</p>
+						
+						<Input
+							type = "text"
+							ref = { inputTitleRef }
+							className = "title-input"
+							value = { titlePreview }
+							onChange = { handleInputTitle }
+							placeholder = "输入标题..."
+							allowClear
+						/>
+						<p>选择封面</p>
+						<div className = "img-cover-box">
+							{/*默认封面图*/ }
+							{ books.map((book , index) => {
+								return (<img
+									key = { index }
+									src = { book.cover }
+									alt = { `cover-${ index }` }
+									width = "70"
+									height = "90"
+									onClick = { () => handleCoverClick(book.cover) }
+								/>);
+							}) }
+						</div>
+						<p>或上传自定义封面</p>
+						<label
+							htmlFor = "fileInput"
+							className = "cover-file-upload"
+						>点击上传
+						</label>
+						<input
+							type = "file"
+							id = "fileInput"
+							accept = "image/*"
+							onChange = { handleFileChange }
+							style = { { display : 'none' } }
+						/>
+					</div>
+					<div className = "preview-area">
+						{ imagePreview ? (
+							<div className = "preview-img">
+								<img
+									src = { imagePreview } // 使用 FileReader 读取的图片数据
+									alt = "Preview"
+								/>
+								<span className = "preview-title">{ titlePreview }</span>
+							</div>
+						) : (
+							  <span style = { { color : 'lightgray' } }>没有预览图片</span> // 没有选择图片时显示的文本
+						  ) }
+					</div>
+				</div>
+			</Modal>
+		</>
+	);
+};
+
+export default AddNoteBookModal;
+
