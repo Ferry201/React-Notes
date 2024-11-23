@@ -1,12 +1,12 @@
 name: deploy Notes
 on:
-  push :
+  push:
     branches:
       -main
 jobs:
   build:
     runs-on: ubuntu-latest
-        steps:
+    steps:
       # 1. Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v4
