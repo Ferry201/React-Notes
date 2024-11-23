@@ -1,0 +1,655 @@
+
+
+#root {
+	height: 100%;
+	overflow: auto;
+}
+
+/*color变量*/
+.container {
+	height: 100%;
+	width: 100%;
+	overflow: hidden;
+	margin: 0 auto;
+	border-radius: 4px;
+	position: relative;
+	padding: 20px;
+	box-sizing: border-box;
+	background: #ffffff;
+	display: flex;
+	flex-flow: row nowrap;
+}
+
+.react-resizable {
+	height: 97%;
+	padding: 10px;
+	margin-right: 20px;
+}
+
+.sidebar-notebook-item {
+	position: relative;
+}
+
+.notebook-cover {
+	object-fit: cover;
+}
+
+.notebook-title {
+	position: absolute;
+	z-index: 10;
+	
+}
+
+/* 自定义的拖动手柄 */
+.custom-resize-handle {
+	position: absolute;
+	top: 0;
+	right: 3px;
+	bottom: 0;
+	width: 1px;
+	cursor: col-resize; /* 设为左右拖动 */
+	background: rgba(0, 0, 0, 0.1);
+}
+
+.resize-handle-container {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	width: 6px;
+	cursor: col-resize;
+	background: #ffffff;
+}
+
+.resize-handle-container:hover {
+	background: rgba(0, 0, 0, 0.1);
+}
+.create-notebook-text{
+	color: #03a9f4;
+	text-decoration: underline;
+	font-style: italic;
+	cursor: pointer;
+}
+.resizable-box {
+	position: relative;
+}
+
+.sidebar-container {
+	width: 100%;
+	height: 100%
+}
+
+.sidebar-book-container {
+	width: 100%;
+	height: calc(100% - 28px)
+}
+
+.empty-container {
+	height: 100%;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+
+html,
+body {
+	overflow: hidden;
+	width: 100%;
+	height: 100%;
+	
+}
+
+body {
+	/*background: #ffffff;*/
+	font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
+	font-size: 14px;
+	color: #000000;
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+.resizable-box.react-resizable {
+	transition: all .2s ease;
+}
+
+.collpased {
+	padding: 0;
+	margin: 0;
+}
+
+.note-container {
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	transition: width .3s ease;
+}
+
+.resizing {
+	transition: unset !important;
+}
+
+
+.note-time {
+	font-size: 12px;
+	color: #8b8a8a;
+	
+}
+
+/*宫格模式和列表模式分别设置不同的ul和noteItem,noteTitle*/
+.note-grid-mode-title {
+	font-size: 16px;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 6;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	line-height: 1.5; /* 设置行高 */
+	max-height: calc(1.5em * 6); /* 根据行高和显示的行数计算最大高度 */
+	height: fit-content;
+	white-space: pre-wrap; /* 改为 normal 来允许换行 */
+	word-wrap: break-word; /* 强制长文本换行 */
+	word-break: break-word; /* 强制长文本换行，尤其是数字 */
+}
+
+.note-grid-mode {
+	display: block; /* 变为块级元素 */
+	max-height: 100%;
+	overflow-y: scroll;
+	overflow-x: hidden;
+}
+
+.note-grid-mode-item {
+	background: white;
+	border-radius: 4px;
+	padding: 10px;
+	box-sizing: border-box;
+	margin-bottom: 10px;
+	width: calc(50% - 5px); /* 保持宽度大约为父容器的一半 */
+	
+	border: 1px solid #cccccc;
+}
+
+.note-grid-mode-item:hover {
+	cursor: pointer;
+}
+
+.note-ul-mode {
+	width: 100%;
+	height: 100%;
+	overflow-y: scroll;
+	overflow-x: hidden;
+	/*position: relative;*/
+}
+
+.note-ul-mode-item {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+	line-height: 1.5;
+	border-radius: 4px;
+	height: fit-content;
+	width: 100%;
+	background: white;
+	margin-bottom: 10px;
+	padding: 4px;
+	/*box-shadow: 1px 1px 1px 1px #cbc9c9;*/
+	border-bottom: 2px solid #cbc9c9;
+	border-right: 2px solid #cbc9c9;
+	border: 1px solid #cccccc;
+	z-index: 10;
+	box-sizing: border-box;
+}
+
+.note-ul-mode-title {
+	font-size: 16px;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	overflow: hidden;
+	-webkit-box-orient: vertical;
+	text-overflow: ellipsis;
+	line-height: 1.5; /* 设置行高 */
+	max-height: calc(1.5em * 2); /* 根据行高和显示的行数计算最大高度 */
+	height: fit-content;
+	white-space: pre-wrap;
+	
+	word-wrap: break-word; /* 强制长文本换行 */
+	word-break: break-word; /* 强制长文本换行，尤其是数字 */
+}
+
+.ulMode-delete-note-btn {
+	visibility: hidden;
+	user-select: none;
+	cursor: pointer;
+}
+
+.gridMode-delete-node-btn {
+	visibility: hidden;
+	user-select: none;
+	cursor: pointer;
+}
+
+.note-ul-mode-item:hover .ulMode-delete-note-btn {
+	visibility: visible;
+}
+
+.note-grid-mode-item:hover .gridMode-delete-node-btn {
+	visibility: visible;
+}
+
+.gridMode-time-delete {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+	height: 16px;
+}
+
+/* 自定义滚动条样式 */
+.note-ul-mode::-webkit-scrollbar {
+	display: inline-block;
+	width: 2px;
+	height: 4px;
+}
+
+.note-ul-mode::-webkit-scrollbar-thumb {
+	background: #9c9a9a;
+	border-radius: 4px;
+	width: 2px;
+	height: 4px;
+}
+
+.note-ul-mode::-webkit-scrollbar-thumb:hover {
+	background: #555555;
+}
+
+.note-grid-mode::-webkit-scrollbar {
+	display: inline-block;
+	width: 2px;
+	height: 4px;
+}
+
+.note-grid-mode::-webkit-scrollbar-thumb {
+	background: #9c9a9a;
+	border-radius: 4px;
+	width: 2px;
+	height: 4px;
+}
+
+.note-grid-mode::-webkit-scrollbar-thumb:hover {
+	background: #555555;
+	width: 4px;
+}
+
+.dropdown-menu {
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-start;
+	align-items: center;
+}
+
+h2 {
+	width: fit-content;
+	margin: 0 4px 2px 4px;
+	user-select: none;
+}
+
+.note-amount {
+	font-size: 12px;
+	color: #8b8a8a;
+	margin-bottom: 10px;
+	user-select: none;
+	font-size: 12px;
+}
+
+.top-tools {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: flex-end;
+}
+
+/*输入框容器*/
+.search-box {
+	display: flex;
+	align-items: center;
+	border: 1px solid #cccccc;
+	border-radius: 6px;
+	padding: 0px 4px;
+	width: 300px;
+	margin-right: 20px;
+	background: white;
+	height: 26px;
+}
+
+/* 输入框样式 */
+.search-input {
+	flex: 1; /* 使输入框占据剩余空间 */
+	border: none;
+	outline: none;
+	font-size: 16px;
+	border-radius: 4px;
+}
+
+/* 按钮（放大镜）样式 */
+.search-btn {
+	background-color: transparent;
+	border: none;
+	cursor: pointer;
+	padding: 5px;
+	width: fit-content;
+	height: fit-content;
+	font-size: 16px;
+}
+
+.add-new-button {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+	font-size: 42px;
+	height: 50px;
+	width: 50px;
+	border-radius: 100%;
+	box-shadow: 2px 2px 2px 1px rgb(0 0 0 / 20%);
+	border: unset;
+	padding: 0;
+	position: absolute;
+	right: 40px;
+	bottom: 36px;
+	/*float: right;*/
+	cursor: pointer;
+	z-index: 10;
+	user-select: none;
+}
+
+.add-new-button-disappear {
+	display: none;
+}
+
+
+.preview-area {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+}
+
+.preview-area .preview-img {
+	width: 100%;
+	position: relative;
+}
+
+.preview-area img {
+	width: 100%;
+	height: 220px;
+	object-fit: cover;
+}
+
+.preview-area .preview-title {
+	display: block;
+	line-height: 46px;
+	text-align: center;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 46px;
+	width: 122px;
+	font-size: 24px;
+	position: absolute;
+	z-index: 10;
+	top: 16%;
+	right: 9%;
+	background-color: white;
+	white-space: nowrap;
+	user-select: none;
+}
+
+.expandButton-title {
+	display: flex;
+	flex-flow: row nowrap;
+	align-items: center;
+}
+
+.expand-icon {
+	height: 24px;
+	width: 24px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.expand-icon:hover {
+	background: #e0dfdf;
+	border-radius: 4px;
+}
+
+.moreOptionContainer {
+	box-sizing: border-box;
+	width: fit-content;
+	height: fit-content;
+	cursor: pointer;
+	user-select: unset;
+	background: white;
+	border-radius: 4px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+	
+}
+
+.option-item {
+	padding: 5px;
+	background-color: white;
+}
+
+.add-NB-modal-content {
+	width: 100%;
+	height: fit-content;
+	display: grid;
+	grid-template-columns: 60% 40%;
+}
+
+.add-NB-modal-content .title-input {
+	width: 96%;
+}
+
+.ant-input-outlined:hover {
+	border: 1px solid black;
+}
+
+.ant-input-outlined:focus {
+	border: 1px solid black;
+	box-shadow: none;
+}
+
+.ant-input-outlined:focus-within {
+	border: 1px solid black;
+	box-shadow: none;
+}
+
+.ant-modal .ant-modal-content {
+	padding: 18px;
+}
+
+.edit-NB-info {
+	width: 100%;
+	padding-right: 20px;
+	box-sizing: border-box;
+}
+
+.edit-NB-info p {
+	margin: 4px 0;
+}
+
+.edit-NB-info .cover-file-upload {
+	display: inline-block;
+	padding: 5px 10px;
+	background-color: #1890ff; /* Ant Design 蓝色 */
+	color: white;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 14px;
+	text-align: center;
+}
+
+.img-cover-box {
+	display: grid;
+	grid-template-columns:repeat(3, 1fr);
+	width: fit-content;
+	gap: 6px;
+}
+
+.img-cover-box img {
+	cursor: pointer;
+	
+	box-shadow: 2px 2px 4px #c7c6c6;
+}
+
+.ant-tooltip {
+	font-size: 10px;
+}
+
+.ant-tooltip .ant-tooltip-inner {
+	min-height: unset;
+}
+
+
+body, html {
+	height: 100%;
+	margin: 0;
+}
+.public-DraftEditor-content{
+	overflow-y: auto;
+}
+.public-DraftEditor-content::-webkit-scrollbar {
+	display: inline-block;
+	width: 2px;
+	height: 4px;
+}
+.public-DraftEditor-content::-webkit-scrollbar-thumb {
+	background: #9c9a9a;
+	border-radius: 4px;
+	width: 2px;
+	height: 4px;
+}
+
+.public-DraftEditor-content::-webkit-scrollbar-thumb:hover {
+	background: #555;
+}
+.editor-container{
+	overflow-y: scroll;
+}
+.editor-container::-webkit-scrollbar {
+	display: inline-block;
+	width: 2px;
+	height: 4px;
+}
+.editor-container::-webkit-scrollbar-thumb {
+	background: #9c9a9a;
+	border-radius: 4px;
+	width: 2px;
+	height: 4px;
+}
+.rich-text-options{
+	display: flex;
+	flex-flow: row nowrap;
+	height: 30px;
+	width: 50%;
+	align-items: center;
+}
+.rich-text-options button{
+	background-color: white;
+	outline: unset;
+	border: unset;
+	margin-right: 4px;
+	cursor: pointer;
+	user-select: unset;
+	box-sizing: border-box;
+	height: 30px;
+	width: 36px;
+}
+.rich-text-options button:hover{
+	background-color: #e6e5e5;
+	border-radius: 4px;
+	
+}
+.align-left {
+	text-align: left;
+}
+
+.align-center {
+	text-align: center;
+}
+
+.align-right {
+	text-align: right;
+}
+
+.align-justify {
+	text-align: justify;
+}
+
+
+/* book-cover.css */
+.book-swiper {
+	position: relative;
+	width: 100%;
+	height: fit-content;
+	margin: auto;
+}
+.swiper{
+	height: fit-content;
+	overflow: hidden;
+}
+.swiper-slide{
+	padding: 0;
+	overflow: visible;
+}
+
+.swiper-slide-content {
+	width: fit-content;
+	height: fit-content;
+	display: grid;
+	grid-template-columns: repeat(3,1fr);
+	gap: 10px;
+}
+
+.book-item {
+	width: 100%; /* 每个封面图片占 30% 宽度，这样每行展示 3 本 */
+	height: 100%;
+	margin: 5px;
+}
+
+.book-item img {
+	object-fit: cover;
+	border-radius: 4px;
+	box-shadow: 2px 2px 4px #919090;
+}
+
+.swiper-button-prev,
+.swiper-button-next {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	background-color: rgba(0, 0, 0, 0.5);
+	color: white;
+	border: none;
+	cursor: pointer;
+	font-size: 16px;
+	z-index: 10;
+}
+
+.swiper-button-prev {
+	left: 10px;
+}
+
+.swiper-button-next {
+	right: 10px;
+}
+
+.swiper-button-prev, .swiper-button-next {
+	z-index: 10;  /* 确保按钮在最上层 */
+}
+
