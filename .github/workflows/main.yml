@@ -15,7 +15,15 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '16'  # 可以选择你需要的 Node.js 版本
+          node-version: '23'  # 可以选择你需要的 Node.js 版本
+          
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm  # 缓存 npm 的全局缓存
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}  # 使用 package-lock.json 文件作为缓存的键
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       # 3. Install dependencies
       - name: Install dependencies
@@ -32,3 +40,5 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}  # 使用 GitHub 提供的 token
           publish_dir: ./dist  # 指定要发布的目录
           publish_branch: gh-pages  # 指定要发布到的分支
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
