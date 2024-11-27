@@ -1,21 +1,15 @@
 import './note.css';
 import React , { Component } from 'react';
-import ReactDOM from 'react-dom/client';
 import { useRef , useState } from 'react';
 import { BrowserRouter as Router , Route , Routes , Link } from 'react-router-dom';
-import Tabs from 'rc-tabs';
 import 'rc-tabs/assets/index.css';
-import { DownOutlined } from '@ant-design/icons';
 import { Checkbox , Dropdown , Space } from 'antd';
 import RichTextEditor from '../RichTextEditor/RichTextEditor';
-import GetContentButton from './GetContentButton';
-import RenderContent from './renderContent';
 import isEqual from 'lodash/isEqual';
-import { Empty } from 'antd';
 import { NoteSidebar } from './sidebar';
-import dayjs from 'dayjs';
 import { NoteManagePanel } from '@src/Home/note-manage-panel';
-
+import { v4 as uuidv4 } from 'uuid';
+import { current } from "@reduxjs/toolkit";
 
 class NotesApp extends Component {
 	constructor (props) {
@@ -24,18 +18,17 @@ class NotesApp extends Component {
 	
 	state = {
 		currentContent : '' ,
-		currentIndex : null ,
+		currentID : null ,
 		isAddNote : false ,
 		noteListData : [] ,
-		noteAmount : JSON.parse(localStorage.getItem('note-info-array')) === null ? 0 : (JSON.parse(localStorage.getItem('note-info-array'))).length ,
 		noteDisplayMode : true ,//默认列表布局
 		isSidebarVisible : false ,
+		currentNoteBook : '我的笔记本' ,
 	};
 	
 	componentDidMount () {
 		const storedNoteData = JSON.parse(localStorage.getItem('note-info-array')) || [];
 		this.setState({ noteListData : storedNoteData });
-		
 	}
 	
 	
@@ -45,88 +38,97 @@ class NotesApp extends Component {
 	};
 	
 	handleAddNote = () => {
-		this.setState({//passing a function to setState instead of an object.
-			isAddNote : !this.state.isAddNote ,// This function receives the previous state (prevState) as an argument,
+		this.setState({
+			isAddNote : !this.state.isAddNote ,
 			currentContent : '' ,
-			currentIndex : null ,
-		});// ensuring we work with the latest state,用回调函数也可以让state立即更新.
+			currentID : null ,
+		});
 	};
 	
 	//保存note
 	handleSaveNote = (rawContentState , saveTime) => {
 		const {
-			currentIndex ,
+			currentID ,
 			noteListData ,
-			
+			currentNoteBook ,
 		} = this.state;
-		let noteInfoArray=[...noteListData];
+		let noteInfoArray = [...noteListData];
 		//
 		let newNoteInfo = {
 			noteContent : rawContentState ,
-			saveTime : saveTime,
+			saveTime : saveTime ,
+			notebook : currentNoteBook ,
+			id : uuidv4() ,
 		};
 		
 		//添加新note
-		if ( currentIndex === null ) {
+		if ( currentID === null ) {
 			noteInfoArray.unshift(newNoteInfo);
 			
 			localStorage.setItem('note-info-array' , JSON.stringify(noteInfoArray));
+			const currentList = noteInfoArray.filter((note) => note.notebook === currentNoteBook);
 			//更新状态
 			this.setState({
 				isAddNote : false ,
 				noteListData : noteInfoArray ,
-				currentIndex : null ,
-				noteAmount : noteInfoArray.length ,
+				currentID : null ,
 			});
 		}
 		
 		//修改已存在的note, 分两种情况:1,修改原内容; 2,未修改
-		if ( currentIndex !== null ) {
+		if ( currentID !== null ) {
 			//rawContentState.blocks 中每个 block 代表的是编辑器中一个段落，而不是一个完整的文档.
 			// 所以当调用 rawContentState.blocks[0].text 时，只会取到第一块的文本内容。
 			// 如果有多行文本，通常会有多个 block，每个 block 里可能只有一行文本。
-			let oldNoteContent = noteInfoArray[currentIndex].noteContent.blocks;
+			let oldNote = noteInfoArray.find((note) => note.id === currentID);
+			let oldNoteContent = oldNote.noteContent.blocks;
 			let newNoteContent = rawContentState.blocks;
-			// console.log(oldNoteContent);
-			// console.log(newNoteContent);
+			
 			if ( isEqual(oldNoteContent , newNoteContent) ) {
 				console.log('没有变化');
 				this.setState({ isAddNote : false });
 				return;
 			}
-			noteInfoArray = noteInfoArray.filter((_ , index) => index !== currentIndex);
+			noteInfoArray = noteInfoArray.filter((note) => note.id !== currentID);
 			
 			noteInfoArray.unshift(newNoteInfo);
 			localStorage.setItem('note-info-array' , JSON.stringify(noteInfoArray));
+			
+			
+			const currentList = noteInfoArray.filter((note) => note.notebook === currentNoteBook);
 			//更新状态
 			this.setState({
 				isAddNote : false ,
 				noteListData : noteInfoArray ,
-				currentIndex : null ,
-				noteAmount : noteInfoArray.length ,
+				currentID : null ,
 			});
 		}
 		
 	};
 	
 	//删除note
-	handleDeleteNote = (index) => {
-		const {noteListData } = this.state;
-		const updatedList = noteListData.filter((_ , i) => i !== index);
+	handleDeleteNote = (id) => {
+		const {
+			noteListData ,
+			currentNoteBook,
+		} = this.state;
+		
+		const updatedList = noteListData.filter((note) => note.id !== id);
+		const currentList = updatedList.filter((note) => note.notebook === currentNoteBook);
 		localStorage.setItem('note-info-array' , JSON.stringify(updatedList));
 		this.setState({
 			noteListData : updatedList ,
-			currentIndex : null ,
-			noteAmount :updatedList.length ,
+			currentID : null ,
 		});
 	};
 	
 	//修改old note
-	handleChangeNote = (noteContent , index) => {
+	handleChangeNote = (noteContent , id) => {
+		console.log(noteContent);
 		this.setState({
 			isAddNote : !this.state.isAddNote ,
 			currentContent : noteContent ,
-			currentIndex : index ,
+			currentID : id ,
 		});
 	};
 	
@@ -134,6 +136,13 @@ class NotesApp extends Component {
 	toggleSidebar = () => {
 		this.setState(prevState => ({ isSidebarVisible : !prevState.isSidebarVisible }) , () => {
 			console.log(this.state.isSidebarVisible);
+		});
+	};
+	
+	handleToggleNoteBook = (notebook) => {
+		this.setState({
+			currentNoteBook : notebook ,
+			
 		});
 	};
 	
@@ -161,15 +170,15 @@ class NotesApp extends Component {
 						  width : '100%' ,
 					  } }
 				  >
-					  <NoteSidebar />
+					  <NoteSidebar handleToggleNoteBook = { this.handleToggleNoteBook } />
 					  <NoteManagePanel
 						  onChangeNote = { this.handleChangeNote }
 						  onDeleteNote = { this.handleDeleteNote }
-						  noteAmount = { this.state.noteAmount }
 						  showMode = { this.state.noteDisplayMode }
 						  OnSwitchMode = { this.handleSwitchMode }
 						  onToggleSidebar = { this.toggleSidebar }
 						  sidebarIsVisible = { this.state.isSidebarVisible }
+						  currentNoteBook = { this.state.currentNoteBook }
 					  />
 				  </div>)
 				

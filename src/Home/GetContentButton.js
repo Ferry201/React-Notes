@@ -3,7 +3,7 @@ import { convertToRaw } from 'draft-js';
 
 const GetContentButton = forwardRef((props,ref) => {
 	const {children,editorState,onSave,...refProps} = props;
-	// console.log(ref);
+	
 	const storeContent = () => {
 		const contentState = editorState.getCurrentContent();
 		const rawContentState = convertToRaw(contentState);

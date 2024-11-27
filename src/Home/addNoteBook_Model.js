@@ -1,5 +1,5 @@
 import React , { useState , useRef , useEffect } from 'react';
-import { Button , Modal , Input } from 'antd';
+import {  Modal , Input } from 'antd';
 import './note.css';
 import BookCoverSwiper from './bookCoverSwiper';
 import { Swiper } from 'swiper/react';
@@ -41,7 +41,7 @@ const books = [
 ];
 
 
-const AddNoteBookModal = ({ addNotebook }) => {
+const AddNoteBookModal = ({ addNotebook ,children}) => {
 	const [isModalOpen , setIsModalOpen] = useState(false);
 	const [imagePreview , setImagePreview] = useState(null); // 用来存储图片预览的 URL
 	const [titlePreview , setTitlePreview] = useState('');
@@ -59,7 +59,6 @@ const AddNoteBookModal = ({ addNotebook }) => {
 	};
 	const showModal = () => {
 		setIsModalOpen(true);
-		// localStorage.removeItem('notebook-array')
 	};
 	
 	const handleCancel = () => {
@@ -69,15 +68,15 @@ const AddNoteBookModal = ({ addNotebook }) => {
 	};
 	
 	const handleOk = () => {
-		console.log(notebookArray);
+		
 		if ( imagePreview && titlePreview ) {
 			const noteBookDate = {
 				cover : imagePreview ,
 				title : titlePreview ,
 			};
 			addNotebook(noteBookDate);
-			notebookArray.unshift(noteBookDate);
-			localStorage.setItem('notebook-array' , JSON.stringify(notebookArray));
+			// notebookArray.unshift(noteBookDate);
+			// localStorage.setItem('notebook-array' , JSON.stringify(notebookArray));
 			setIsModalOpen(false);
 			setImagePreview(null); // 清空图片预览
 			setTitlePreview('');
@@ -97,19 +96,25 @@ const AddNoteBookModal = ({ addNotebook }) => {
 		
 		if ( file ) {
 			const reader = new FileReader();
+			//readAsDataURL 是一个异步方法，它告诉 FileReader 去处理文件数据并将其转换为 Base64 格式的数据 URL
+			//readAsDataURL(file) 并不直接返回结果，而是触发文件读取过程，并通过 reader.result 在事件回调中提供读取结果。
+			//文件数据读取完成后，FileReader 会触发相关事件（如 onload 或 onloadend），告知主线程数据已准备好。
+			reader.readAsDataURL(file); // 将文件转换为 base64 URL
+			
 			reader.onloadend = () => {
 				setImagePreview(reader.result); // 将读取到的图片数据设置为预览图
 				
 			};
-			reader.readAsDataURL(file); // 将文件转换为 base64 URL
 		}
 	};
+	
 	const handleCoverClick = (coverSrc) => {
 		setImagePreview(coverSrc); // 点击默认封面时更新预览图
 	};
 	const handleInputTitle = (e) => {
 		setTitlePreview(e.target.value);//输入标题时更新预览标题
 	};
+	
 	return (
 		<>
 			<div
@@ -119,7 +124,8 @@ const AddNoteBookModal = ({ addNotebook }) => {
 				} }
 				className = "title-add"
 			>
-				<AddNewBookIcon />
+				{children}
+				
 			</div>
 			
 			<Modal
@@ -196,28 +202,6 @@ const AddNoteBookModal = ({ addNotebook }) => {
 		</>
 	);
 };
-const AddNewBookIcon = () => {
-	return <svg
-		t = "1732428997742"
-		className = "icon"
-		viewBox = "0 0 1024 1024"
-		version = "1.1"
-		xmlns = "http://www.w3.org/2000/svg"
-		p-id = "152069"
-		width = "16"
-		height = "16"
-	>
-		<path
-			d = "M896 544H128c-19.2 0-32-12.8-32-32s12.8-32 32-32h768c19.2 0 32 12.8 32 32s-12.8 32-32 32z"
-			fill = "#333333"
-			p-id = "152070"
-		></path>
-		<path
-			d = "M512 928c-19.2 0-32-12.8-32-32V128c0-19.2 12.8-32 32-32s32 12.8 32 32v768c0 19.2-12.8 32-32 32z"
-			fill = "#333333"
-			p-id = "152071"
-		></path>
-	</svg>;
-};
+
 export default AddNoteBookModal;
 

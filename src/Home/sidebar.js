@@ -10,9 +10,12 @@ import { DownOutlined , UpOutlined } from '@ant-design/icons'; // 引入所需�
 import coverDefault from './img-collection/cover-default.png';
 
 
-
 @reaxper
 export class NoteSidebar extends Component {
+	constructor (props) {
+		super(props);
+		
+	}
 	
 	state = {
 		siderbarWidth : 200 ,
@@ -25,7 +28,6 @@ export class NoteSidebar extends Component {
 		const storedNoteBooks = localStorage.getItem('notebook-array');
 		
 		if ( storedNoteBooks === null ) {
-			console.log(coverDefault);
 			// 默认笔记本数据
 			const defaultNoteBooks = {
 				cover : coverDefault ,
@@ -60,9 +62,7 @@ export class NoteSidebar extends Component {
 		this.setState({ siderbarWidth : width });
 	};
 	handleFoldSubMenu = () => {
-		this.setState({ expandSubMenu : !this.state.expandSubMenu } , () => {
-			console.log(this.state.expandSubMenu);
-		});
+		this.setState({ expandSubMenu : !this.state.expandSubMenu } );
 	};
 	handleImageError = (e) => {
 		if ( e.target.src !== coverDefault ) {  // 仅当图片的 src 不是默认封面时才替换
@@ -72,8 +72,6 @@ export class NoteSidebar extends Component {
 	};
 	
 	render () {
-		
-		
 		const {
 			siderCollapsed ,
 			resizing ,
@@ -83,6 +81,7 @@ export class NoteSidebar extends Component {
 			noteBookArray ,
 			expandSubMenu ,
 		} = this.state;
+		const {handleToggleNoteBook} = this.props;
 		
 		
 		return <div
@@ -129,14 +128,7 @@ export class NoteSidebar extends Component {
 						<Divider style = { { borderColor : '#e4e4e4' } } />
 						{/*sidebar主要功能菜单列表*/ }
 						<div className = "sidebar-menu-list">
-							{/*<Menu*/ }
-							{/*	style = { {*/ }
-							{/*		width : '100%' ,*/ }
-							{/*	} }*/ }
-							{/*	defaultOpenKeys = { ['sub1'] }*/ }
-							{/*	mode = "inline"*/ }
-							{/*	items = { menuItems }*/ }
-							{/*/>*/ }
+							
 							<div className = "sub-menu">
 								<div
 									className = "sub-menu-title"
@@ -150,7 +142,10 @@ export class NoteSidebar extends Component {
 											<span>笔记本</span>
 											<div
 												onClick = { (e) => e.stopPropagation() }
-											><AddNoteBookModal addNotebook = { this.addNoteBook } /></div>
+											>
+												<AddNoteBookModal addNotebook = { this.addNoteBook }><AddNewBookIcon /></AddNoteBookModal>
+											
+											</div>
 										</div>
 									</div>
 									{ expandSubMenu ? <UpOutlined style = { { color : 'rgb(179 179 179)' } } /> : <DownOutlined style = { { color : 'rgb(179 179 179)' } } /> }
@@ -167,6 +162,7 @@ export class NoteSidebar extends Component {
 												alt = { book.title }
 												className = "notebook-cover"
 												onError = { this.handleImageError }
+												onClick={()=>{handleToggleNoteBook(book.title)}}
 											/>
 											<span className = "notebook-title">{ book.title }</span>
 										</div>;
@@ -200,6 +196,29 @@ export class NoteSidebar extends Component {
 	}
 }
 
+const AddNewBookIcon = () => {
+	return <svg
+		t = "1732428997742"
+		className = "icon"
+		viewBox = "0 0 1024 1024"
+		version = "1.1"
+		xmlns = "http://www.w3.org/2000/svg"
+		p-id = "152069"
+		width = "16"
+		height = "16"
+	>
+		<path
+			d = "M896 544H128c-19.2 0-32-12.8-32-32s12.8-32 32-32h768c19.2 0 32 12.8 32 32s-12.8 32-32 32z"
+			fill = "#333333"
+			p-id = "152070"
+		></path>
+		<path
+			d = "M512 928c-19.2 0-32-12.8-32-32V128c0-19.2 12.8-32 32-32s32 12.8 32 32v768c0 19.2-12.8 32-32 32z"
+			fill = "#333333"
+			p-id = "152071"
+		></path>
+	</svg>;
+};
 
 class NoteBookIcon extends Component {
 	render () {
