@@ -3,27 +3,54 @@ import { Button , Modal , Input } from 'antd';
 import './note.css';
 import BookCoverSwiper from './bookCoverSwiper';
 import { Swiper } from 'swiper/react';
-import coverBlue from './img-collection/cover-blue.png';
-import coverGray from './img-collection/cover-gray.png';
-import coverGreen from './img-collection/cover-green.png';
-import coverYellow from './img-collection/cover-yellow.png';
-import coverRed from './img-collection/cover-red.png';
-import coverPurple from './img-collection/cover-purple.png';
+
+import coverDefault from './img-collection/cover-default.png';
+import coverOne from './img-collection/cover-1.png';
+import coverTwo from './img-collection/cover-2.png';
+import coverThree from './img-collection/cover-3.png';
+import coverFour from './img-collection/cover-4.png';
+import coverFive from './img-collection/cover-5.png';
+import coverSix from './img-collection/cover-6.png';
+import coverSeven from './img-collection/cover-7.png';
+import coverEight from './img-collection/cover-8.png';
+import coverNine from './img-collection/cover-9.png';
+import coverTen from './img-collection/cover-10.png';
+import coverEleven from './img-collection/cover-11.png';
+import coverTwelve from './img-collection/cover-12.png';
+import coverThirteen from './img-collection/cover-13.png';
+import coverFourteen from './img-collection/cover-14.png';
+import coverFifteen from './img-collection/cover-15.png';
 
 const books = [
-	{ cover : coverGray } ,
-	{ cover : coverBlue } ,
-	{ cover : coverGreen } ,
-	{ cover : coverYellow } ,
-	{ cover : coverRed } ,
-	{ cover : coverPurple } ,
+	{ cover : coverDefault } ,
+	{ cover : coverOne } ,
+	{ cover : coverTwo } ,
+	{ cover : coverThree } ,
+	{ cover : coverFour } ,
+	{ cover : coverFive } ,
+	{ cover : coverSix } ,
+	{ cover : coverSeven } ,
+	{ cover : coverEight } ,
+	{ cover : coverNine } ,
+	{ cover : coverTen } ,
+	{ cover : coverEleven } ,
+	{ cover : coverTwelve } ,
+	{ cover : coverThirteen } ,
+	{ cover : coverFourteen } ,
+	{ cover : coverFifteen } ,
 ];
-const AddNoteBookModal = () => {
+
+
+const AddNoteBookModal = ({ addNotebook }) => {
 	const [isModalOpen , setIsModalOpen] = useState(false);
 	const [imagePreview , setImagePreview] = useState(null); // 用来存储图片预览的 URL
 	const [titlePreview , setTitlePreview] = useState('');
 	const inputTitleRef = useRef(null);
-	const notebookArray = JSON.parse(localStorage.getItem('notebook-array')) === null ? [] : JSON.parse(localStorage.getItem('notebook-array'));
+	
+	const storedNoteBooks = localStorage.getItem('notebook-array');
+	
+	// 如果 localStorage 中有笔记本数据，则解析它，否则使用默认数据
+	const notebookArray = storedNoteBooks === null ? [] : JSON.parse(storedNoteBooks);
 	
 	const handleAfterOpen = () => {
 		if ( inputTitleRef.current ) {
@@ -32,7 +59,7 @@ const AddNoteBookModal = () => {
 	};
 	const showModal = () => {
 		setIsModalOpen(true);
-		localStorage.removeItem('notebook-array');
+		// localStorage.removeItem('notebook-array')
 	};
 	
 	const handleCancel = () => {
@@ -42,11 +69,13 @@ const AddNoteBookModal = () => {
 	};
 	
 	const handleOk = () => {
+		console.log(notebookArray);
 		if ( imagePreview && titlePreview ) {
 			const noteBookDate = {
 				cover : imagePreview ,
 				title : titlePreview ,
 			};
+			addNotebook(noteBookDate);
 			notebookArray.unshift(noteBookDate);
 			localStorage.setItem('notebook-array' , JSON.stringify(notebookArray));
 			setIsModalOpen(false);
@@ -83,8 +112,14 @@ const AddNoteBookModal = () => {
 	};
 	return (
 		<>
-			<div onClick = { showModal }>
-				新建笔记本
+			<div
+				onClick = { (e) => {
+					e.stopPropagation();
+					showModal();
+				} }
+				className = "title-add"
+			>
+				<AddNewBookIcon />
 			</div>
 			
 			<Modal
@@ -123,8 +158,8 @@ const AddNoteBookModal = () => {
 									key = { index }
 									src = { book.cover }
 									alt = { `cover-${ index }` }
-									width = "70"
-									height = "90"
+									width = "50"
+									height = "64"
 									onClick = { () => handleCoverClick(book.cover) }
 								/>);
 							}) }
@@ -161,6 +196,28 @@ const AddNoteBookModal = () => {
 		</>
 	);
 };
-
+const AddNewBookIcon = () => {
+	return <svg
+		t = "1732428997742"
+		className = "icon"
+		viewBox = "0 0 1024 1024"
+		version = "1.1"
+		xmlns = "http://www.w3.org/2000/svg"
+		p-id = "152069"
+		width = "16"
+		height = "16"
+	>
+		<path
+			d = "M896 544H128c-19.2 0-32-12.8-32-32s12.8-32 32-32h768c19.2 0 32 12.8 32 32s-12.8 32-32 32z"
+			fill = "#333333"
+			p-id = "152070"
+		></path>
+		<path
+			d = "M512 928c-19.2 0-32-12.8-32-32V128c0-19.2 12.8-32 32-32s32 12.8 32 32v768c0 19.2-12.8 32-32 32z"
+			fill = "#333333"
+			p-id = "152071"
+		></path>
+	</svg>;
+};
 export default AddNoteBookModal;
 

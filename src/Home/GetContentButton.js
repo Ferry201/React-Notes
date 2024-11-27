@@ -17,6 +17,7 @@ const GetContentButton = forwardRef((props,ref) => {
 		
 		onSave(rawContentState,saveTime);
 	};
+	
 	return <button
 		{...refProps}
 		onClick={storeContent}

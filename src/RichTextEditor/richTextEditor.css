@@ -37,11 +37,17 @@ body, html {
 .rich-text-options{
 	display: flex;
 	flex-flow: row nowrap;
-	height: 30px;
-	width: 50%;
+	height: 31px;
+	width: 100%;
 	align-items: center;
+	background: white;
+	border-top-left-radius: 6px;
+	border-top-right-radius: 6px;
+	box-sizing: border-box;
+	border-bottom: 1px solid #d0d0d0;
 }
 .rich-text-options button{
+	border-radius: 6px;
 	background-color: white;
 	outline: unset;
 	border: unset;

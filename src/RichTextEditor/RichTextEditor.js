@@ -132,6 +132,8 @@ const RichTextEditor = ({
 			style = { {
 				height : '100%' ,
 				width : '100%' ,
+				padding:'20px',
+				boxSizing:'border-box'
 			} }
 		>
 			<div className = "rich-text-options">
@@ -229,12 +231,11 @@ const RichTextEditor = ({
 			</div>
 			<div
 				style = { {
-					marginTop : '10px' ,
-					border : '1px solid black' ,
+					borderBottomLeftRadius:'6px',
+					borderBottomRightRadius:'6px',
 					background : 'white' ,
-					borderRadius : '4px' ,
 					height : '100%' ,
-					maxHeight : 'calc(100% - 40px)' ,
+					maxHeight : 'calc(100% - 30px)' ,
 					padding : '10px' ,
 					overflowY : 'scroll' ,
 					width : '100%' ,
