@@ -5,77 +5,68 @@ import { Dropdown , Space } from 'antd';
 import RenderContent from '@src/Home/renderContent';
 import AddNoteBookModal from './addNoteBook_Model';
 import './note.css';
-
-
-// const noteFeatures = [
-// 	{
-// 		label : <div>重命名</div> ,
-// 		key : '0' ,
-// 	} ,
-// 	{
-// 		label : <div><AddNoteBookModal >换封面</AddNoteBookModal></div> ,
-// 		key : '1' ,
-// 	} ,
-// 	{
-// 		label : <div>置顶笔记本</div> ,
-// 		key : '2' ,
-// 	} ,
-// 	{
-// 		label : <div>导出PDF</div> ,
-// 		key : '4' ,
-// 	} ,
-// 	{
-// 		label : <div>分享</div> ,
-// 		key : '5' ,
-// 	} ,
-// 	{
-// 		label : <div className = "delete-notebook-button">删除笔记本</div> ,
-// 		key : '3' ,
-// 	} ,
-// ];
+import dayjs from "dayjs";
 
 @reaxper
 class NoteManagePanel extends Reaxlass {
 	constructor (props) {
 		super(props);
 		this.inputRef = React.createRef();
+		
+		this.state = {
+			isSearch : false ,
+			isHover : false ,//DefaultExpandIcon hover时改变显示的svg
+			isModalVisible : false ,
+			noteFeaturesMenu : this.generateNoteFeaturesMenu() ,
+		};
 	}
-	
-	state = {
-		isSearch : false ,
-		isHover : false ,//DefaultExpandIcon hover时改变显示的svg
-		isModalVisible : false ,
-		noteFeatures : [
-			{
-				label : <div>重命名</div> ,
-				key : '0' ,
-			} ,
-			{
-				label : <div><AddNoteBookModal>换封面</AddNoteBookModal></div> ,
-				key : '1' ,
-			} ,
-			{
-				label : <div>置顶笔记本</div> ,
-				key : '2' ,
-			} ,
-			{
-				label : <div>导出PDF</div> ,
-				key : '4' ,
-			} ,
-			{
-				label : <div>分享</div> ,
-				key : '5' ,
-			} ,
-			{
-				label : <div className = "delete-notebook-button">删除笔记本</div> ,
-				key : '3' ,
-			} ,
-		] ,
-	};
 	
 	componentDidMount () {
 		this.inputRef.current?.focus();
 	}
+	componentDidUpdate(prevProps) {
+		if (prevProps.currentNotebook.id !== this.props.currentNotebook.id) {
+			this.setState({
+				noteFeaturesMenu: this.generateNoteFeaturesMenu(),
+			});
+		}
+	}
+	generateNoteFeaturesMenu = () => {
+		return [
+			{
+				label : <div>重命名</div> ,
+				key : 'rename' ,
+			} , {
+				label : <div><AddNoteBookModal>换封面</AddNoteBookModal></div> ,
+				key : 'change-cover' ,
+			} , {
+				label : <div>置顶笔记本</div> ,
+				key : 'pinned-notebook' ,
+			} , {
+				label : <div>导出PDF</div> ,
+				key : 'export-pdf' ,
+			} , {
+				key : 'notebook-detail' ,
+				label : <div>详情</div> ,
+				children : [
+					{
+						key : 'notebook-create-time' ,
+						label : <span>创建时间:{ dayjs(this.props.currentNotebook.createdTime).format('YYYY-MM-DD HH:mm') }</span> ,
+					} ,
+				] ,
+			} ,
+			
+			{
+				label : <div>分享</div> ,
+				key : 'share-notebook' ,
+			} , {
+				label : <div className = "delete-notebook-button">删除笔记本</div> ,
+				key : 'delete-notebook' ,
+			} ,
+		];
+	};
+	
+	
 	
 	handleSearchNote = () => {
 	};
@@ -87,18 +78,15 @@ class NoteManagePanel extends Reaxlass {
 		this.setState({ isHover : false });
 	};
 	
-	//如果在 setState 中提供了回调函数，回调会在状态更新完成并且 DOM 已经渲染之后执行,确保能获取到最新state
-	
 	
 	render () {
 		const {
 			onChangeNote ,
 			onDeleteNote ,
-			noteAmount ,
 			OnSwitchMode ,
 			showMode ,
 			onToggleSidebar ,
-			currentNoteBook ,
+			currentNotebook ,
 		} = this.props;
 		const { isHover } = this.state;
 		const {
@@ -117,21 +105,23 @@ class NoteManagePanel extends Reaxlass {
 					>
 						{ !siderCollapsed ? (<LeftExpandIcon
 							onclick = { () => {
-								toggleSiderCollapse();
-								onToggleSidebar();
-								this.handleMouseLeave();
+								this.setState({ isHover : false } , () => {
+									toggleSiderCollapse();
+									console.log(isHover);
+								});
 							} }
 						/>) : (isHover ? (<RightExpandIcon
 							onclick = { () => {
 								toggleSiderCollapse();
-								onToggleSidebar();
 							} }
 						/>) : (<DefaultExpandIcon />)) }
 					</div>
-					<h2>{ currentNoteBook }</h2>
+					{/*当前笔记本*/}
+					<h2>{ currentNotebook.title }</h2>
+					{/*笔记本下拉操作菜单*/}
 					<Dropdown
 						placement = "bottomLeft"
-						menu = { { items : this.state.noteFeatures } }
+						menu = { { items : this.state.noteFeaturesMenu } }
 						trigger = { ['click' , 'hover'] }
 					>
 						<a onClick = { (e) => e.preventDefault() }>
@@ -162,14 +152,13 @@ class NoteManagePanel extends Reaxlass {
 			
 			{/*Note List*/ }
 			
-				  <RenderContent
-					  changeNote = { onChangeNote }
-					  deleteNote = { onDeleteNote }
-					  ShowMode = { showMode }
-					  currentNotebook = { currentNoteBook }
-				  />
-			
-			
+			<RenderContent
+				changeNote = { onChangeNote }
+				deleteNote = { onDeleteNote }
+				ShowMode = { showMode }
+				currentNotebook={currentNotebook}
+			/>
+		
 		
 		</div>;
 	}
@@ -210,39 +199,35 @@ const MoreNoteOptions = ({
 }) => {
 	const moreNoteOptions = [
 		{
-			label : <div
-				style = { {
-					width : '100%' ,
-					height : '100%' ,
-				} }
-				onClick = { () => {
-					onSwitchNoteMode();
-				} }
-			>{ showMode ? '宫格模式' : '列表模式' }</div> ,
-			key : '0' ,
-		} ,
-		{
-			label : <div>00</div> ,
+			label : <div>{ showMode ? '宫格模式' : '列表模式' }</div> ,
+			key : 'switch-mode' ,
+		} , {
+			label : <div>主题背景</div> ,
 			key : '1' ,
-		} ,
-		{
+		} , {
 			label : <div>11</div> ,
 			key : '2' ,
 		} ,
 	];
-	return (
-		<Dropdown
-			placement = "bottomLeft"
-			menu = { { items : moreNoteOptions } }
-			trigger = { ['click' , 'hover'] }
-		>
-			<a onClick = { (e) => e.preventDefault() }>
-				<Space>
-					<MoreOptionsIcon />
-				</Space>
-			</a>
-		</Dropdown>
-	);
+	return (<Dropdown
+		placement = "bottomLeft"
+		menu = { {
+			items : moreNoteOptions ,
+			onClick : ({ key }) => {
+				if ( key === 'switch-mode' ) {
+					onSwitchNoteMode();
+				}
+				
+			} ,
+		} }
+		trigger = { ['click' , 'hover'] }
+	>
+		<a onClick = { (e) => e.preventDefault() }>
+			<Space>
+				<MoreOptionsIcon />
+			</Space>
+		</a>
+	</Dropdown>);
 };
 
 class MoreOptionsIcon extends Component {
@@ -388,7 +373,6 @@ class LeftExpandIcon extends Component {
 		</div>;
 	}
 }
-
 
 
 export { NoteManagePanel };

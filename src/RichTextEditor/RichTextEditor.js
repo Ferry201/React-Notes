@@ -4,7 +4,8 @@ import 'draft-js/dist/Draft.css';
 import GetContentButton from '@src/Home/GetContentButton';
 import { FaPaintBrush , FaBold , FaItalic , FaUnderline , FaStrikethrough , FaAlignLeft , FaAlignCenter , FaAlignRight , FaAlignJustify , FaListOl , FaListUl , FaImage } from 'react-icons/fa';
 import './richTextEditor.css';
-import { Popover , Tooltip } from 'antd';
+import { Popover , Tooltip , Modal } from 'antd';
+import dayjs from "dayjs";
 
 //todo:选中分区
 
@@ -34,7 +35,44 @@ const colorStyleMap = {
 	TEAL : { backgroundColor : '#91eded' } ,
 	GRAY : { backgroundColor : '#edeeec' } ,
 };
-
+const AddNoteModal = ({
+	onSave ,
+	initialContent ,
+	onCancel ,
+	children ,
+}) => {
+	const [isModalOpen , setIsModalOpen] = useState(false);
+	const showModal = () => {
+		setIsModalOpen(true);
+	};
+	const handleCancel = () => {
+		setIsModalOpen(false);
+	};
+	
+	const handleOk = () => {
+		setIsModalOpen(false);
+	};
+	return <div>
+		<div onClick = { showModal }>{ children }</div>
+		<Modal
+			open = { isModalOpen }
+			onOk = { handleOk }
+			onCancel = { handleCancel }
+			cancelText = "取消"
+			okText = "创建"
+			width = { 500 }
+			height={300}
+			destroyOnClose = { true }
+			keyboard = { true }
+		>
+			<RichTextEditor
+				onSave = { onSave }
+				initialContent = { initialContent }
+				onCancel = { onCancel }
+			/>
+		</Modal>
+	</div>;
+};
 const RichTextEditor = ({
 	onSave ,
 	initialContent ,
@@ -132,8 +170,8 @@ const RichTextEditor = ({
 			style = { {
 				height : '100%' ,
 				width : '100%' ,
-				padding:'20px',
-				boxSizing:'border-box'
+				padding : '20px' ,
+				boxSizing : 'border-box' ,
 			} }
 		>
 			<div className = "rich-text-options">
@@ -150,34 +188,34 @@ const RichTextEditor = ({
 				<Tooltip title = "加粗">
 					<button onClick = { onBoldClick }><FaBold /></button>
 				</Tooltip>
-				<Tooltip title='斜体'>
+				<Tooltip title = "斜体">
 					<button onClick = { onItalicClick }><FaItalic /></button>
 				</Tooltip>
-				<Tooltip title='下划线'>
+				<Tooltip title = "下划线">
 					<button onClick = { onUnderlineClick }><FaUnderline /></button>
 				</Tooltip>
-				<Tooltip title='删除线'>
+				<Tooltip title = "删除线">
 					<button onClick = { onStrikethroughClick }><FaStrikethrough /></button>
 				</Tooltip>
-				<Tooltip title='文本靠左'>
+				<Tooltip title = "文本靠左">
 					<button onClick = { onAlignLeft }><FaAlignLeft /></button>
 				</Tooltip>
-				<Tooltip title='文本居中'>
+				<Tooltip title = "文本居中">
 					<button onClick = { onAlignCenter }><FaAlignCenter /></button>
 				</Tooltip>
-				<Tooltip title='文本靠右'>
+				<Tooltip title = "文本靠右">
 					<button onClick = { onAlignRight }><FaAlignRight /></button>
 				</Tooltip>
-				<Tooltip title='添加图片'>
+				<Tooltip title = "添加图片">
 					<button onClick = { onAddImage }><FaImage /></button>
 				</Tooltip>
-				<Tooltip title='有序列表'>
+				<Tooltip title = "有序列表">
 					<button onClick = { onOrderedList }><FaListOl /></button>
 				</Tooltip>
-				<Tooltip title='无序列表'>
+				<Tooltip title = "无序列表">
 					<button onClick = { onUnorderedList }><FaListUl /></button>
 				</Tooltip>
-				<Tooltip title='字号'>
+				<Tooltip title = "字号">
 					<button><FontSizeIcon /></button>
 				</Tooltip>
 				<Tooltip></Tooltip>
@@ -218,11 +256,11 @@ const RichTextEditor = ({
 					<option value = "TEAL">Teal</option>
 					<option value = "GRAY">Gray</option>
 				</select>
-				<Tooltip title='保存'><GetContentButton
+				<Tooltip title = "保存"><GetContentButton
 					editorState = { editorState }
 					onSave = { onSave }
 				> <SaveIcon /></GetContentButton></Tooltip>
-				<Tooltip title='退出且不保存修改'>
+				<Tooltip title = "退出且不保存修改">
 					<button
 						onClick = { onCancel }
 					><CancelEditIcon />
@@ -231,8 +269,8 @@ const RichTextEditor = ({
 			</div>
 			<div
 				style = { {
-					borderBottomLeftRadius:'6px',
-					borderBottomRightRadius:'6px',
+					borderBottomLeftRadius : '6px' ,
+					borderBottomRightRadius : '6px' ,
 					background : 'white' ,
 					height : '100%' ,
 					maxHeight : 'calc(100% - 30px)' ,
@@ -382,6 +420,7 @@ const SaveIcon = () => {
 		></path>
 	</svg>;
 };
+export { AddNoteModal };
 export default RichTextEditor;
 
 

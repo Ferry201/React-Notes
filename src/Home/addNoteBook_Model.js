@@ -1,8 +1,8 @@
 import React , { useState , useRef , useEffect } from 'react';
-import {  Modal , Input } from 'antd';
+import { Modal , Input } from 'antd';
 import './note.css';
-import BookCoverSwiper from './bookCoverSwiper';
-import { Swiper } from 'swiper/react';
+import { v4 as uuidv4 } from 'uuid';
+import dayjs from "dayjs";
 
 import coverDefault from './img-collection/cover-default.png';
 import coverOne from './img-collection/cover-1.png';
@@ -41,7 +41,10 @@ const books = [
 ];
 
 
-const AddNoteBookModal = ({ addNotebook ,children}) => {
+const AddNoteBookModal = ({
+	addNotebook ,
+	children,
+}) => {
 	const [isModalOpen , setIsModalOpen] = useState(false);
 	const [imagePreview , setImagePreview] = useState(null); // 用来存储图片预览的 URL
 	const [titlePreview , setTitlePreview] = useState('');
@@ -73,6 +76,8 @@ const AddNoteBookModal = ({ addNotebook ,children}) => {
 			const noteBookDate = {
 				cover : imagePreview ,
 				title : titlePreview ,
+				id : uuidv4() ,
+				createdTime : dayjs().valueOf(),
 			};
 			addNotebook(noteBookDate);
 			// notebookArray.unshift(noteBookDate);
@@ -124,8 +129,8 @@ const AddNoteBookModal = ({ addNotebook ,children}) => {
 				} }
 				className = "title-add"
 			>
-				{children}
-				
+				{ children }
+			
 			</div>
 			
 			<Modal
@@ -191,7 +196,7 @@ const AddNoteBookModal = ({ addNotebook ,children}) => {
 									src = { imagePreview } // 使用 FileReader 读取的图片数据
 									alt = "Preview"
 								/>
-								<span className = "preview-title">{ titlePreview }</span>
+								<p className = "preview-title">{ titlePreview }</p>
 							</div>
 						) : (
 							  <span style = { { color : 'lightgray' } }>没有预览图片</span> // 没有选择图片时显示的文本

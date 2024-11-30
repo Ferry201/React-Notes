@@ -1,6 +1,6 @@
 import React , { Children , forwardRef } from 'react';
 import { convertToRaw } from 'draft-js';
-
+import dayjs from "dayjs";
 const GetContentButton = forwardRef((props,ref) => {
 	const {children,editorState,onSave,...refProps} = props;
 	
@@ -13,7 +13,7 @@ const GetContentButton = forwardRef((props,ref) => {
 			return
 		}
 		// console.log('Content stored' , rawContentState);
-		const saveTime = + Date.now();
+		const saveTime = dayjs().valueOf();
 		
 		onSave(rawContentState,saveTime);
 	};

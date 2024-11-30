@@ -10,21 +10,39 @@ import { NoteSidebar } from './sidebar';
 import { NoteManagePanel } from '@src/Home/note-manage-panel';
 import { v4 as uuidv4 } from 'uuid';
 import { current } from "@reduxjs/toolkit";
+import coverDefault from "@src/Home/img-collection/cover-default.png";
+import dayjs from "dayjs";
+import { AddNoteModal } from '../RichTextEditor/RichTextEditor';
+
+const defaultNotebook = {
+	cover : coverDefault ,
+	title : '我的笔记本' ,
+	id : 'default-notebook-id' ,
+	createdTime : dayjs().valueOf() ,
+};
 
 class NotesApp extends Component {
 	constructor (props) {
 		super(props);
+		
+		this.state = {
+			currentContent : '' ,
+			currentID : null ,
+			isAddNote : false ,
+			noteListData : [] ,
+			noteDisplayMode : true ,//默认列表布局
+			isSidebarVisible : false ,
+			currentNotebook : JSON.parse(localStorage.getItem('current-notebook')) || defaultNotebook ,
+		};
 	}
 	
-	state = {
-		currentContent : '' ,
-		currentID : null ,
-		isAddNote : false ,
-		noteListData : [] ,
-		noteDisplayMode : true ,//默认列表布局
-		isSidebarVisible : false ,
-		currentNoteBook : '我的笔记本' ,
-	};
+	componentDidUpdate (prevProps , prevState) {
+		// 确保 currentNotebook 存在并且 id 不同
+		if ( this.state.currentNotebook && prevState.currentNotebook && this.state.currentNotebook.id !== prevState.currentNotebook.id ) {
+			localStorage.setItem('current-notebook' , JSON.stringify(this.state.currentNotebook));
+		}
+	}
+	
 	
 	componentDidMount () {
 		const storedNoteData = JSON.parse(localStorage.getItem('note-info-array')) || [];
@@ -50,14 +68,15 @@ class NotesApp extends Component {
 		const {
 			currentID ,
 			noteListData ,
-			currentNoteBook ,
+			currentNotebook ,
 		} = this.state;
 		let noteInfoArray = [...noteListData];
 		//
 		let newNoteInfo = {
 			noteContent : rawContentState ,
 			saveTime : saveTime ,
-			notebook : currentNoteBook ,
+			notebook : currentNotebook.title ,
+			notebookID : currentNotebook.id ,
 			id : uuidv4() ,
 		};
 		
@@ -66,7 +85,7 @@ class NotesApp extends Component {
 			noteInfoArray.unshift(newNoteInfo);
 			
 			localStorage.setItem('note-info-array' , JSON.stringify(noteInfoArray));
-			const currentList = noteInfoArray.filter((note) => note.notebook === currentNoteBook);
+			
 			//更新状态
 			this.setState({
 				isAddNote : false ,
@@ -94,8 +113,6 @@ class NotesApp extends Component {
 			noteInfoArray.unshift(newNoteInfo);
 			localStorage.setItem('note-info-array' , JSON.stringify(noteInfoArray));
 			
-			
-			const currentList = noteInfoArray.filter((note) => note.notebook === currentNoteBook);
 			//更新状态
 			this.setState({
 				isAddNote : false ,
@@ -110,12 +127,10 @@ class NotesApp extends Component {
 	handleDeleteNote = (id) => {
 		const {
 			noteListData ,
-			currentNoteBook,
 		} = this.state;
-		
 		const updatedList = noteListData.filter((note) => note.id !== id);
-		const currentList = updatedList.filter((note) => note.notebook === currentNoteBook);
 		localStorage.setItem('note-info-array' , JSON.stringify(updatedList));
+		
 		this.setState({
 			noteListData : updatedList ,
 			currentID : null ,
@@ -138,11 +153,10 @@ class NotesApp extends Component {
 			console.log(this.state.isSidebarVisible);
 		});
 	};
-	
+	//传给sidebar
 	handleToggleNoteBook = (notebook) => {
 		this.setState({
-			currentNoteBook : notebook ,
-			
+			currentNotebook : notebook ,
 		});
 	};
 	
@@ -157,11 +171,10 @@ class NotesApp extends Component {
 			/>
 			{ this.state.isAddNote === true ? (
 				<>
-					
 					<RichTextEditor
-						onCancel = { this.handleAddNote }
-						onSave = { this.handleSaveNote }
-						initialContent = { this.state.currentContent }
+					onCancel = { this.handleAddNote }
+					onSave = { this.handleSaveNote }
+					initialContent = { this.state.currentContent }
 					/>
 				</>) : (
 				  <div
@@ -170,7 +183,10 @@ class NotesApp extends Component {
 						  width : '100%' ,
 					  } }
 				  >
-					  <NoteSidebar handleToggleNoteBook = { this.handleToggleNoteBook } />
+					  <NoteSidebar
+						  defaultNotebook = { defaultNotebook }
+						  handleToggleNoteBook = { this.handleToggleNoteBook }
+					  />
 					  <NoteManagePanel
 						  onChangeNote = { this.handleChangeNote }
 						  onDeleteNote = { this.handleDeleteNote }
@@ -178,7 +194,7 @@ class NotesApp extends Component {
 						  OnSwitchMode = { this.handleSwitchMode }
 						  onToggleSidebar = { this.toggleSidebar }
 						  sidebarIsVisible = { this.state.isSidebarVisible }
-						  currentNoteBook = { this.state.currentNoteBook }
+						  currentNotebook = { this.state.currentNotebook }
 					  />
 				  </div>)
 				

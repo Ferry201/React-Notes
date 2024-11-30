@@ -10,29 +10,28 @@ const RenderContent = ({
 	changeNote ,
 	deleteNote ,
 	ShowMode ,
-	currentNotebook ,
+	currentNotebook,
 }) => {
 	
 	const storedContents = JSON.parse(localStorage.getItem('note-info-array')) || [];
-	let timeStampArray = storedContents.map(item => item.saveTime);
-	
 	const [contents , setContents] = useState([]);
+	
 	useEffect(() => {
 		const fetchContents = () => {
-			const CurrentNotes = storedContents.filter(note => note.notebook === currentNotebook);
-			const allNoteContents = CurrentNotes.map(({
+			const currentNotes = storedContents.filter(note => note.notebookID === currentNotebook.id);
+			const allNoteContents = currentNotes.map(({
 				id ,
 				noteContent ,
 			}) => ({
 				id ,
 				noteContent ,
 			}));
-			// console.log(CurrentNotes);
-			setContents(allNoteContents); // Ensure the order is reversed as needed
+			
+			setContents(allNoteContents);
 			
 		};
 		fetchContents();
-	} , [currentNotebook]);
+	} , [currentNotebook.id]);
 	
 	const onDeleteNote = (id) => {
 		deleteNote(id);
@@ -53,11 +52,9 @@ const RenderContent = ({
 						onClick = { () => changeNote(noteContent , id) }
 					>
 						<span className = "note-ul-mode-title">{ convertFromRaw(noteContent).getPlainText() }</span>
+						{/*note details : 时间 ,置顶 ,收藏 ,删除*/ }
 						<div className = "note-details">
-							{/*<FormRelativeTimeComponent*/ }
-							{/*	timeStamps = { timeStampArray }*/ }
-							{/*	index = { content.id }*/ }
-							{/*/>*/ }
+							<FormatTime id = { id } />
 							<div
 								className = "note-operation-buttons"
 								onClick = { (e) => {
@@ -127,10 +124,7 @@ const RenderContent = ({
 							<span className = "note-grid-mode-title">{ convertFromRaw(noteContent).getPlainText() }</span>
 							
 							<div className = "note-details">
-								{/*<FormRelativeTimeComponent*/ }
-								{/*	timeStamps = { timeStampArray }*/ }
-								{/*	index = { index }*/ }
-								{/*/>*/ }
+								<FormatTime id = { id } />
 								<div
 									className = "note-operation-buttons"
 									onClick = { (e) => {
@@ -156,6 +150,52 @@ const RenderContent = ({
 		}
 	}
 	
+	const FormatTime = ({ id }) => {
+		const [timeIDArray , setTimeIDArray] = useState([]);
+		
+		useEffect(() => {
+			const fetchTimeArray = () => {
+				
+				let initialTimeArray = storedContents.map(({
+					id ,
+					saveTime,
+				}) => ({
+					id ,
+					saveTime ,
+					relativeTime : convertTimestampsToRelativeTimes(saveTime) ,
+				}));
+				
+				setTimeIDArray(initialTimeArray);
+			};
+			
+			fetchTimeArray();
+			
+			const timer = setInterval(() => {
+				
+				setTimeIDArray(prevTimeIDArray => {
+					return prevTimeIDArray.map(item => {
+
+						const newRelativeTime = convertTimestampsToRelativeTimes(item.saveTime);
+						if ( item.relativeTime === newRelativeTime ) return item; // 不变时直接返回
+						return {
+							...item ,
+							relativeTime : newRelativeTime ,
+						};
+					});
+				});
+				
+			} , 3000);
+			
+			return () => {
+				clearInterval(timer);
+			};
+		} , []);
+		
+		return (
+			<div className = "note-time">{ timeIDArray.find(item => item.id === id)?.relativeTime }</div>
+		);
+		
+	};
 	
 	return (
 		<div style = { { height : "100%" } }>
@@ -175,58 +215,37 @@ const RenderContent = ({
 	);
 };
 
-class FormRelativeTimeComponent extends Component {
-	constructor (props) {
-		super(props);
-		this.state = {
-			relativeTimes : convertTimestampsToRelativeTimes(this.props.timeStamps) ,
-		};
-	}
-	
-	componentDidMount () {
-		this.timer = setInterval(this._updateTimes , 3000);
-	}
-	
-	componentWillUnmount () {
-		clearInterval(this.timer);
-	}
-	
-	_updateTimes = () => {
-		const updateTimes = convertTimestampsToRelativeTimes(this.props.timeStamps);
-		this.setState({
-			relativeTimes : updateTimes ,
-		});
-	};
-	
-	render () {
-		return <div className = "note-time">{ this.state.relativeTimes[this.props.index] }</div>;
-		
-	}
-}
 
-const convertTimestampsToRelativeTimes = (timeStampsArray) => {
-	const newRelativeTimes = timeStampsArray.map((timeStamps) => {
-		// const durationSeconds = (+ Date.now() - timeStamps) / 1000;
-		const durationSeconds = (dayjs().valueOf() - timeStamps) / 1000;
-		const durationMinutes = durationSeconds / 60;
-		const durationHours = durationMinutes / 60;
-		if ( dayjs().date() - dayjs(timeStamps).date() === 1 ) {
-			return '昨天' + dayjs(timeStamps).format('HH:mm:ss');
-		}
-		if ( dayjs().date() - dayjs(timeStamps).date() > 1 ) {
-			return dayjs(timeStamps).format('YYYY/MM/DD HH:mm');
-		}
-		if ( durationMinutes > 60 ) {
-			return Math.round(durationHours) + '小时前';
-		}
-		if ( durationSeconds > 60 ) {
-			return Math.round(durationMinutes) + '分钟前';
-		}
-		if ( durationSeconds < 60 ) {
-			return Math.round(Math.max(durationSeconds , 1)) + '秒前';
-		}
-	});
-	return newRelativeTimes;
+const convertTimestampsToRelativeTimes = (timestamp) => {
+	
+	const now = dayjs();
+	const timestampDay = dayjs(timestamp);
+	const durationSeconds = (now.valueOf() - timestamp) / 1000;
+	const durationMinutes = durationSeconds / 60;
+	const durationHours = durationMinutes / 60;
+	const dayDifference = now.date() - timestampDay.date();
+	
+	if ( durationHours > 2 && dayDifference === 0 ) {
+		return '今天 ' + timestampDay.format('HH:mm:ss');
+	}
+	if ( dayDifference === 1 ) {
+		return '昨天 ' + timestampDay.format('HH:mm');
+	}
+	if ( dayDifference > 1 ) {
+		return timestampDay.format('YYYY/MM/DD HH:mm');
+	}
+	
+	if ( durationMinutes > 60 ) {
+		return Math.round(durationHours) + '小时前';
+	}
+	if ( durationSeconds > 60 ) {
+		return Math.round(durationMinutes) + '分钟前';
+	}
+	if ( durationSeconds < 3 ) {
+		return '刚刚';
+	}
+	return Math.round(Math.max(durationSeconds , 1)) + '秒前';
+	
 };
 
 const EmptyIcon = () => {
@@ -305,8 +324,8 @@ class UnselectedFavoriteIcon extends Component {
 			version = "1.1"
 			xmlns = "http://www.w3.org/2000/svg"
 			p-id = "103841"
-			width = "24"
-			height = "24"
+			width = "18"
+			height = "18"
 			data-immersive-translate-walked = "9cfe9fc8-a3e8-4c35-aeea-d58e109df866"
 		>
 			<path
@@ -327,20 +346,20 @@ class UnselectedFavoriteIcon extends Component {
 
 const TopUpIcon = () => {
 	return <svg
-		t = "1732603952055"
+		t = "1732970778716"
 		className = "icon"
 		viewBox = "0 0 1024 1024"
 		version = "1.1"
 		xmlns = "http://www.w3.org/2000/svg"
-		p-id = "2318"
-		width = "24"
-		height = "24"
+		p-id = "18866"
+		width = "18"
+		height = "18"
 	>
 		<path
-			d = "M128 128l768 0 0 89.6-768 0 0-89.6ZM732.288 496 555.7888 309.8624c-10.9504-11.2064-26.4128-18.4896-43.7888-18.4896s-32.832 7.2832-43.6032 18.6048L291.5264 495.8656c-9.2288 10.0224-15.1104 22.9696-15.1104 37.3248 0 30.816 26.3808 55.8016 58.8992 55.8016 0.4544 0 0.896-0.0576 1.344-0.0704l0 0.352L416 589.2736 416 896l192 0L608 589.2736l77.1904 0 0-0.448c1.1648 0.064 2.3104 0.1792 3.5008 0.1792 32.5248 0 58.8992-24.992 58.8992-55.8144C747.5904 518.8352 741.7024 505.8944 732.288 496z"
+			d = "M1024 0v102.4H0V0h1024zM512 153.6l512 496.7936h-297.984L727.1936 1024h-429.056v-373.6064H0L512 153.6z"
 			fill = "#dbdbdb"
-			p-id = "2319"
+			p-id = "18867"
 		></path>
-	</svg>;
+	</svg>
 };
 export default RenderContent;

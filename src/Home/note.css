@@ -18,7 +18,7 @@
 	flex-flow: row nowrap;
 	/*background-image: url("https://i.postimg.cc/ncXVJbw0/DALL-E-2024-11-26-15-47-29-A-minimalist-16-9-background-image-with-a-predominantly-white-design-f.webp");*/
 	/*background: linear-gradient(0deg, rgba(34,193,195,1) 0%, rgba(253,187,45,0.28748481814600846) 100%);*/
-	background: linear-gradient(0deg, rgb(123 188 188) 0%, rgb(250 226 175 / 55%) 100%);
+	/*background: linear-gradient(0deg, rgb(123 188 188) 0%, rgb(250 226 175 / 55%) 100%);*/
 	/*background: radial-gradient(circle, rgba(238,174,202,1) 23%, rgba(148,187,233,1) 100%);*/
 }
 
@@ -35,7 +35,7 @@
 	height: auto; /* 自动根据内容的高度 */
 	display: grid;
 	/*grid-template-columns: repeat(2, 1fr);*/
-	grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+	grid-template-columns: repeat(auto-fill, minmax(79px, 1fr));
 	gap: 10px;
 	margin-bottom: 10px;
 	opacity: 1; /* 完全可见 */
@@ -44,7 +44,7 @@
 	box-sizing: border-box;
 	overflow: visible;
 	transition: width 0.4s ease;
-	transition: grid-template-columns 0.4s ease;
+	transition: grid-template-columns 0.5s ease;
 }
 
 .sub-menu-content .notebook-option {
@@ -52,20 +52,26 @@
 	flex-flow: column;
 	width: 100%;
 	height: 100%;
+	align-items: center;
 }
 
 .sub-menu-content .notebook-option .notebook-cover {
-	width: 100%;
+	width: 79px;
 	height: 100%;
 	aspect-ratio: 9 / 11; /* 保证宽高比一致 */
 	cursor: pointer;
 	object-fit: cover; /* 图片按比例填充 */
 	display: block;
-	border-radius: 4px;
-	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2), 0 0 6px rgba(0, 0, 0, 0.15);
-	
+	border-radius: 4px; 
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+	box-sizing: border-box;
+	transition: border-color 0.3s ease;
 }
-
+.notebook-cover.selected {
+	border: 1px outset black;
+	/*box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1), 0 4px 10px rgba(0, 0, 0, 0.2);*/
+	/*box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2), 0 0 6px rgba(0, 0, 0, 0.15);*/
+}
 .sub-menu-content .notebook-option .notebook-title {
 	width: 70px;
 	height: 16px;
@@ -292,7 +298,7 @@ body {
 
 
 .note-time {
-	font-size: 12px;
+	font-size: 10px;
 	color: #8b8a8a;
 	
 }
@@ -442,6 +448,7 @@ body {
 
 
 h2 {
+	font-family: Arial, sans-serif;
 	width: fit-content;
 	margin: 0 0 2px 4px;
 	user-select: none;
@@ -555,30 +562,28 @@ h2 {
 	object-fit: cover;
 }
 
-.preview-area .preview-title {
-	/*display: block;*/
-	/*line-height: 46px;*/
-	/*text-align: center;*/
-	/*overflow: hidden;*/
-	/*text-overflow: ellipsis;*/
-	/*height: 46px;*/
-	/*width: 122px;*/
-	/*font-size: 24px;*/
-	/*position: absolute;*/
-	/*z-index: 10;*/
-	/*top: 16%;*/
-	/*right: 9%;*/
-	/*background-color: white;*/
-	/*white-space: nowrap;*/
-	/*user-select: none;*/
-}
 
+.preview-title{
+	max-width: 100%;
+	height: 20px;
+	margin: 8px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
 .note-title-bar {
 	display: flex;
 	flex-flow: row nowrap;
 	align-items: center;
 }
-
+.note-title-bar .down-outline-box{
+	height: 24px;
+	width: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+}
 .expand-icon {
 	height: 24px;
 	width: 24px;
@@ -741,14 +746,7 @@ svg.star-active path{
 	fill: #FFD700;  /* 改变颜色 */
 	animation: jump 2s ease infinite;  /* 闪烁效果 */
 }
-.down-outline-box{
-	width: 20px;
-	height: 20px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	cursor: pointer;
-}
+
 .delete-notebook-button{
 	color: red;
 }

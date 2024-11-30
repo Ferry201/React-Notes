@@ -79,3 +79,12 @@ body, html {
 	text-align: justify;
 }
 
+.code-block {
+	background-color: #f5f5f5;
+	font-family: monospace;
+	border-left: 4px solid #ddd;
+	padding: 8px;
+	margin: 0;
+	white-space: pre-wrap;
+}
+

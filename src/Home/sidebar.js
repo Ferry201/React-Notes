@@ -5,8 +5,8 @@ import AddNoteBookModal from './addNoteBook_Model';
 import { UserOutlined } from '@ant-design/icons';
 import { Avatar , Space , Divider } from 'antd';
 import './note.css';
-import { DownOutlined , UpOutlined } from '@ant-design/icons'; // 引入所需图标
-
+import { DownOutlined , UpOutlined } from '@ant-design/icons';
+import { v4 as uuidv4 } from 'uuid';
 import coverDefault from './img-collection/cover-default.png';
 
 
@@ -21,24 +21,19 @@ export class NoteSidebar extends Component {
 		siderbarWidth : 200 ,
 		noteBookArray : [] ,
 		expandSubMenu : true ,
+		selectedNotebookId : null ,
 	};
 	
 	componentDidMount () {
-		
 		const storedNoteBooks = localStorage.getItem('notebook-array');
 		
 		if ( storedNoteBooks === null ) {
-			// 默认笔记本数据
-			const defaultNoteBooks = {
-				cover : coverDefault ,
-				title : '我的笔记本' ,
-			};
 			
 			// 将默认笔记本存入 localStorage
-			localStorage.setItem('notebook-array' , JSON.stringify([defaultNoteBooks]));
+			localStorage.setItem('notebook-array' , JSON.stringify([this.props.defaultNotebook]));
 			
 			// 更新组件状态
-			this.setState({ noteBookArray : [defaultNoteBooks] });
+			this.setState({ noteBookArray : [this.props.defaultNotebook] });
 		} else {
 			// 如果有数据，从 localStorage 中加载
 			this.setState({ noteBookArray : JSON.parse(storedNoteBooks) });
@@ -55,6 +50,7 @@ export class NoteSidebar extends Component {
 			return { noteBookArray : updatedNotebooks };
 		} , () => {
 			localStorage.setItem('notebook-array' , JSON.stringify(this.state.noteBookArray));
+			this.props.handleToggleNoteBook(newNoteBook);//添加后立刻显示新添加笔记本页面
 		});
 	};
 	
@@ -62,13 +58,18 @@ export class NoteSidebar extends Component {
 		this.setState({ siderbarWidth : width });
 	};
 	handleFoldSubMenu = () => {
-		this.setState({ expandSubMenu : !this.state.expandSubMenu } );
+		this.setState({ expandSubMenu : !this.state.expandSubMenu });
 	};
 	handleImageError = (e) => {
 		if ( e.target.src !== coverDefault ) {  // 仅当图片的 src 不是默认封面时才替换
 			e.target.src = coverDefault; // 设置默认封面
 			alert('图片加载失败，使用默认封面');
 		}
+	};
+	handleClickNotebook = (notebook) => {
+		this.setState({ selectedNotebookId : notebook.id } , () => {
+			this.props.handleToggleNoteBook(notebook);
+		});
 	};
 	
 	render () {
@@ -81,7 +82,8 @@ export class NoteSidebar extends Component {
 			noteBookArray ,
 			expandSubMenu ,
 		} = this.state;
-		const {handleToggleNoteBook} = this.props;
+		
+		
 		
 		
 		return <div
@@ -96,8 +98,8 @@ export class NoteSidebar extends Component {
 				width = { siderCollapsed ? 0 : this.state.siderbarWidth }
 				axis = "x" // 只允许水平拖动
 				minConstraints = { [200 , 0] } // 设置最小宽度
-				maxConstraints = { [350 , 0] } // 设置最大宽度
-				resizeHandles = { ['e'] } // 使用右边缘 east
+				maxConstraints = { [380 , 0] } // 设置最大宽度
+				resizeHandles = { ['e'] } // 右边缘 east
 				onResizeStart = { (e , data) => {
 					toggleResizing(true);
 					
@@ -153,6 +155,7 @@ export class NoteSidebar extends Component {
 								</div>
 								<div className = { expandSubMenu ? 'sub-menu-content' : 'sub-menu-content-disappear' }>
 									{ noteBookArray.map((book , index) => {
+										const isSelected = this.state.selectedNotebookId === book.id;
 										return <div
 											key = { index }
 											className = "notebook-option"
@@ -160,9 +163,11 @@ export class NoteSidebar extends Component {
 											<img
 												src = { book.cover }
 												alt = { book.title }
-												className = "notebook-cover"
+												className = {`notebook-cover ${isSelected ? 'selected' : ''}`}
 												onError = { this.handleImageError }
-												onClick={()=>{handleToggleNoteBook(book.title)}}
+												onClick = { () => {
+													this.handleClickNotebook(book);
+												} }
 											/>
 											<span className = "notebook-title">{ book.title }</span>
 										</div>;
@@ -447,3 +452,4 @@ const FeedbackIcon = () => {
 
 import { reaxel_sider } from './sider.reaxel';
 import { reaxper } from 'reaxes-react';
+import dayjs from "dayjs";
