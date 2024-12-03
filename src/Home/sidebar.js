@@ -19,40 +19,12 @@ export class NoteSidebar extends Component {
 	
 	state = {
 		siderbarWidth : 200 ,
-		noteBookArray : [] ,
 		expandSubMenu : true ,
-		selectedNotebookId : null ,
 	};
 	
 	componentDidMount () {
-		const storedNoteBooks = localStorage.getItem('notebook-array');
 		
-		if ( storedNoteBooks === null ) {
-			
-			// 将默认笔记本存入 localStorage
-			localStorage.setItem('notebook-array' , JSON.stringify([this.props.defaultNotebook]));
-			
-			// 更新组件状态
-			this.setState({ noteBookArray : [this.props.defaultNotebook] });
-		} else {
-			// 如果有数据，从 localStorage 中加载
-			this.setState({ noteBookArray : JSON.parse(storedNoteBooks) });
-		}
 	}
-	
-	//传给Modal的
-	addNoteBook = (newNoteBook) => {
-		this.setState((prevState) => {
-			const updatedNotebooks = [
-				newNoteBook ,
-				...prevState.noteBookArray ,
-			];
-			return { noteBookArray : updatedNotebooks };
-		} , () => {
-			localStorage.setItem('notebook-array' , JSON.stringify(this.state.noteBookArray));
-			this.props.handleToggleNoteBook(newNoteBook);//添加后立刻显示新添加笔记本页面
-		});
-	};
 	
 	handleSetWidth = (width) => {
 		this.setState({ siderbarWidth : width });
@@ -66,11 +38,7 @@ export class NoteSidebar extends Component {
 			alert('图片加载失败，使用默认封面');
 		}
 	};
-	handleClickNotebook = (notebook) => {
-		this.setState({ selectedNotebookId : notebook.id } , () => {
-			this.props.handleToggleNoteBook(notebook);
-		});
-	};
+	
 	
 	render () {
 		const {
@@ -79,11 +47,8 @@ export class NoteSidebar extends Component {
 			toggleResizing ,
 		} = reaxel_sider();
 		const {
-			noteBookArray ,
 			expandSubMenu ,
 		} = this.state;
-		
-		
 		
 		
 		return <div
@@ -145,7 +110,7 @@ export class NoteSidebar extends Component {
 											<div
 												onClick = { (e) => e.stopPropagation() }
 											>
-												<AddNoteBookModal addNotebook = { this.addNoteBook }><AddNewBookIcon /></AddNoteBookModal>
+												<AddNoteBookModal changeNotebookArray = { this.props.addNoteBook }><AddNewBookIcon /></AddNoteBookModal>
 											
 											</div>
 										</div>
@@ -154,8 +119,8 @@ export class NoteSidebar extends Component {
 								
 								</div>
 								<div className = { expandSubMenu ? 'sub-menu-content' : 'sub-menu-content-disappear' }>
-									{ noteBookArray.map((book , index) => {
-										const isSelected = this.state.selectedNotebookId === book.id;
+									{ this.props.noteBookArray.map((book , index) => {
+										const isSelected = this.props.selectedNotebookId === book.id;
 										return <div
 											key = { index }
 											className = "notebook-option"
@@ -166,7 +131,7 @@ export class NoteSidebar extends Component {
 												className = {`notebook-cover ${isSelected ? 'selected' : ''}`}
 												onError = { this.handleImageError }
 												onClick = { () => {
-													this.handleClickNotebook(book);
+													this.props.handleToggleNoteBook(book);
 												} }
 											/>
 											<span className = "notebook-title">{ book.title }</span>

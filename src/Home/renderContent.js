@@ -10,7 +10,7 @@ const RenderContent = ({
 	changeNote ,
 	deleteNote ,
 	ShowMode ,
-	currentNotebook,
+	currentNotebook ,
 }) => {
 	
 	const storedContents = JSON.parse(localStorage.getItem('note-info-array')) || [];
@@ -26,7 +26,6 @@ const RenderContent = ({
 				id ,
 				noteContent ,
 			}));
-			
 			setContents(allNoteContents);
 			
 		};
@@ -158,13 +157,12 @@ const RenderContent = ({
 				
 				let initialTimeArray = storedContents.map(({
 					id ,
-					saveTime,
+					saveTime ,
 				}) => ({
 					id ,
 					saveTime ,
 					relativeTime : convertTimestampsToRelativeTimes(saveTime) ,
 				}));
-				
 				setTimeIDArray(initialTimeArray);
 			};
 			
@@ -174,7 +172,7 @@ const RenderContent = ({
 				
 				setTimeIDArray(prevTimeIDArray => {
 					return prevTimeIDArray.map(item => {
-
+						
 						const newRelativeTime = convertTimestampsToRelativeTimes(item.saveTime);
 						if ( item.relativeTime === newRelativeTime ) return item; // 不变时直接返回
 						return {
@@ -216,37 +214,41 @@ const RenderContent = ({
 };
 
 
+
 const convertTimestampsToRelativeTimes = (timestamp) => {
+	const now = dayjs(); // 当前时间
+	const timestampDay = dayjs(timestamp); // 时间戳对应的时间
 	
-	const now = dayjs();
-	const timestampDay = dayjs(timestamp);
-	const durationSeconds = (now.valueOf() - timestamp) / 1000;
-	const durationMinutes = durationSeconds / 60;
-	const durationHours = durationMinutes / 60;
-	const dayDifference = now.date() - timestampDay.date();
+	const durationSeconds = (now.valueOf() - timestamp) / 1000; // 时间差（秒）
+	const durationMinutes = durationSeconds / 60; // 时间差（分钟）
+	const durationHours = durationMinutes / 60; // 时间差（小时）
 	
-	if ( durationHours > 2 && dayDifference === 0 ) {
-		return '今天 ' + timestampDay.format('HH:mm:ss');
-	}
-	if ( dayDifference === 1 ) {
-		return '昨天 ' + timestampDay.format('HH:mm');
-	}
-	if ( dayDifference > 1 ) {
-		return timestampDay.format('YYYY/MM/DD HH:mm');
-	}
-	
-	if ( durationMinutes > 60 ) {
-		return Math.round(durationHours) + '小时前';
-	}
-	if ( durationSeconds > 60 ) {
-		return Math.round(durationMinutes) + '分钟前';
-	}
+	// 1. 判断最近的时间段
 	if ( durationSeconds < 3 ) {
 		return '刚刚';
 	}
-	return Math.round(Math.max(durationSeconds , 1)) + '秒前';
+	if ( durationSeconds < 60 ) {
+		return Math.round(durationSeconds) + '秒前';
+	}
+	if ( durationMinutes < 60 ) {
+		return Math.round(durationMinutes) + '分钟前';
+	}
+	if ( durationHours < 2 ) {
+		return Math.round(durationHours) + '小时前';
+	}
+	if ( timestampDay.isSame(now , 'day') ) {
+		return '今天 ' + timestampDay.format('HH:mm:ss');
+	}
 	
+	// 2. 判断是否昨天
+	if (timestampDay.isSame(now.subtract(1,'day'),'day') ) {
+		return '昨天 ' + timestampDay.format('HH:mm');
+	}
+	
+	// 3. 其他日期，直接显示完整日期时间
+	return timestampDay.format('YYYY/MM/DD HH:mm');
 };
+
 
 const EmptyIcon = () => {
 	return <svg
@@ -360,6 +362,6 @@ const TopUpIcon = () => {
 			fill = "#dbdbdb"
 			p-id = "18867"
 		></path>
-	</svg>
+	</svg>;
 };
 export default RenderContent;

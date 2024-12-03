@@ -18,34 +18,43 @@ class NoteManagePanel extends Reaxlass {
 			isHover : false ,//DefaultExpandIcon hover时改变显示的svg
 			isModalVisible : false ,
 			noteFeaturesMenu : this.generateNoteFeaturesMenu() ,
+			isRenaming : false ,
+			title : this.props.currentNotebook.title ,
 		};
 	}
 	
 	componentDidMount () {
 		this.inputRef.current?.focus();
 	}
-	componentDidUpdate(prevProps) {
-		if (prevProps.currentNotebook.id !== this.props.currentNotebook.id) {
+	
+	componentDidUpdate (prevProps) {
+		if ( prevProps.currentNotebook.id !== this.props.currentNotebook.id ||prevProps.currentNotebook.title !== this.props.currentNotebook.title) {
 			this.setState({
-				noteFeaturesMenu: this.generateNoteFeaturesMenu(),
+				noteFeaturesMenu : this.generateNoteFeaturesMenu() ,
+				title : this.props.currentNotebook.title ,
 			});
 		}
 	}
+	
 	generateNoteFeaturesMenu = () => {
 		return [
 			{
 				label : <div>重命名</div> ,
 				key : 'rename' ,
-			} , {
-				label : <div><AddNoteBookModal>换封面</AddNoteBookModal></div> ,
+			} ,
+			{
+				label : <div><AddNoteBookModal showTitleInput = { false }>换封面</AddNoteBookModal></div> ,
 				key : 'change-cover' ,
-			} , {
+			} ,
+			{
 				label : <div>置顶笔记本</div> ,
 				key : 'pinned-notebook' ,
-			} , {
+			} ,
+			{
 				label : <div>导出PDF</div> ,
 				key : 'export-pdf' ,
-			} , {
+			} ,
+			{
 				key : 'notebook-detail' ,
 				label : <div>详情</div> ,
 				children : [
@@ -55,7 +64,6 @@ class NoteManagePanel extends Reaxlass {
 					} ,
 				] ,
 			} ,
-			
 			{
 				label : <div>分享</div> ,
 				key : 'share-notebook' ,
@@ -67,7 +75,6 @@ class NoteManagePanel extends Reaxlass {
 	};
 	
 	
-	
 	handleSearchNote = () => {
 	};
 	
@@ -77,7 +84,22 @@ class NoteManagePanel extends Reaxlass {
 	handleMouseLeave = () => {
 		this.setState({ isHover : false });
 	};
-	
+	// 重命名笔记本
+	renameNotebookTitle=(e)=>{
+		const newTitle=e.target.value;
+		this.props.updateNotebookTitle(newTitle)
+	}
+	handleBlur = (e) => {
+		this.setState({ isRenaming : false },()=>{this.renameNotebookTitle(e)});
+	};
+	handleKeyDown = (e) => {
+		if ( e.key === 'Enter' ) {
+			this.setState({ isRenaming : false },()=>{this.renameNotebookTitle(e)});
+		}
+	};
+	handleChangeTitle = (e) => {
+		this.setState({ title : e.target.value });
+	};
 	
 	render () {
 		const {
@@ -88,7 +110,10 @@ class NoteManagePanel extends Reaxlass {
 			onToggleSidebar ,
 			currentNotebook ,
 		} = this.props;
-		const { isHover } = this.state;
+		const {
+			isHover ,
+			isRenaming ,
+		} = this.state;
 		const {
 			toggleSiderCollapse ,
 			siderCollapsed ,
@@ -116,12 +141,28 @@ class NoteManagePanel extends Reaxlass {
 							} }
 						/>) : (<DefaultExpandIcon />)) }
 					</div>
-					{/*当前笔记本*/}
-					<h2>{ currentNotebook.title }</h2>
-					{/*笔记本下拉操作菜单*/}
+					{/*当前笔记本*/ }
+					{ isRenaming ?
+					  (<input
+						  type = "text"
+						  value = { this.state.title }
+						  onChange = { this.handleChangeTitle }
+						  onBlur = { this.handleBlur }
+						  onKeyDown = { this.handleKeyDown }
+					  />) :
+					  (<h2>{ this.state.title }</h2>) }
+					
+					{/*笔记本下拉操作菜单*/ }
 					<Dropdown
 						placement = "bottomLeft"
-						menu = { { items : this.state.noteFeaturesMenu } }
+						menu = { {
+							items : this.state.noteFeaturesMenu ,
+							onClick : ({ key }) => {
+								if ( key === 'rename' ) {
+									this.setState({ isRenaming : true });
+								}
+							} ,
+						} }
 						trigger = { ['click' , 'hover'] }
 					>
 						<a onClick = { (e) => e.preventDefault() }>
@@ -151,12 +192,11 @@ class NoteManagePanel extends Reaxlass {
 			
 			
 			{/*Note List*/ }
-			
 			<RenderContent
 				changeNote = { onChangeNote }
 				deleteNote = { onDeleteNote }
 				ShowMode = { showMode }
-				currentNotebook={currentNotebook}
+				currentNotebook = { currentNotebook }
 			/>
 		
 		

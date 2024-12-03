@@ -30,9 +30,11 @@ class NotesApp extends Component {
 			currentID : null ,
 			isAddNote : false ,
 			noteListData : [] ,
+			noteBookData : [] ,
 			noteDisplayMode : true ,//默认列表布局
 			isSidebarVisible : false ,
 			currentNotebook : JSON.parse(localStorage.getItem('current-notebook')) || defaultNotebook ,
+			selectedNotebookId : null ,
 		};
 	}
 	
@@ -47,6 +49,18 @@ class NotesApp extends Component {
 	componentDidMount () {
 		const storedNoteData = JSON.parse(localStorage.getItem('note-info-array')) || [];
 		this.setState({ noteListData : storedNoteData });
+		
+		const storedNoteBooks = localStorage.getItem('notebook-array');
+		if ( storedNoteBooks === null ) {
+			// 将默认笔记本存入 localStorage
+			localStorage.setItem('notebook-array' , JSON.stringify([defaultNotebook]));
+			
+			// 更新组件状态
+			this.setState({ noteBookData : [defaultNotebook] });
+		} else {
+			// 如果有数据，从 localStorage 中加载
+			this.setState({ noteBookData : JSON.parse(storedNoteBooks) });
+		}
 	}
 	
 	
@@ -153,10 +167,57 @@ class NotesApp extends Component {
 			console.log(this.state.isSidebarVisible);
 		});
 	};
+	//传给modal
+	addNoteBook = (newNoteBook) => {
+		this.setState((prevState) => {
+			const updatedNotebooks = [
+				newNoteBook ,
+				...prevState.noteBookData ,
+			];
+			return {
+				noteBookData : updatedNotebooks ,
+				selectedNotebookId : newNoteBook.id,
+			};
+		} , () => {
+			localStorage.setItem('notebook-array' , JSON.stringify(this.state.noteBookData));
+			this.handleToggleNoteBook(newNoteBook);//添加后立刻显示新添加笔记本页面
+		});
+	};
 	//传给sidebar
 	handleToggleNoteBook = (notebook) => {
 		this.setState({
 			currentNotebook : notebook ,
+			selectedNotebookId : notebook.id,
+		});
+	};
+	//重命名笔记本
+	updateNotebookTitle = (title) => {
+		const {
+			noteBookData ,
+			currentNotebook ,
+		} = this.state;
+		let updatedNotebooks = [...noteBookData];
+		updatedNotebooks = updatedNotebooks.map(notebook => {
+			if ( notebook.id === currentNotebook.id ) {
+				return {
+					...notebook ,
+					title : title ,
+				};
+			}
+			return notebook;
+		});
+		this.setState(prevState => {
+			const updatedNotebook = {
+				...prevState.currentNotebook ,
+				title : title ,
+			};
+			return {
+				currentNotebook : updatedNotebook ,
+				noteBookData : updatedNotebooks ,
+			};
+		} , () => {
+			localStorage.setItem('current-notebook' , JSON.stringify(this.state.currentNotebook));
+			localStorage.setItem('notebook-array' , JSON.stringify(updatedNotebooks));
 		});
 	};
 	
@@ -172,9 +233,9 @@ class NotesApp extends Component {
 			{ this.state.isAddNote === true ? (
 				<>
 					<RichTextEditor
-					onCancel = { this.handleAddNote }
-					onSave = { this.handleSaveNote }
-					initialContent = { this.state.currentContent }
+						onCancel = { this.handleAddNote }
+						onSave = { this.handleSaveNote }
+						initialContent = { this.state.currentContent }
 					/>
 				</>) : (
 				  <div
@@ -184,8 +245,10 @@ class NotesApp extends Component {
 					  } }
 				  >
 					  <NoteSidebar
-						  defaultNotebook = { defaultNotebook }
+						  noteBookArray = { this.state.noteBookData }
 						  handleToggleNoteBook = { this.handleToggleNoteBook }
+						  selectedNotebookId={this.state.selectedNotebookId}
+						  addNoteBook = { this.addNoteBook }
 					  />
 					  <NoteManagePanel
 						  onChangeNote = { this.handleChangeNote }
@@ -195,6 +258,7 @@ class NotesApp extends Component {
 						  onToggleSidebar = { this.toggleSidebar }
 						  sidebarIsVisible = { this.state.isSidebarVisible }
 						  currentNotebook = { this.state.currentNotebook }
+						  updateNotebookTitle = { this.updateNotebookTitle }
 					  />
 				  </div>)
 				

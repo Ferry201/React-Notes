@@ -42,8 +42,9 @@ const books = [
 
 
 const AddNoteBookModal = ({
-	addNotebook ,
-	children,
+	changeNotebookArray ,
+	children ,
+	showTitleInput = true ,
 }) => {
 	const [isModalOpen , setIsModalOpen] = useState(false);
 	const [imagePreview , setImagePreview] = useState(null); // 用来存储图片预览的 URL
@@ -77,9 +78,9 @@ const AddNoteBookModal = ({
 				cover : imagePreview ,
 				title : titlePreview ,
 				id : uuidv4() ,
-				createdTime : dayjs().valueOf(),
+				createdTime : dayjs().valueOf() ,
 			};
-			addNotebook(noteBookDate);
+			changeNotebookArray(noteBookDate);
 			// notebookArray.unshift(noteBookDate);
 			// localStorage.setItem('notebook-array' , JSON.stringify(notebookArray));
 			setIsModalOpen(false);
@@ -134,33 +135,35 @@ const AddNoteBookModal = ({
 			</div>
 			
 			<Modal
-				title = "新建笔记本"
+				title = {showTitleInput&&"新建笔记本"}
 				open = { isModalOpen }
 				onOk = { handleOk }
 				onCancel = { handleCancel }
 				cancelText = "取消"
-				okText = "创建"
+				okText = "完成"
+				closable={false}
 				width = { 450 }
-				style = { {
-					top : 20 ,
-				} }
 				destroyOnClose = { true }
 				keyboard = { true }
 				afterOpenChange = { handleAfterOpen }
 			>
 				<div className = "add-NB-modal-content">
 					<div className = "edit-NB-info">
-						<p>输入标题</p>
+						{ showTitleInput && (<div>
+							
+							<p>输入标题</p>
+							
+							<Input
+								type = "text"
+								ref = { inputTitleRef }
+								className = "title-input"
+								value = { titlePreview }
+								onChange = { handleInputTitle }
+								placeholder = "输入标题..."
+								allowClear
+							/>
+						</div>) }
 						
-						<Input
-							type = "text"
-							ref = { inputTitleRef }
-							className = "title-input"
-							value = { titlePreview }
-							onChange = { handleInputTitle }
-							placeholder = "输入标题..."
-							allowClear
-						/>
 						<p>选择封面</p>
 						<div className = "img-cover-box">
 							{/*默认封面图*/ }
