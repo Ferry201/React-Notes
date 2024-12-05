@@ -11,7 +11,8 @@ import dayjs from "dayjs";
 class NoteManagePanel extends Reaxlass {
 	constructor (props) {
 		super(props);
-		this.inputRef = React.createRef();
+		this.inputSearchRef = React.createRef();
+		this.inputRenameRef = React.createRef();
 		
 		this.state = {
 			isSearch : false ,
@@ -24,11 +25,11 @@ class NoteManagePanel extends Reaxlass {
 	}
 	
 	componentDidMount () {
-		this.inputRef.current?.focus();
+		this.inputSearchRef.current?.focus();
 	}
 	
 	componentDidUpdate (prevProps) {
-		if ( prevProps.currentNotebook.id !== this.props.currentNotebook.id ||prevProps.currentNotebook.title !== this.props.currentNotebook.title) {
+		if ( prevProps.currentNotebook.id !== this.props.currentNotebook.id || prevProps.currentNotebook.title !== this.props.currentNotebook.title ) {
 			this.setState({
 				noteFeaturesMenu : this.generateNoteFeaturesMenu() ,
 				title : this.props.currentNotebook.title ,
@@ -43,7 +44,7 @@ class NoteManagePanel extends Reaxlass {
 				key : 'rename' ,
 			} ,
 			{
-				label : <div><AddNoteBookModal showTitleInput = { false }>换封面</AddNoteBookModal></div> ,
+				label : <div>换封面</div> ,
 				key : 'change-cover' ,
 			} ,
 			{
@@ -85,16 +86,20 @@ class NoteManagePanel extends Reaxlass {
 		this.setState({ isHover : false });
 	};
 	// 重命名笔记本
-	renameNotebookTitle=(e)=>{
-		const newTitle=e.target.value;
-		this.props.updateNotebookTitle(newTitle)
-	}
+	renameNotebookTitle = (e) => {
+		const newTitle = e.target.value;
+		this.props.updateNotebookInfo('title',newTitle);
+	};
 	handleBlur = (e) => {
-		this.setState({ isRenaming : false },()=>{this.renameNotebookTitle(e)});
+		this.setState({ isRenaming : false } , () => {
+			this.renameNotebookTitle(e);
+		});
 	};
 	handleKeyDown = (e) => {
 		if ( e.key === 'Enter' ) {
-			this.setState({ isRenaming : false },()=>{this.renameNotebookTitle(e)});
+			this.setState({ isRenaming : false } , () => {
+				this.renameNotebookTitle(e);
+			});
 		}
 	};
 	handleChangeTitle = (e) => {
@@ -149,6 +154,8 @@ class NoteManagePanel extends Reaxlass {
 						  onChange = { this.handleChangeTitle }
 						  onBlur = { this.handleBlur }
 						  onKeyDown = { this.handleKeyDown }
+						  ref = { this.inputRenameRef }
+						  className='rename-input'
 					  />) :
 					  (<h2>{ this.state.title }</h2>) }
 					
@@ -159,7 +166,12 @@ class NoteManagePanel extends Reaxlass {
 							items : this.state.noteFeaturesMenu ,
 							onClick : ({ key }) => {
 								if ( key === 'rename' ) {
-									this.setState({ isRenaming : true });
+									this.setState({ isRenaming : true },()=>{
+										this.inputRenameRef.current?.focus();
+									});
+								}
+								if ( key === 'change-cover' ) {
+									this.props.openModal('changeCover');
 								}
 							} ,
 						} }
@@ -175,7 +187,7 @@ class NoteManagePanel extends Reaxlass {
 				<div className = "top-tool-bar">
 					<div className = "search-bar">
 						<input
-							ref = { this.inputRef }
+							ref = { this.inputSearchRef }
 							type = "text"
 							className = "search-input"
 							placeholder = "输入关键词..."

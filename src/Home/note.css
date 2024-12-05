@@ -476,7 +476,15 @@ h2 {
 	align-items: center;
 	width: fit-content;
 }
-
+.rename-input{
+	height: 28px;
+	font-size: 21px;
+	font-weight: bold;
+	width: 110px;
+	outline: none;
+	border: none;
+	border-bottom: 1px solid black;
+}
 .top-tool-bar {
 	display: flex;
 	flex-direction: row;

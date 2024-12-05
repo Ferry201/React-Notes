@@ -13,10 +13,11 @@ import { current } from "@reduxjs/toolkit";
 import coverDefault from "@src/Home/img-collection/cover-default.png";
 import dayjs from "dayjs";
 import { AddNoteModal } from '../RichTextEditor/RichTextEditor';
+import AddNoteBookModal from "@src/Home/addNoteBook_Model";
 
 const defaultNotebook = {
-	cover : coverDefault ,
 	title : '我的笔记本' ,
+	cover : coverDefault ,
 	id : 'default-notebook-id' ,
 	createdTime : dayjs().valueOf() ,
 };
@@ -35,6 +36,9 @@ class NotesApp extends Component {
 			isSidebarVisible : false ,
 			currentNotebook : JSON.parse(localStorage.getItem('current-notebook')) || defaultNotebook ,
 			selectedNotebookId : null ,
+			activeModal : null ,
+			isAddModalOpen : false ,
+			isChangeModalOpen : false ,
 		};
 	}
 	
@@ -176,7 +180,6 @@ class NotesApp extends Component {
 			];
 			return {
 				noteBookData : updatedNotebooks ,
-				selectedNotebookId : newNoteBook.id,
 			};
 		} , () => {
 			localStorage.setItem('notebook-array' , JSON.stringify(this.state.noteBookData));
@@ -187,11 +190,11 @@ class NotesApp extends Component {
 	handleToggleNoteBook = (notebook) => {
 		this.setState({
 			currentNotebook : notebook ,
-			selectedNotebookId : notebook.id,
+			selectedNotebookId : notebook.id ,
 		});
 	};
-	//重命名笔记本
-	updateNotebookTitle = (title) => {
+	//笔记本 : 重命名 换封面
+	updateNotebookInfo = (key,value) => {
 		const {
 			noteBookData ,
 			currentNotebook ,
@@ -201,7 +204,7 @@ class NotesApp extends Component {
 			if ( notebook.id === currentNotebook.id ) {
 				return {
 					...notebook ,
-					title : title ,
+					[key] : value ,
 				};
 			}
 			return notebook;
@@ -209,7 +212,7 @@ class NotesApp extends Component {
 		this.setState(prevState => {
 			const updatedNotebook = {
 				...prevState.currentNotebook ,
-				title : title ,
+				[key] : value ,
 			};
 			return {
 				currentNotebook : updatedNotebook ,
@@ -217,8 +220,28 @@ class NotesApp extends Component {
 			};
 		} , () => {
 			localStorage.setItem('current-notebook' , JSON.stringify(this.state.currentNotebook));
-			localStorage.setItem('notebook-array' , JSON.stringify(updatedNotebooks));
+			localStorage.setItem('notebook-array' , JSON.stringify(this.state.noteBookData));
 		});
+	};
+	
+	//Modal
+	handleOpenModal = (type) => {
+		if ( type === 'addNotebook' ) {
+			this.setState({ isAddModalOpen : true });
+		}
+		if ( type === 'changeCover' ) {
+			this.setState({ isChangeModalOpen : true });
+		}
+		this.setState({ activeModal : type } );
+	};
+	handleCloseModal = (type) => {
+		if ( type === 'addNotebook' ) {
+			this.setState({ isAddModalOpen : false });
+		}
+		if ( type === 'changeCover' ) {
+			this.setState({ isChangeModalOpen : false });
+		}
+		this.setState({ activeModal : null }  );
 	};
 	
 	render () {
@@ -247,8 +270,9 @@ class NotesApp extends Component {
 					  <NoteSidebar
 						  noteBookArray = { this.state.noteBookData }
 						  handleToggleNoteBook = { this.handleToggleNoteBook }
-						  selectedNotebookId={this.state.selectedNotebookId}
+						  selectedNotebookId = { this.state.selectedNotebookId }
 						  addNoteBook = { this.addNoteBook }
+						  openModal = { this.handleOpenModal }
 					  />
 					  <NoteManagePanel
 						  onChangeNote = { this.handleChangeNote }
@@ -258,8 +282,40 @@ class NotesApp extends Component {
 						  onToggleSidebar = { this.toggleSidebar }
 						  sidebarIsVisible = { this.state.isSidebarVisible }
 						  currentNotebook = { this.state.currentNotebook }
-						  updateNotebookTitle = { this.updateNotebookTitle }
+						  updateNotebookInfo = { this.updateNotebookInfo }
+						  openModal = { this.handleOpenModal }
 					  />
+					  
+					  {/*添加笔记本 Modal*/ }
+					  { this.state.activeModal === 'addNotebook' && (<AddNoteBookModal
+						  showTitleInput = { true }
+						  onOk = { ({
+							  title ,
+							  cover ,
+						  }) => {
+							  const newNoteBook = {
+								  title ,
+								  cover ,
+								  id : uuidv4() ,
+								  createdTime : dayjs().valueOf() ,
+							  };
+							  this.addNoteBook(newNoteBook);
+						  }
+						  }
+						  closeModal = { () => this.handleCloseModal('addNotebook') }
+						  open = { this.state.isAddModalOpen }
+					  />) }
+					  
+					  {/*修改笔记本封面 Modal*/ }
+					  { this.state.activeModal === 'changeCover' && (<AddNoteBookModal
+						  showTitleInput = { false }
+						  onOk = { ({ cover }) => {
+							  console.log(cover);
+							  this.updateNotebookInfo('cover',cover);
+						  } }
+						  closeModal = { () => this.handleCloseModal('changeCover') }
+						  open = { this.state.isChangeModalOpen }
+					  />) }
 				  </div>)
 				
 			}

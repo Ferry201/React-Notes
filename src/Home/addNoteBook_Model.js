@@ -42,18 +42,19 @@ const books = [
 
 
 const AddNoteBookModal = ({
-	changeNotebookArray ,
-	children ,
-	showTitleInput = true ,
+	onOk ,
+	showTitleInput = undefined ,//控制是否显示标题输入框，使组件适配更多场景。
+	closeModal ,
+	open ,
 }) => {
-	const [isModalOpen , setIsModalOpen] = useState(false);
+	// const [isModalOpen , setIsModalOpen] = useState(false);
 	const [imagePreview , setImagePreview] = useState(null); // 用来存储图片预览的 URL
 	const [titlePreview , setTitlePreview] = useState('');
 	const inputTitleRef = useRef(null);
 	
 	const storedNoteBooks = localStorage.getItem('notebook-array');
 	
-	// 如果 localStorage 中有笔记本数据，则解析它，否则使用默认数据
+	// 如果 localStorage 中有笔记本数据，解析它，否则使用默认数据
 	const notebookArray = storedNoteBooks === null ? [] : JSON.parse(storedNoteBooks);
 	
 	const handleAfterOpen = () => {
@@ -61,38 +62,40 @@ const AddNoteBookModal = ({
 			inputTitleRef.current.focus();
 		}
 	};
-	const showModal = () => {
-		setIsModalOpen(true);
-	};
+	
 	
 	const handleCancel = () => {
-		setIsModalOpen(false);
+		closeModal();
 		setImagePreview(null); // 清空图片预览
 		setTitlePreview('');
 	};
 	
 	const handleOk = () => {
-		
-		if ( imagePreview && titlePreview ) {
-			const noteBookDate = {
-				cover : imagePreview ,
-				title : titlePreview ,
-				id : uuidv4() ,
-				createdTime : dayjs().valueOf() ,
-			};
-			changeNotebookArray(noteBookDate);
-			// notebookArray.unshift(noteBookDate);
-			// localStorage.setItem('notebook-array' , JSON.stringify(notebookArray));
-			setIsModalOpen(false);
-			setImagePreview(null); // 清空图片预览
-			setTitlePreview('');
-		} else {
+		if ( showTitleInput === true ) {
+			if ( imagePreview && titlePreview ) {
+				onOk({
+					title : titlePreview ,
+					cover : imagePreview ,
+				});
+				handleCancel();//关闭Modal并重置状态
+			}
 			if ( titlePreview === '' ) {
 				alert('输入标题');
 			}
 			if ( imagePreview === null ) {
 				alert('选择封面');
 			}
+		} else {
+			if ( imagePreview ) {
+				onOk({
+					cover : imagePreview ,
+				});
+				handleCancel();
+			}
+			if ( imagePreview === null ) {
+				alert('选择封面');
+			}
+			
 		}
 	};
 	
@@ -115,7 +118,7 @@ const AddNoteBookModal = ({
 	};
 	
 	const handleCoverClick = (coverSrc) => {
-		setImagePreview(coverSrc); // 点击默认封面时更新预览图
+		setImagePreview(coverSrc); // 点击封面时更新预览图
 	};
 	const handleInputTitle = (e) => {
 		setTitlePreview(e.target.value);//输入标题时更新预览标题
@@ -123,25 +126,14 @@ const AddNoteBookModal = ({
 	
 	return (
 		<>
-			<div
-				onClick = { (e) => {
-					e.stopPropagation();
-					showModal();
-				} }
-				className = "title-add"
-			>
-				{ children }
-			
-			</div>
-			
 			<Modal
-				title = {showTitleInput&&"新建笔记本"}
-				open = { isModalOpen }
+				title = { showTitleInput && "新建笔记本" }
+				open = { open }
 				onOk = { handleOk }
 				onCancel = { handleCancel }
 				cancelText = "取消"
 				okText = "完成"
-				closable={false}
+				closable = { false }
 				width = { 450 }
 				destroyOnClose = { true }
 				keyboard = { true }

@@ -7,6 +7,7 @@ import { Avatar , Space , Divider } from 'antd';
 import './note.css';
 import { DownOutlined , UpOutlined } from '@ant-design/icons';
 import { v4 as uuidv4 } from 'uuid';
+import dayjs from "dayjs";
 import coverDefault from './img-collection/cover-default.png';
 
 
@@ -110,7 +111,11 @@ export class NoteSidebar extends Component {
 											<div
 												onClick = { (e) => e.stopPropagation() }
 											>
-												<AddNoteBookModal changeNotebookArray = { this.props.addNoteBook }><AddNewBookIcon /></AddNoteBookModal>
+												<AddNewBookIcon
+													onclick = { () => {
+														this.props.openModal('addNotebook');
+													} }
+												/>
 											
 											</div>
 										</div>
@@ -128,7 +133,7 @@ export class NoteSidebar extends Component {
 											<img
 												src = { book.cover }
 												alt = { book.title }
-												className = {`notebook-cover ${isSelected ? 'selected' : ''}`}
+												className = { `notebook-cover ${ isSelected ? 'selected' : '' }` }
 												onError = { this.handleImageError }
 												onClick = { () => {
 													this.props.handleToggleNoteBook(book);
@@ -166,10 +171,14 @@ export class NoteSidebar extends Component {
 	}
 }
 
-const AddNewBookIcon = () => {
+const AddNewBookIcon = ({ onclick }) => {
 	return <svg
+		onClick = { (e) => {
+			e.stopPropagation();
+			onclick();
+		} }
 		t = "1732428997742"
-		className = "icon"
+		className = "title-add"
 		viewBox = "0 0 1024 1024"
 		version = "1.1"
 		xmlns = "http://www.w3.org/2000/svg"
@@ -417,4 +426,3 @@ const FeedbackIcon = () => {
 
 import { reaxel_sider } from './sider.reaxel';
 import { reaxper } from 'reaxes-react';
-import dayjs from "dayjs";
