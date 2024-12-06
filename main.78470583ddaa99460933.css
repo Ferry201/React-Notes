@@ -492,7 +492,9 @@ h2 {
 	align-items: center;
 	width: fit-content;
 }
-
+.expand-icon{
+	cursor: pointer;
+}
 
 /*输入框容器*/
 .search-bar {
