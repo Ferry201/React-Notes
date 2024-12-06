@@ -1,7 +1,6 @@
 import { ResizableBox } from 'react-resizable';
 import 'react-resizable/css/styles.css';
 import React , { Component , useState } from 'react';
-import AddNoteBookModal from './addNoteBook_Model';
 import { UserOutlined } from '@ant-design/icons';
 import { Avatar , Space , Divider } from 'antd';
 import './note.css';

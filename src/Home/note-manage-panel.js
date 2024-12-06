@@ -3,7 +3,6 @@ import { Reaxlass , reaxper } from 'reaxes-react';
 import { reaxel_sider } from '@src/Home/sider.reaxel';
 import { Dropdown , Space } from 'antd';
 import RenderContent from '@src/Home/renderContent';
-import AddNoteBookModal from './addNoteBook_Model';
 import './note.css';
 import dayjs from "dayjs";
 
@@ -21,6 +20,7 @@ class NoteManagePanel extends Reaxlass {
 			noteFeaturesMenu : this.generateNoteFeaturesMenu() ,
 			isRenaming : false ,
 			title : this.props.currentNotebook.title ,
+			isClicked:false
 		};
 	}
 	
@@ -29,7 +29,7 @@ class NoteManagePanel extends Reaxlass {
 	}
 	
 	componentDidUpdate (prevProps) {
-		if ( prevProps.currentNotebook.id !== this.props.currentNotebook.id || prevProps.currentNotebook.title !== this.props.currentNotebook.title ) {
+		if ( prevProps.currentNotebook.id !== this.props.currentNotebook.id ) {
 			this.setState({
 				noteFeaturesMenu : this.generateNoteFeaturesMenu() ,
 				title : this.props.currentNotebook.title ,
@@ -80,15 +80,20 @@ class NoteManagePanel extends Reaxlass {
 	};
 	
 	handleMouseEnter = () => {
-		this.setState({ isHover : true });
+		if (!this.state.isClicked) {
+			this.setState({ isHover: true });
+		}
 	};
+	
 	handleMouseLeave = () => {
-		this.setState({ isHover : false });
+		if (!this.state.isClicked) {
+			this.setState({ isHover: false });
+		}
 	};
 	// 重命名笔记本
 	renameNotebookTitle = (e) => {
 		const newTitle = e.target.value;
-		this.props.updateNotebookInfo('title',newTitle);
+		this.props.updateNotebookInfo('title' , newTitle);
 	};
 	handleBlur = (e) => {
 		this.setState({ isRenaming : false } , () => {
@@ -130,21 +135,29 @@ class NoteManagePanel extends Reaxlass {
 				{/*笔记本名称 & dropdown*/ }
 				<div className = "note-title-bar">
 					<div
-						onMouseEnter = { () => this.handleMouseEnter() }
-						onMouseLeave = { () => this.handleMouseLeave() }
+						onMouseEnter = { this.handleMouseEnter }
+						onMouseLeave = {this.handleMouseLeave}
 					>
-						{ !siderCollapsed ? (<LeftExpandIcon
+						{ !siderCollapsed ? (
+							<LeftExpandIcon
 							onclick = { () => {
-								this.setState({ isHover : false } , () => {
+								this.setState({ isHover: false, isClicked: true }, () => {
+									//点击后，鼠标事件会被 isClicked 屏蔽，避免触发 isHover: true
 									toggleSiderCollapse();
-									console.log(isHover);
+									// 延迟重置 isClicked，防止鼠标事件干扰
+									setTimeout(() => {
+										this.setState({ isClicked: false });
+									}, 0);
 								});
 							} }
-						/>) : (isHover ? (<RightExpandIcon
-							onclick = { () => {
-								toggleSiderCollapse();
-							} }
-						/>) : (<DefaultExpandIcon />)) }
+						/>) : (this.state.isHover ? (
+							<RightExpandIcon
+								onclick = { () => {
+									toggleSiderCollapse();
+								} }
+							/>) : (
+							<DefaultExpandIcon />
+						)) }
 					</div>
 					{/*当前笔记本*/ }
 					{ isRenaming ?
@@ -155,7 +168,7 @@ class NoteManagePanel extends Reaxlass {
 						  onBlur = { this.handleBlur }
 						  onKeyDown = { this.handleKeyDown }
 						  ref = { this.inputRenameRef }
-						  className='rename-input'
+						  className = "rename-input"
 					  />) :
 					  (<h2>{ this.state.title }</h2>) }
 					
@@ -166,12 +179,15 @@ class NoteManagePanel extends Reaxlass {
 							items : this.state.noteFeaturesMenu ,
 							onClick : ({ key }) => {
 								if ( key === 'rename' ) {
-									this.setState({ isRenaming : true },()=>{
+									this.setState({ isRenaming : true } , () => {
 										this.inputRenameRef.current?.focus();
 									});
 								}
 								if ( key === 'change-cover' ) {
 									this.props.openModal('changeCover');
+								}
+								if(key==='delete-notebook'){
+									this.props.deleteNotebook()
 								}
 							} ,
 						} }

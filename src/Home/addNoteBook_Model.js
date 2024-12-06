@@ -41,7 +41,7 @@ const books = [
 ];
 
 
-const AddNoteBookModal = ({
+const NoteBookModal = ({
 	onOk ,
 	showTitleInput = undefined ,//控制是否显示标题输入框，使组件适配更多场景。
 	closeModal ,
@@ -146,6 +146,7 @@ const AddNoteBookModal = ({
 							<p>输入标题</p>
 							
 							<Input
+								autoFocus={true}
 								type = "text"
 								ref = { inputTitleRef }
 								className = "title-input"
@@ -203,5 +204,5 @@ const AddNoteBookModal = ({
 	);
 };
 
-export default AddNoteBookModal;
+export { NoteBookModal };
 

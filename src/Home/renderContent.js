@@ -30,7 +30,7 @@ const RenderContent = ({
 			
 		};
 		fetchContents();
-	} , [currentNotebook.id]);
+	} , [currentNotebook]);
 	
 	const onDeleteNote = (id) => {
 		deleteNote(id);
