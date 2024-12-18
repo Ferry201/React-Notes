@@ -1,5 +1,5 @@
 import React , { useState , useRef , useEffect } from 'react';
-import { Modal , Input } from 'antd';
+import { Modal , Input ,message} from 'antd';
 import './note.css';
 import { v4 as uuidv4 } from 'uuid';
 import dayjs from "dayjs";
@@ -80,10 +80,10 @@ const NoteBookModal = ({
 				handleCancel();//关闭Modal并重置状态
 			}
 			if ( titlePreview === '' ) {
-				alert('输入标题');
+				message.warning('请输入标题')
 			}
 			if ( imagePreview === null ) {
-				alert('选择封面');
+				message.warning('请选择封面')
 			}
 		} else {
 			if ( imagePreview ) {
@@ -93,7 +93,7 @@ const NoteBookModal = ({
 				handleCancel();
 			}
 			if ( imagePreview === null ) {
-				alert('选择封面');
+				message.warning('请选择封面')
 			}
 			
 		}

@@ -93,8 +93,14 @@ const RenderContent = ({
 					itemSelector : '.note-grid-mode-item' , // grid-item 选择器
 					columnWidth : '.note-grid-mode-item' ,  // 每个 item 的宽度
 					percentPosition : true ,      // 设置百分比定位
-					gutter : 10 ,                  // 设置间距（可选）
+					gutter : 16 ,                  // 设置间距（可选）
 				});
+			}
+		}
+		
+		componentDidUpdate () {
+			if ( this.masonry ) {
+				this.masonry.layout(); // 重新触发 Masonry 布局
 			}
 		}
 		
@@ -196,23 +202,16 @@ const RenderContent = ({
 	};
 	
 	return (
-		<div style = { { height : "100%" } }>
-			<div className = "note-amount">{ contents.length }篇笔记</div>
+		<div className = "show-mode-box">
 			{ contents.length === 0 ? (<div className = "empty-container">
 				<EmptyIcon />
 				<p>还没有笔记 , 点击右下角按钮创建吧!</p>
-			</div>) : (<div
-				style = { {
-					height : 'calc(100% - 52px)' ,
-					boxSizing : 'border-box' ,
-				} }
-			>
+			</div>) : (<div className = "show-noteList-box">
 				{ ShowMode ? <UlMode /> : <GridMode /> }</div>) }
 		
 		</div>
 	);
 };
-
 
 
 const convertTimestampsToRelativeTimes = (timestamp) => {
@@ -241,7 +240,7 @@ const convertTimestampsToRelativeTimes = (timestamp) => {
 	}
 	
 	// 2. 判断是否昨天
-	if (timestampDay.isSame(now.subtract(1,'day'),'day') ) {
+	if ( timestampDay.isSame(now.subtract(1 , 'day') , 'day') ) {
 		return '昨天 ' + timestampDay.format('HH:mm');
 	}
 	

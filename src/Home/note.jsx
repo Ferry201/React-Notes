@@ -3,7 +3,10 @@ import React , { Component } from 'react';
 import { useRef , useState } from 'react';
 import { BrowserRouter as Router , Route , Routes , Link } from 'react-router-dom';
 import 'rc-tabs/assets/index.css';
-import { Checkbox , Dropdown , Space } from 'antd';
+import { Checkbox , Dropdown , Space , Modal , message } from 'antd';
+import { ExclamationCircleFilled } from '@ant-design/icons';
+
+const { confirm } = Modal;
 import RichTextEditor from '../RichTextEditor/RichTextEditor';
 import isEqual from 'lodash/isEqual';
 import { NoteSidebar } from './sidebar';
@@ -38,6 +41,7 @@ class NotesApp extends Component {
 			selectedNotebookId : null ,
 			activeModal : null ,
 			isModalOpen : false ,
+			notesAmount : 0 ,
 		};
 	}
 	
@@ -45,18 +49,28 @@ class NotesApp extends Component {
 		// 确保 currentNotebook 存在并且 id 不同
 		if ( this.state.currentNotebook && prevState.currentNotebook && this.state.currentNotebook.id !== prevState.currentNotebook.id ) {
 			localStorage.setItem('current-notebook' , JSON.stringify(this.state.currentNotebook));
+			
+			const currentNotes = this.state.noteListData.filter(note => note.notebookID === this.state.currentNotebook.id);
+			this.setState({ notesAmount : currentNotes.length });
+		}
+		if ( this.state.activeModal === 'deleteConfirm' && this.state.noteBookData.length === 1 ) {
+			message.error('至少需要一个笔记本存在 , 不能删除最后一个笔记本!');
 		}
 	}
 	
 	
 	componentDidMount () {
 		const storedNoteData = JSON.parse(localStorage.getItem('note-info-array')) || [];
-		this.setState({ noteListData : storedNoteData });
+		const currentNotes = storedNoteData.filter(note => note.notebookID === this.state.currentNotebook.id);
+		this.setState({
+			noteListData : storedNoteData ,
+			notesAmount : currentNotes.length ,
+		});
 		
 		const storedNoteBooks = localStorage.getItem('notebook-array');
 		if ( storedNoteBooks === null ) {
 			// 更新组件状态
-			this.setState({ noteBookData : [defaultNotebook] },()=>{
+			this.setState({ noteBookData : [defaultNotebook] } , () => {
 				// 将默认笔记本存入 localStorage
 				localStorage.setItem('notebook-array' , JSON.stringify([defaultNotebook]));
 			});
@@ -64,7 +78,7 @@ class NotesApp extends Component {
 			// 如果有数据，从 localStorage 中加载
 			this.setState({ noteBookData : JSON.parse(storedNoteBooks) });
 		}
-		this.setState({selectedNotebookId:this.state.currentNotebook.id})
+		this.setState({ selectedNotebookId : this.state.currentNotebook.id });
 	}
 	
 	
@@ -87,6 +101,7 @@ class NotesApp extends Component {
 			currentID ,
 			noteListData ,
 			currentNotebook ,
+			notesAmount ,
 		} = this.state;
 		let noteInfoArray = [...noteListData];
 		//
@@ -96,6 +111,7 @@ class NotesApp extends Component {
 			notebook : currentNotebook.title ,
 			notebookID : currentNotebook.id ,
 			id : uuidv4() ,
+			
 		};
 		
 		//添加新note
@@ -103,12 +119,13 @@ class NotesApp extends Component {
 			noteInfoArray.unshift(newNoteInfo);
 			
 			localStorage.setItem('note-info-array' , JSON.stringify(noteInfoArray));
-			
+			const currentNotes = noteInfoArray.filter(note => note.notebookID === currentNotebook.id);
 			//更新状态
 			this.setState({
 				isAddNote : false ,
 				noteListData : noteInfoArray ,
 				currentID : null ,
+				notesAmount : currentNotes.length ,
 			});
 		}
 		
@@ -130,12 +147,14 @@ class NotesApp extends Component {
 			
 			noteInfoArray.unshift(newNoteInfo);
 			localStorage.setItem('note-info-array' , JSON.stringify(noteInfoArray));
+			const currentNotes = noteInfoArray.filter(note => note.notebookID === currentNotebook.id);
 			
 			//更新状态
 			this.setState({
 				isAddNote : false ,
 				noteListData : noteInfoArray ,
 				currentID : null ,
+				notesAmount : currentNotes.length ,
 			});
 		}
 		
@@ -145,13 +164,17 @@ class NotesApp extends Component {
 	handleDeleteNote = (id) => {
 		const {
 			noteListData ,
+			notesAmount,
+			currentNotebook
 		} = this.state;
 		const updatedList = noteListData.filter((note) => note.id !== id);
+		const currentNotes = updatedList.filter(note => note.notebookID === currentNotebook.id);
 		localStorage.setItem('note-info-array' , JSON.stringify(updatedList));
 		
 		this.setState({
 			noteListData : updatedList ,
 			currentID : null ,
+			notesAmount : currentNotes.length ,
 		});
 	};
 	
@@ -230,11 +253,7 @@ class NotesApp extends Component {
 			currentNotebook ,
 			noteListData ,
 		} = this.state;
-		if ( noteBookData.length === 1 ) {
-			alert('至少需要一个笔记本存在 , 不能删除最后一个笔记本!');
-			return;
-		}
-		alert(`将删除${ currentNotebook.title }及该笔记本所有笔记 , 确定删除吗?`);
+		
 		let updatedNotebooks = [...noteBookData];
 		let updatedNoteList = [...noteListData];
 		updatedNotebooks = updatedNotebooks.filter((notebook) => notebook.id !== currentNotebook.id);
@@ -244,13 +263,14 @@ class NotesApp extends Component {
 			const nextIndex = currentIndex < updatedNotebooks.length ? currentIndex : updatedNotebooks.length - 1;
 			newCurrentNotebook = updatedNotebooks[nextIndex];
 		}
+		//删掉该笔记本中所有笔记
 		updatedNoteList = updatedNoteList.filter((note) => note.notebookID !== currentNotebook.id);
 		
 		this.setState({
 			noteBookData : updatedNotebooks ,
 			currentNotebook : newCurrentNotebook ,
 			noteListData : updatedNoteList ,
-			selectedNotebookId:newCurrentNotebook.id,
+			selectedNotebookId : newCurrentNotebook.id ,
 		} , () => {
 			localStorage.setItem('notebook-array' , JSON.stringify(this.state.noteBookData));
 			localStorage.setItem('current-notebook' , JSON.stringify(this.state.currentNotebook));
@@ -306,8 +326,8 @@ class NotesApp extends Component {
 						  sidebarIsVisible = { this.state.isSidebarVisible }
 						  currentNotebook = { this.state.currentNotebook }
 						  updateNotebookInfo = { this.updateNotebookInfo }
-						  deleteNotebook = { this.deleteNotebook }
 						  openModal = { this.handleOpenModal }
+						  notesAmount = { this.state.notesAmount }
 					  />
 					  
 					  {/*添加笔记本 Modal*/ }
@@ -339,6 +359,20 @@ class NotesApp extends Component {
 						  closeModal = { () => this.handleCloseModal() }
 						  open = { this.state.isModalOpen }
 					  />) }
+					  
+					  {/*  删除笔记本确认框*/ }
+					  { this.state.activeModal === 'deleteConfirm' && this.state.noteBookData.length !== 1 ? (
+						  showDeleteConfirm(
+							  this.state.currentNotebook.title ,
+							  this.state.isModalOpen ,
+							  () => {
+								  this.deleteNotebook();
+								  this.handleCloseModal();
+							  } ,
+							  this.handleCloseModal ,
+						  )
+					  ) : null }
+				  
 				  </div>)
 				
 			}
@@ -347,8 +381,30 @@ class NotesApp extends Component {
 		</div>;
 	}
 	
-	
 }
+
+const showDeleteConfirm = (title , open , clickOk , clickCancel) => {
+	confirm({
+		icon : <ExclamationCircleFilled /> ,
+		content : (<div>
+			确定删除
+			<span className = "delete-confirm-title">{ title }</span>
+			及该笔记本中所有笔记吗?
+		</div>) ,
+		okText : '确定' ,
+		okType : 'danger' ,
+		cancelText : '我再想想' ,
+		open : open ,
+		onOk () {
+			console.log('OK');
+			clickOk();
+		} ,
+		onCancel () {
+			console.log('Cancel');
+			clickCancel();
+		} ,
+	});
+};
 
 
 class AddNewNotebtn extends Component {

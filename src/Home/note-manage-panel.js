@@ -1,7 +1,10 @@
 import React , { Component } from 'react';
 import { Reaxlass , reaxper } from 'reaxes-react';
 import { reaxel_sider } from '@src/Home/sider.reaxel';
-import { Dropdown , Space } from 'antd';
+import { Modal , Dropdown , Space } from 'antd';
+import { ExclamationCircleFilled } from '@ant-design/icons';
+
+const { confirm } = Modal;
 import RenderContent from '@src/Home/renderContent';
 import './note.css';
 import dayjs from "dayjs";
@@ -10,7 +13,6 @@ import dayjs from "dayjs";
 class NoteManagePanel extends Reaxlass {
 	constructor (props) {
 		super(props);
-		this.inputSearchRef = React.createRef();
 		this.inputRenameRef = React.createRef();
 		
 		this.state = {
@@ -20,13 +22,11 @@ class NoteManagePanel extends Reaxlass {
 			noteFeaturesMenu : this.generateNoteFeaturesMenu() ,
 			isRenaming : false ,
 			title : this.props.currentNotebook.title ,
-			isClicked:false
+			isClicked : false,
 		};
+		
 	}
 	
-	componentDidMount () {
-		this.inputSearchRef.current?.focus();
-	}
 	
 	componentDidUpdate (prevProps) {
 		if ( prevProps.currentNotebook.id !== this.props.currentNotebook.id ) {
@@ -76,18 +76,15 @@ class NoteManagePanel extends Reaxlass {
 	};
 	
 	
-	handleSearchNote = () => {
-	};
-	
 	handleMouseEnter = () => {
-		if (!this.state.isClicked) {
-			this.setState({ isHover: true });
+		if ( !this.state.isClicked ) {
+			this.setState({ isHover : true });
 		}
 	};
 	
 	handleMouseLeave = () => {
-		if (!this.state.isClicked) {
-			this.setState({ isHover: false });
+		if ( !this.state.isClicked ) {
+			this.setState({ isHover : false });
 		}
 	};
 	// 重命名笔记本
@@ -96,20 +93,18 @@ class NoteManagePanel extends Reaxlass {
 		this.props.updateNotebookInfo('title' , newTitle);
 	};
 	handleBlur = (e) => {
-		this.setState({ isRenaming : false } , () => {
+		this.setState({ isRenaming : false , title : e.target.value} , () => {
 			this.renameNotebookTitle(e);
 		});
 	};
 	handleKeyDown = (e) => {
 		if ( e.key === 'Enter' ) {
-			this.setState({ isRenaming : false } , () => {
+			this.setState({ isRenaming : false , title : e.target.value} , () => {
 				this.renameNotebookTitle(e);
 			});
 		}
 	};
-	handleChangeTitle = (e) => {
-		this.setState({ title : e.target.value });
-	};
+	
 	
 	render () {
 		const {
@@ -119,6 +114,7 @@ class NoteManagePanel extends Reaxlass {
 			showMode ,
 			onToggleSidebar ,
 			currentNotebook ,
+			notesAmount,
 		} = this.props;
 		const {
 			isHover ,
@@ -136,44 +132,46 @@ class NoteManagePanel extends Reaxlass {
 				<div className = "note-title-bar">
 					<div
 						onMouseEnter = { this.handleMouseEnter }
-						onMouseLeave = {this.handleMouseLeave}
+						onMouseLeave = { this.handleMouseLeave }
 					>
 						{ !siderCollapsed ? (
 							<LeftExpandIcon
-							onclick = { () => {
-								this.setState({ isHover: false, isClicked: true }, () => {
-									//点击后，鼠标事件会被 isClicked 屏蔽，避免触发 isHover: true
-									toggleSiderCollapse();
-									// 延迟重置 isClicked，防止鼠标事件干扰
-									setTimeout(() => {
-										this.setState({ isClicked: false });
-									}, 0);
-								});
-							} }
-						/>) : (this.state.isHover ? (
+								onclick = { () => {
+									this.setState({
+										isHover : false ,
+										isClicked : true ,
+									} , () => {
+										//点击后，鼠标事件会被 isClicked 屏蔽，避免触发 isHover: true
+										toggleSiderCollapse();
+										// 延迟重置 isClicked，防止鼠标事件干扰
+										setTimeout(() => {
+											this.setState({ isClicked : false });
+										} , 0);
+									});
+								} }
+							/>) : (this.state.isHover ? (
 							<RightExpandIcon
 								onclick = { () => {
 									toggleSiderCollapse();
 								} }
 							/>) : (
-							<DefaultExpandIcon />
-						)) }
+								       <DefaultExpandIcon />
+							       )) }
 					</div>
 					{/*当前笔记本*/ }
 					{ isRenaming ?
 					  (<input
 						  type = "text"
-						  value = { this.state.title }
-						  onChange = { this.handleChangeTitle }
+						  defaultValue = { this.state.title }
 						  onBlur = { this.handleBlur }
 						  onKeyDown = { this.handleKeyDown }
 						  ref = { this.inputRenameRef }
 						  className = "rename-input"
 					  />) :
-					  (<h2>{ this.state.title }</h2>) }
+					  (<h2>{ this.state.title }({notesAmount})</h2>) }
 					
 					{/*笔记本下拉操作菜单*/ }
-					<Dropdown
+					{ !isRenaming && <Dropdown
 						placement = "bottomLeft"
 						menu = { {
 							items : this.state.noteFeaturesMenu ,
@@ -186,8 +184,8 @@ class NoteManagePanel extends Reaxlass {
 								if ( key === 'change-cover' ) {
 									this.props.openModal('changeCover');
 								}
-								if(key==='delete-notebook'){
-									this.props.deleteNotebook()
+								if ( key === 'delete-notebook' ) {
+									this.props.openModal('deleteConfirm');
 								}
 							} ,
 						} }
@@ -196,22 +194,12 @@ class NoteManagePanel extends Reaxlass {
 						<a onClick = { (e) => e.preventDefault() }>
 							<DownOutLinedIcon />
 						</a>
-					</Dropdown>
+					</Dropdown> }
 				</div>
 				
 				{/*搜索 & 更多选项*/ }
 				<div className = "top-tool-bar">
-					<div className = "search-bar">
-						<input
-							ref = { this.inputSearchRef }
-							type = "text"
-							className = "search-input"
-							placeholder = "输入关键词..."
-						/>
-						<button className = "search-btn">
-							<SearchNotes onSearch = { this.handleSearchNote } />
-						</button>
-					</div>
+					{/*添加笔记本主题背景 渐变色,简约图案,每个笔记框的颜色风格*/ }
 					<MoreNoteOptions
 						onSwitchNoteMode = { OnSwitchMode }
 						showMode = { showMode }
@@ -232,34 +220,6 @@ class NoteManagePanel extends Reaxlass {
 	}
 };
 
-class SearchNotes extends Component {
-	
-	render () {
-		return <svg
-			onClick = { () => {
-				this.props.onSearch();
-			} }
-			className = "search-notes"
-			style = { {
-				width : ' 1em' ,
-				height : '1em' ,
-				verticalAlign : 'middle' ,
-				fill : 'currentColor' ,
-				overflow : 'hidden' ,
-			} }
-			viewBox = "0 0 1024 1024"
-			version = "1.1"
-			xmlns = "http://www.w3.org/2000/svg"
-			p-id = "9664"
-		>
-			<path
-				d = "M974.00547 967.39343L694.834457 643.915973c130.349584-141.025575 136.925532-361.142986 8.539348-509.913886A382.790921 382.790921 0 0 0 413.339123 1.270436a382.863104 382.863104 0 0 0-250.052051 93.044974C85.848245 161.143212 39.073114 254.130438 31.573213 356.140646s25.170506 200.844325 92.005527 278.268715a382.805357 382.805357 0 0 0 290.056337 132.753306 382.776484 382.776484 0 0 0 215.605921-66.676216l279.192669 323.499112 65.571803-56.592133zM189.150543 577.824447c-51.712505-59.919808-76.998506-136.391372-71.194925-215.331623s41.99656-150.885887 101.923587-202.605611a296.242493 296.242493 0 0 1 193.459918-72.003384 296.242493 296.242493 0 0 1 224.462879 102.710391c106.752686 123.708671 92.987227 311.198985-30.699789 417.944452a296.293021 296.293021 0 0 1-417.95167-30.714225z"
-				fill = "#231815"
-				p-id = "9665"
-			></path>
-		</svg>;
-	}
-}
 
 const MoreNoteOptions = ({
 	onSwitchNoteMode ,
