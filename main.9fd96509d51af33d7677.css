@@ -38,7 +38,7 @@
 	/*grid-template-columns: repeat(2, 1fr);*/
 	grid-template-columns: repeat(auto-fill, minmax(79px, 1fr));
 	gap: 10px;
-	margin-bottom: 10px;
+	margin-top: 10px;
 	opacity: 1; /* 完全可见 */
 	visibility: visible; /* 确保占据空间 */
 	transition: opacity 1s ease, height 0.4s ease; /* 增加过渡时间 */
@@ -67,26 +67,47 @@
 	/*box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2), 0 0 6px rgba(0, 0, 0, 0.15);*/
 	box-sizing: border-box;
 	transition: border-color 0.3s ease;
-	box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+	box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
 }
+
 .notebook-cover.selected {
 	
 	border: 1px outset black;
 	/*box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1), 0 4px 10px rgba(0, 0, 0, 0.2);*/
 	/*box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2), 0 0 6px rgba(0, 0, 0, 0.15);*/
 }
+
 .sub-menu-content .notebook-option .notebook-title {
 	width: 70px;
-	height: 16px;
+	height: 20px;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	padding: 3px 0;
 }
-
+.feedback-content{
+	padding: 10px;
+	background: white;
+}
+.feedback-content span{
+	width: fit-content;
+	display: flex;
+	align-items: center;
+	background: white;
+	border: 1px solid lightgray;
+	border-radius: 4px;
+}
 .all-notebook-header {
 	display: flex;
 	flex-flow: row nowrap;
+	align-items: center;
+}
+
+.add-notebook-icon-box {
+	width: 20px;
+	height: 20px;
+	display: flex;
+	justify-content: center;
 	align-items: center;
 }
 
@@ -95,6 +116,16 @@
 	display: flex;
 	flex-flow: row nowrap;
 	align-items: center;
+}
+
+.title-add span:first-of-type {
+	margin: 0 0 0 4px;
+}
+
+.title-add span:last-of-type {
+	color: #767676;
+	font-size: 14px;
+	margin-right: 4px;
 }
 
 .sub-menu-title {
@@ -118,13 +149,41 @@
 	background-color: #eeeeee;
 }
 
-.sub-menu-title .all-notebook-header span {
-	margin: 0 4px 0 4px;
+
+.ant-collapse .ant-collapse-content > .ant-collapse-content-box {
+	padding: 0;
 }
 
-.sidebar-menu-list .menu-item {
+.ant-collapse-ghost > .ant-collapse-item > .ant-collapse-content > .ant-collapse-content-box {
+	padding: 0;
+}
+
+.ant-collapse > .ant-collapse-item > .ant-collapse-header {
+	padding: 0;
+	display: flex;
+	align-items: center;
+	padding: 6px 10px 6px 0;
+	height: 40px;
+	border-radius: 8px;
+	box-sizing: border-box;
+	border-radius: 4px;
 	font-size: 16px;
-	margin-bottom: 6px;
+}
+
+.ant-collapse > .ant-collapse-item > .ant-collapse-header:hover {
+	background-color: #eeeeee;
+}
+
+.ant-collapse > .ant-collapse-item:last-child {
+	border-radius: 0;
+}
+
+.ant-collapse > .ant-collapse-item:last-child > .ant-collapse-header {
+	border-radius: 8px;
+}
+
+.sidebar-content-panel .menu-item {
+	font-size: 16px;
 	box-sizing: border-box;
 	display: flex;
 	flex-flow: row nowrap;
@@ -133,19 +192,19 @@
 	user-select: none;
 	padding: 6px 0;
 	height: 40px;
-	border-radius: 4px;
+	border-radius: 8px;
 	transition: background-color 0.4s ease, width 0.5s ease;
 }
 
-.sidebar-menu-list .menu-item:hover {
+.sidebar-content-panel .menu-item:hover {
 	background-color: #eeeeee;
 }
 
-.sidebar-menu-list .menu-item:active {
-	background-color: #7c7c7c;
+.sidebar-content-panel .menu-item span {
+	margin-left: 4px;
 }
 
-.sidebar-menu-list .menu-item span {
+.sidebar-content-panel .menu-item svg {
 	margin-left: 4px;
 }
 
@@ -166,20 +225,18 @@
 	right: 0; /* 固定到右侧 */
 	height: 100%;
 	z-index: 10; /* 确保在上层 */
-	background-color: rgba(0, 0, 0, 0.1);
 	cursor: col-resize;
 	width: 2px;
 }
 
 .custom-resize-handle {
-	width: 2px;
-	background-color: rgba(0, 0, 0, 0.1);
-	cursor: col-resize;
+	/*width: 2px;*/
+	/*background-color: rgba(0, 0, 0, 0.1);*/
+	/*cursor: col-resize;*/
 }
 
 .resize-handle-container:hover {
-	background: #9f9d9d;
-	
+	background-color: rgba(0, 0, 0, 0.1);
 }
 
 .react-resizable {
@@ -207,7 +264,7 @@
 .sidebar-content-panel {
 	width: 100%;
 	height: 100%;
-	padding: 16px;
+	padding: 10px;
 	box-sizing: border-box;
 }
 
@@ -273,7 +330,7 @@ body {
 
 .resizable-box.react-resizable {
 	transition: all .2s ease;
-	/*background: linear-gradient(0deg, rgba(34,193,195,1) 0%, rgba(253,187,45,0.28748481814600846) 100%);*/
+	background: #f8f8f8;
 	
 }
 
@@ -287,24 +344,44 @@ body {
 }
 
 .note-container {
-	padding: 16px;
 	width: 100%;
-	height: 100%;
-	overflow: hidden;
+	height: 100vh;
 	transition: width .3s ease;
 	box-sizing: border-box;
 }
+.show-mode-box{
+	box-sizing: border-box;
+	height: calc(100% - 30px);
+	overflow-x: hidden;
+	overflow-y: scroll;
+}
+.show-mode-box::-webkit-scrollbar-button {
+	display: none;
+}
+.show-mode-box::-webkit-scrollbar {
+	display: inline-block;
+	width: 10px;
+}
+.show-mode-box::-webkit-scrollbar-track {
+	background: #dadcda;
+}
+.show-mode-box::-webkit-scrollbar-thumb {
+	background: #a4a4a4;
+	width: 2px;
+}
 
+.show-mode-box::-webkit-scrollbar-thumb:hover {
+	background: #7d7d7d;
+}
+
+.show-noteList-box{
+	padding: 24px;
+}
 .resizing {
 	transition: unset !important;
 }
 
 
-.note-time {
-	font-size: 10px;
-	color: #8b8a8a;
-	
-}
 
 /*宫格模式和列表模式分别设置不同的ul和noteItem,noteTitle*/
 .note-grid-mode-title {
@@ -317,57 +394,58 @@ body {
 	line-height: 1.5; /* 设置行高 */
 	max-height: calc(1.5em * 6); /* 根据行高和显示的行数计算最大高度 */
 	height: fit-content;
-	white-space: pre-wrap; /* 改为 normal 来允许换行 */
+	white-space: pre-wrap; 
 	word-wrap: break-word; /* 强制长文本换行 */
 	word-break: break-word; /* 强制长文本换行，尤其是数字 */
 }
 
 .note-grid-mode {
 	display: block; /* 变为块级元素 */
-	max-height: 100%;
-	overflow-y: scroll;
-	overflow-x: hidden;
 }
 
 .note-grid-mode-item {
 	background: white;
-	border-radius: 4px;
+	border-radius: 8px;
 	padding: 10px;
 	box-sizing: border-box;
-	margin-bottom: 10px;
-	width: calc(50% - 5px); /* 保持宽度大约为父容器的一半 */
-	
+	margin-bottom: 16px;
+	width: calc(50% - 8px); /* 保持宽度大约为父容器的一半 */
 	border: 1px solid #cccccc;
+}
+.note-grid-mode-item:last-child {
+	margin-bottom: 20px; /* 给最后一个子元素留出空间 */
 }
 
 .note-grid-mode-item:hover {
 	cursor: pointer;
+	box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
 }
 
 .note-ul-mode {
 	width: 100%;
 	height: 100%;
-	overflow-y: scroll;
-	overflow-x: hidden;
-	/*position: relative;*/
 }
 
 .note-ul-mode-item {
 	display: flex;
 	flex-direction: column;
 	line-height: 1.5;
-	border-radius: 4px;
+	border-radius: 8px;
 	height: fit-content;
 	width: 100%;
 	background: white;
-	margin-bottom: 10px;
 	padding: 4px;
-	/*box-shadow: 1px 1px 1px 1px #cbc9c9;*/
 	border-bottom: 2px solid #cbc9c9;
 	border-right: 2px solid #cbc9c9;
 	border: 1px solid #cccccc;
 	z-index: 10;
 	box-sizing: border-box;
+	margin-bottom: 16px;
+}
+
+.note-ul-mode-item:hover {
+	cursor: pointer;
+	box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
 }
 
 .note-ul-mode-title {
@@ -386,14 +464,27 @@ body {
 	word-break: break-word; /* 强制长文本换行，尤其是数字 */
 }
 
-
+.note-details {
+	display: flex;
+	flex-flow: row nowrap;
+	align-items: center;
+	height: 24px;
+	width: 100%;
+}
+.note-time {
+	width: 30%;
+	font-size: 10px;
+	color: #8b8a8a;
+}
 .note-operation-buttons {
+	width: 70%;
 	visibility: hidden;
 	user-select: none;
 	cursor: pointer;
 	display: flex;
 	flex-flow: row nowrap;
 	align-items: center;
+	justify-content: space-around;
 }
 
 .note-ul-mode-item:hover .note-operation-buttons {
@@ -404,50 +495,43 @@ body {
 	visibility: visible;
 }
 
-.note-details {
-	display: flex;
-	justify-content: space-between;
-	flex-flow: row nowrap;
-	align-items: center;
-	height: 24px;
-	width: 100%;
-}
+
 
 /* 自定义滚动条样式 */
-.note-ul-mode::-webkit-scrollbar {
-	display: inline-block;
-	width: 2px;
-	height: 4px;
-}
+/*.note-ul-mode::-webkit-scrollbar {*/
+/*	display: inline-block;*/
+/*	width: 2px;*/
+/*	height: 4px;*/
+/*}*/
 
-.note-ul-mode::-webkit-scrollbar-thumb {
-	background: #9c9a9a;
-	border-radius: 4px;
-	width: 2px;
-	height: 4px;
-}
+/*.note-ul-mode::-webkit-scrollbar-thumb {*/
+/*	background: #9c9a9a;*/
+/*	border-radius: 4px;*/
+/*	width: 2px;*/
+/*	height: 4px;*/
+/*}*/
 
-.note-ul-mode::-webkit-scrollbar-thumb:hover {
-	background: #555555;
-}
+/*.note-ul-mode::-webkit-scrollbar-thumb:hover {*/
+/*	background: #555555;*/
+/*}*/
 
-.note-grid-mode::-webkit-scrollbar {
-	display: inline-block;
-	width: 2px;
-	height: 4px;
-}
+/*.note-grid-mode::-webkit-scrollbar {*/
+/*	display: inline-block;*/
+/*	width: 2px;*/
+/*	height: 4px;*/
+/*}*/
 
-.note-grid-mode::-webkit-scrollbar-thumb {
-	background: #9c9a9a;
-	border-radius: 4px;
-	width: 2px;
-	height: 4px;
-}
+/*.note-grid-mode::-webkit-scrollbar-thumb {*/
+/*	background: #9c9a9a;*/
+/*	border-radius: 4px;*/
+/*	width: 2px;*/
+/*	height: 4px;*/
+/*}*/
 
-.note-grid-mode::-webkit-scrollbar-thumb:hover {
-	background: #555555;
-	width: 4px;
-}
+/*.note-grid-mode::-webkit-scrollbar-thumb:hover {*/
+/*	background: #555555;*/
+/*	width: 4px;*/
+/*}*/
 
 
 h2 {
@@ -457,18 +541,12 @@ h2 {
 	user-select: none;
 }
 
-.note-amount {
-	color: #8b8a8a;
-	margin-bottom: 8px;
-	user-select: none;
-	font-size: 12px;
-}
-
 .main-section-header {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
 	flex-flow: row nowrap;
+	padding: 24px 24px 0 24px;
 }
 
 .note-title-bar {
@@ -477,23 +555,31 @@ h2 {
 	align-items: center;
 	width: fit-content;
 }
-.rename-input{
+
+.rename-input {
 	height: 28px;
 	font-size: 21px;
 	font-weight: bold;
-	width: 110px;
+	width: fit-content;
 	outline: none;
 	border: none;
 	border-bottom: 1px solid black;
 }
+
 .top-tool-bar {
 	display: flex;
 	flex-direction: row;
 	align-items: center;
 	width: fit-content;
 }
-.expand-icon{
+
+.expand-icon {
 	cursor: pointer;
+}
+
+.delete-confirm-title {
+	font-weight: bold;
+	padding: 0 4px;
 }
 
 /*输入框容器*/
@@ -576,7 +662,7 @@ h2 {
 }
 
 
-.preview-title{
+.preview-title {
 	max-width: 100%;
 	height: 20px;
 	margin: 8px;
@@ -584,12 +670,14 @@ h2 {
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
+
 .note-title-bar {
 	display: flex;
 	flex-flow: row nowrap;
 	align-items: center;
 }
-.note-title-bar .down-outline-box{
+
+.note-title-bar .down-outline-box {
 	height: 24px;
 	width: 24px;
 	display: flex;
@@ -597,6 +685,7 @@ h2 {
 	justify-content: center;
 	cursor: pointer;
 }
+
 .expand-icon {
 	height: 24px;
 	width: 24px;
@@ -746,21 +835,27 @@ h2 {
 }
 
 @keyframes jump {
-	0% { transform: translateY(0); }
-	50% { transform: translateY(-10px); }
-	100% { transform: translateY(0); }
+	0% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-10px);
+	}
+	100% {
+		transform: translateY(0);
+	}
 }
 
 .star {
 	transition: fill 0.3s ease;
 }
 
-svg.star-active path{
-	fill: #FFD700;  /* 改变颜色 */
-	animation: jump 2s ease infinite;  /* 闪烁效果 */
+svg.star-active path {
+	fill: #ffd700; /* 改变颜色 */
+	animation: jump 2s ease infinite; /* 闪烁效果 */
 }
 
-.delete-notebook-button{
+.delete-notebook-button {
 	color: red;
 }
 
