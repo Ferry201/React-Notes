@@ -23,6 +23,8 @@ const defaultNotebook = {
 	cover : coverDefault ,
 	id : 'default-notebook-id' ,
 	createdTime : dayjs().valueOf() ,
+	showMode : 'list-mode',//当前笔记显示模式
+	currentTheme :'blue-theme',//列表主题,类名
 };
 
 class NotesApp extends Component {
@@ -35,7 +37,6 @@ class NotesApp extends Component {
 			isAddNote : false ,
 			noteListData : [] ,
 			noteBookData : [] ,
-			noteDisplayMode : true ,//默认列表布局
 			isSidebarVisible : false ,
 			currentNotebook : JSON.parse(localStorage.getItem('current-notebook')) || defaultNotebook ,
 			selectedNotebookId : null ,
@@ -82,10 +83,7 @@ class NotesApp extends Component {
 	}
 	
 	
-	handleSwitchMode = () => {
-		this.setState(prevState => ({ noteDisplayMode : !prevState.noteDisplayMode }));
-		
-	};
+	
 	
 	handleAddNote = () => {
 		this.setState({
@@ -111,7 +109,6 @@ class NotesApp extends Component {
 			notebook : currentNotebook.title ,
 			notebookID : currentNotebook.id ,
 			id : uuidv4() ,
-			
 		};
 		
 		//添加新note
@@ -287,6 +284,8 @@ class NotesApp extends Component {
 		this.setState({ activeModal : null });
 	};
 	
+	
+	
 	render () {
 		const addNoteBtnClass = this.state.isAddNote ? 'add-new-button-disappear' : 'add-new-button';
 		
@@ -294,7 +293,7 @@ class NotesApp extends Component {
 			
 			<AddNewNotebtn
 				onClick = { this.handleAddNote }
-				className = { addNoteBtnClass }
+				className = {` ${addNoteBtnClass} ${this.state.currentNotebook.currentTheme}` }
 			/>
 			{ this.state.isAddNote === true ? (
 				<>
@@ -314,14 +313,11 @@ class NotesApp extends Component {
 						  noteBookArray = { this.state.noteBookData }
 						  handleToggleNoteBook = { this.handleToggleNoteBook }
 						  selectedNotebookId = { this.state.selectedNotebookId }
-						  addNoteBook = { this.addNoteBook }
 						  openModal = { this.handleOpenModal }
 					  />
 					  <NoteManagePanel
 						  onChangeNote = { this.handleChangeNote }
 						  onDeleteNote = { this.handleDeleteNote }
-						  showMode = { this.state.noteDisplayMode }
-						  OnSwitchMode = { this.handleSwitchMode }
 						  onToggleSidebar = { this.toggleSidebar }
 						  sidebarIsVisible = { this.state.isSidebarVisible }
 						  currentNotebook = { this.state.currentNotebook }
@@ -342,6 +338,8 @@ class NotesApp extends Component {
 								  cover ,
 								  id : uuidv4() ,
 								  createdTime : dayjs().valueOf() ,
+								  showMode : 'list-mode' ,
+								  currentTheme :'blue-theme'
 							  };
 							  this.addNoteBook(newNoteBook);
 						  }
@@ -396,11 +394,9 @@ const showDeleteConfirm = (title , open , clickOk , clickCancel) => {
 		cancelText : '我再想想' ,
 		open : open ,
 		onOk () {
-			console.log('OK');
 			clickOk();
 		} ,
 		onCancel () {
-			console.log('Cancel');
 			clickCancel();
 		} ,
 	});
@@ -420,7 +416,6 @@ class AddNewNotebtn extends Component {
 		return <div
 			className = { className }
 			onClick = { onClick }
-		
 		>
 			<svg
 				t = "1731896096497"
@@ -434,7 +429,6 @@ class AddNewNotebtn extends Component {
 			>
 				<path
 					d = "M512 512m-512 0a512 512 0 1 0 1024 0 512 512 0 1 0-1024 0Z"
-					fill = "black"
 					p-id = "29492"
 				></path>
 				<path

@@ -1,7 +1,7 @@
 import React , { Component } from 'react';
 import { Reaxlass , reaxper } from 'reaxes-react';
 import { reaxel_sider } from '@src/Home/sider.reaxel';
-import { Modal , Dropdown , Space } from 'antd';
+import { Modal , Dropdown , Space , Tooltip } from 'antd';
 import { ExclamationCircleFilled } from '@ant-design/icons';
 
 const { confirm } = Modal;
@@ -22,7 +22,7 @@ class NoteManagePanel extends Reaxlass {
 			noteFeaturesMenu : this.generateNoteFeaturesMenu() ,
 			isRenaming : false ,
 			title : this.props.currentNotebook.title ,
-			isClicked : false,
+			isClicked : false ,
 		};
 		
 	}
@@ -93,13 +93,19 @@ class NoteManagePanel extends Reaxlass {
 		this.props.updateNotebookInfo('title' , newTitle);
 	};
 	handleBlur = (e) => {
-		this.setState({ isRenaming : false , title : e.target.value} , () => {
+		this.setState({
+			isRenaming : false ,
+			title : e.target.value ,
+		} , () => {
 			this.renameNotebookTitle(e);
 		});
 	};
 	handleKeyDown = (e) => {
 		if ( e.key === 'Enter' ) {
-			this.setState({ isRenaming : false , title : e.target.value} , () => {
+			this.setState({
+				isRenaming : false ,
+				title : e.target.value ,
+			} , () => {
 				this.renameNotebookTitle(e);
 			});
 		}
@@ -111,10 +117,10 @@ class NoteManagePanel extends Reaxlass {
 			onChangeNote ,
 			onDeleteNote ,
 			OnSwitchMode ,
-			showMode ,
 			onToggleSidebar ,
 			currentNotebook ,
-			notesAmount,
+			notesAmount ,
+			updateNotebookInfo
 		} = this.props;
 		const {
 			isHover ,
@@ -125,9 +131,9 @@ class NoteManagePanel extends Reaxlass {
 			siderCollapsed ,
 			resizing ,
 		} = reaxel_sider();
-		return <div className = { `note-container${ resizing ? ' resizing' : '' }` }>
+		return <div className = { `note-container${ resizing ? ' resizing' : '' } ${ currentNotebook.currentTheme }` }>
 			{/*顶部工具栏*/ }
-			<div className = "main-section-header">
+			<div className = { `main-section-header ${ currentNotebook.currentTheme }` }>
 				{/*笔记本名称 & dropdown*/ }
 				<div className = "note-title-bar">
 					<div
@@ -168,7 +174,7 @@ class NoteManagePanel extends Reaxlass {
 						  ref = { this.inputRenameRef }
 						  className = "rename-input"
 					  />) :
-					  (<h2>{ this.state.title }({notesAmount})</h2>) }
+					  (<h2>{ this.state.title }({ notesAmount })</h2>) }
 					
 					{/*笔记本下拉操作菜单*/ }
 					{ !isRenaming && <Dropdown
@@ -197,13 +203,18 @@ class NoteManagePanel extends Reaxlass {
 					</Dropdown> }
 				</div>
 				
-				{/*搜索 & 更多选项*/ }
+				{/* 切换显示模式 选择主题颜色*/ }
 				<div className = "top-tool-bar">
-					{/*添加笔记本主题背景 渐变色,简约图案,每个笔记框的颜色风格*/ }
-					<MoreNoteOptions
-						onSwitchNoteMode = { OnSwitchMode }
-						showMode = { showMode }
-					/></div>
+					<ModeSelector
+						onSwitchNoteMode = { updateNotebookInfo }
+						showMode = { currentNotebook.showMode }
+					/>
+					<ThemeSelector
+						selectTheme = { updateNotebookInfo }
+						theme = { currentNotebook.currentTheme }
+					/>
+				
+				</div>
 			</div>
 			
 			
@@ -211,7 +222,7 @@ class NoteManagePanel extends Reaxlass {
 			<RenderContent
 				changeNote = { onChangeNote }
 				deleteNote = { onDeleteNote }
-				ShowMode = { showMode }
+				ShowMode = { currentNotebook.showMode }
 				currentNotebook = { currentNotebook }
 			/>
 		
@@ -219,67 +230,290 @@ class NoteManagePanel extends Reaxlass {
 		</div>;
 	}
 };
-
-
-const MoreNoteOptions = ({
+//显示模式选择器
+const ModeSelector = ({
 	onSwitchNoteMode ,
-	showMode ,
+	showMode,
 }) => {
-	const moreNoteOptions = [
+	const modeOptions = [
 		{
-			label : <div>{ showMode ? '宫格模式' : '列表模式' }</div> ,
-			key : 'switch-mode' ,
-		} , {
-			label : <div>主题背景</div> ,
-			key : '1' ,
-		} , {
-			label : <div>11</div> ,
-			key : '2' ,
+			key : 'modeOptions' ,
+			type : 'group' ,
+			label : '笔记显示模式' ,
+			children : [
+				{
+					label : <div>列表模式</div> ,
+					key : 'list-mode' ,
+				} ,
+				{
+					label : <div>卡片模式</div> ,
+					key : 'card-mode' ,
+				} ,
+				{
+					label : <div>宫格模式</div> ,
+					key : 'grid-mode' ,
+				} ,
+			] ,
 		} ,
 	];
 	return (<Dropdown
-		placement = "bottomLeft"
+		destroyPopupOnHide={true}
+		placement = "bottom"
 		menu = { {
-			items : moreNoteOptions ,
+			items : modeOptions ,
+			selectable : true ,
+			defaultSelectedKeys : [showMode] ,
 			onClick : ({ key }) => {
-				if ( key === 'switch-mode' ) {
-					onSwitchNoteMode();
-				}
-				
+				onSwitchNoteMode('showMode' , key);
 			} ,
 		} }
-		trigger = { ['click' , 'hover'] }
+		trigger = { ['click'] }
 	>
 		<a onClick = { (e) => e.preventDefault() }>
 			<Space>
-				<MoreOptionsIcon />
+				{ showMode === 'list-mode' ? <ListModeIcon /> :
+				  showMode === 'card-mode' ? <CardModeIcon /> : <GridModeIcon /> }
+				{/*<ListModeIcon/>*/}
+			</Space>
+		</a>
+	</Dropdown>);
+};
+//主题颜色选择器
+const ThemeSelector = ({ selectTheme ,theme}) => {
+	const themeOptions = [
+		{
+			key : 'themeOptions' ,
+			type : 'group' ,
+			label : '主题色系' ,
+			children : [
+				{
+					label : <div>蓝色</div> ,
+					key : 'blue-theme' ,
+				} ,
+				{
+					label : <div>紫色</div> ,
+					key : 'purple-theme' ,
+				} ,
+				{
+					label : <div>红色</div> ,
+					key : 'red-theme' ,
+				} ,
+				{
+					label : <div>绿色</div> ,
+					key : 'green-theme' ,
+				} ,
+				{
+					label : <div>橙色</div> ,
+					key : 'orange-theme' ,
+				} ,
+				{
+					label : <div>粉色</div> ,
+					key : 'pink-theme' ,
+				} ,
+				{
+					label : <div>黑白</div> ,
+					key : 'default-theme' ,
+				} ,
+				{
+					label : <div>渐变1</div>,
+					key :'gradient-theme-blue-yellow'
+				},
+				{
+					label : <div>渐变2</div>,
+					key :'gradient-theme-blue-purple'
+				},
+				{
+					label : <div>渐变3</div>,
+					key :'gradient-theme-red-gray'
+				},
+				{
+					label : <div>渐变4</div>,
+					key :'gradient-theme-green-blue'
+				},
+				
+			] ,
+		} ,
+	
+	
+	];
+	return (<Dropdown
+		destroyPopupOnHide={true}
+		placement = "bottom"
+		menu = { {
+			items : themeOptions ,
+			selectable : true ,
+			defaultSelectedKeys : [theme] ,
+			onClick : ({ key }) => {
+				selectTheme('currentTheme',key);
+			} ,
+		} }
+		trigger = { ['click'] }
+	>
+		<a onClick = { (e) => e.preventDefault() }>
+			<Space>
+				<ColorPalette />
 			</Space>
 		</a>
 	</Dropdown>);
 };
 
-class MoreOptionsIcon extends Component {
-	render () {
-		return <svg
-			className = "icon"
-			style = { {
-				width : '20px' ,
-				height : ' 20px' ,
-				verticalAlign : 'middle' ,
-				fill : 'currentColor' ,
-				overflow : 'hidden' ,
-			} }
-			viewBox = "0 0 1024 1024"
-			version = "1.1"
-			xmlns = "http://www.w3.org/2000/svg"
-			p-id = "11550"
+const CardModeIcon = () => {
+	return <div>
+		<Tooltip
+			title = "点击选择显示模式"
+			placement = "bottom"
+			zIndex = "1"
 		>
-			<path
-				d = "M512 256a85.333333 85.333333 0 1 1 0-170.666667 85.333333 85.333333 0 0 1 0 170.666667z m0 341.333333a85.333333 85.333333 0 1 1 0-170.666666 85.333333 85.333333 0 0 1 0 170.666666z m0 341.333334a85.333333 85.333333 0 1 1 0-170.666667 85.333333 85.333333 0 0 1 0 170.666667z"
-				fill = "#2E2F30"
-				p-id = "11551"
-			></path>
-		</svg>;
+			<div
+				className = { `notelist-header-icon card-mode-icon-box` }
+			
+			>
+				<svg
+					t = "1734629911980"
+					className = "icon"
+					viewBox = "0 0 1024 1024"
+					version = "1.1"
+					xmlns = "http://www.w3.org/2000/svg"
+					p-id = "117271"
+					width = "20"
+					height = "20"
+				>
+					<path
+						d = "M25.6 640A102.4 102.4 0 0 1 128 537.6h256A102.4 102.4 0 0 1 486.4 640v256A102.4 102.4 0 0 1 384 998.4H128A102.4 102.4 0 0 1 25.6 896v-256zM128 614.4a25.6 25.6 0 0 0-25.6 25.6v256c0 14.08 11.52 25.6 25.6 25.6h256a25.6 25.6 0 0 0 25.6-25.6v-256a25.6 25.6 0 0 0-25.6-25.6H128zM537.6 640A102.4 102.4 0 0 1 640 537.6h256a102.4 102.4 0 0 1 102.4 102.4v256a102.4 102.4 0 0 1-102.4 102.4h-256A102.4 102.4 0 0 1 537.6 896v-256z m102.4-25.6a25.6 25.6 0 0 0-25.6 25.6v256c0 14.08 11.52 25.6 25.6 25.6h256a25.6 25.6 0 0 0 25.6-25.6v-256a25.6 25.6 0 0 0-25.6-25.6h-256zM25.6 128A102.4 102.4 0 0 1 128 25.6h256A102.4 102.4 0 0 1 486.4 128v256A102.4 102.4 0 0 1 384 486.4H128A102.4 102.4 0 0 1 25.6 384V128zM128 102.4a25.6 25.6 0 0 0-25.6 25.6v256c0 14.08 11.52 25.6 25.6 25.6h256a25.6 25.6 0 0 0 25.6-25.6V128a25.6 25.6 0 0 0-25.6-25.6H128zM537.6 128A102.4 102.4 0 0 1 640 25.6h256A102.4 102.4 0 0 1 998.4 128v256A102.4 102.4 0 0 1 896 486.4h-256A102.4 102.4 0 0 1 537.6 384V128z m102.4-25.6a25.6 25.6 0 0 0-25.6 25.6v256c0 14.08 11.52 25.6 25.6 25.6h256a25.6 25.6 0 0 0 25.6-25.6V128a25.6 25.6 0 0 0-25.6-25.6h-256z"
+						fill = "#000000"
+						p-id = "117272"
+					></path>
+				</svg>
+			</div>
+		</Tooltip>
+	</div>;
+};
+const ListModeIcon = () => {
+	return <div>
+		<Tooltip
+			title = "点击选择显示模式"
+			placement = "bottom"
+			zIndex = "1"
+		>
+			<div
+				className = { `notelist-header-icon list-mode-icon-box`}
+			>
+				<svg
+					xmlns = "http://www.w3.org/2000/svg"
+					viewBox = "0 0 1024 1024"
+					width = "20"
+					height = "20"
+				>
+					<rect
+						x = "50"
+						y = "70"
+						width = "924"
+						height = "220"
+						stroke = "#000000"
+						fill = "none"
+						strokeWidth = "75"
+						rx = "18"
+						ry = "18"
+					/>
+					<rect
+						x = "50"
+						y = "410"
+						width = "924"
+						height = "220"
+						stroke = "#000000"
+						fill = "none"
+						strokeWidth = "75"
+						rx = "20"
+						ry = "20"
+					/>
+					<rect
+						x = "50"
+						y = "740"
+						width = "924"
+						height = "220"
+						stroke = "#000000"
+						fill = "none"
+						strokeWidth = "75"
+						rx = "20"
+						ry = "20"
+					/>
+				</svg>
+			</div>
+		</Tooltip>
+	</div>;
+};
+const GridModeIcon = () => {
+	return <div>
+		<Tooltip
+			placement = "bottom"
+			title = "点击选择显示模式"
+			zIndex = "1"
+		>
+			<div
+				className = { `notelist-header-icon grid-mode-icon-box`}
+				onClick = { () => {
+					// onSwitchNoteMode('grid-mode');
+				} }
+			>
+				<svg
+					t = "1734630128020"
+					className = "icon"
+					viewBox = "0 0 1024 1024"
+					version = "1.1"
+					xmlns = "http://www.w3.org/2000/svg"
+					p-id = "119720"
+					width = "20"
+					height = "20"
+				>
+					<path
+						d = "M424.228571 36.571429H87.771429C58.514286 36.571429 36.571429 58.514286 36.571429 87.771429v336.457142c0 29.257143 21.942857 51.2 51.2 51.2h336.457142c29.257143 0 51.2-21.942857 51.2-51.2V87.771429c0-29.257143-21.942857-51.2-51.2-51.2z m-21.942857 73.142857v292.571428h-292.571428v-292.571428h292.571428z m21.942857 438.857143H87.771429c-29.257143 0-51.2 21.942857-51.2 51.2v336.457142c0 29.257143 21.942857 51.2 51.2 51.2h336.457142c29.257143 0 51.2-21.942857 51.2-51.2V599.771429c0-29.257143-21.942857-51.2-51.2-51.2z m-21.942857 73.142857v292.571428h-292.571428v-292.571428h292.571428z m533.942857 73.142857H599.771429c-29.257143 0-51.2 21.942857-51.2 51.2v190.171428c0 29.257143 21.942857 51.2 51.2 51.2h336.457142c29.257143 0 51.2-21.942857 51.2-51.2v-190.171428c0-29.257143-21.942857-51.2-51.2-51.2z m-21.942857 73.142857v146.285714h-292.571428v-146.285714h292.571428z m21.942857-731.428571H599.771429c-29.257143 0-51.2 21.942857-51.2 51.2v482.742857c0 29.257143 21.942857 51.2 51.2 51.2h336.457142c29.257143 0 51.2-21.942857 51.2-51.2V87.771429c0-29.257143-21.942857-51.2-51.2-51.2z m-21.942857 73.142857v438.857143h-292.571428v-438.857143h292.571428z"
+						p-id = "119721"
+						fill = "#000000"
+					></path>
+				</svg>
+			</div>
+		</Tooltip>
+	</div>;
+};
+
+
+class ColorPalette extends Component {
+	render () {
+		return <div>
+			<Tooltip
+				placement = "bottom"
+				title = "点击选择主题"
+				zIndex = "1"
+			>
+				<div className = "notelist-header-icon">
+					<svg
+						t = "1734813093634"
+						className = "icon"
+						viewBox = "0 0 1024 1024"
+						version = "1.1"
+						xmlns = "http://www.w3.org/2000/svg"
+						p-id = "233500"
+						width = "22"
+						height = "22"
+					>
+						<path
+							d = "M465.408 1021.1328c-21.504 0-44.1344-2.048-68.6592-5.12l-6.144-1.024c-174.336-26.624-293.2736-195.8912-298.3936-203.0592C-76.032 555.6736 8.0896 296.192 167.0656 152.6272 324.9664 9.0624 588.4928-52.48 819.2 133.1712c148.736 119.9616 193.8432 286.0544 195.8912 293.2224v2.048c21.504 116.8896 4.096 203.0592-52.2752 258.4576-86.1696 83.0976-228.6592 56.3712-248.2176 52.2752-26.6752-3.072-46.1312 5.12-60.4672 22.528-15.36 19.456-18.432 45.1072-13.312 60.4672 14.336 43.1104 16.384 75.8784 6.144 100.5056-29.7984 64.6656-90.2656 98.4576-181.5552 98.4576z m-65.6384-67.6352l6.144 1.024c99.4816 15.36 160-4.096 184.576-59.4944 0-1.024 5.12-14.336-8.192-55.3472-13.312-36.9664-3.072-85.1456 23.552-117.9136 27.6992-34.8672 68.6592-50.2272 116.8896-45.1072l3.072 1.024c1.024 0 128.1024 27.648 193.792-35.9424 40.0384-38.9632 52.3264-106.6496 34.9184-201.0112-4.096-13.312-48.2304-157.9008-175.3088-259.4304C578.2016 17.3056 347.4944 71.68 208.0256 197.7856 79.872 314.624-14.4896 537.088 143.36 778.1888c1.024 0 108.6976 153.8048 256.3584 175.3088z"
+							fill = "#000000"
+							p-id = "233501"
+							stroke = "#000000"
+							strokeWidth = "6"
+						></path>
+						<path
+							d = "M158.8736 538.1632a61.5424 61.5424 0 1 0 123.0336 0 61.5424 61.5424 0 0 0-123.0336 0z m71.7312-184.5248a61.5424 61.5424 0 1 0 123.0848 0 61.5424 61.5424 0 0 0-123.0848 0z m184.5248-102.5536a61.5424 61.5424 0 1 0 123.0848 0 61.5424 61.5424 0 0 0-123.0848 0z m205.1072 51.2512a61.5424 61.5424 0 1 0 123.0848 0 61.5424 61.5424 0 0 0-123.0848 0z m102.5536 164.096a61.5424 61.5424 0 1 0 123.0848-0.0512 61.5424 61.5424 0 0 0-123.0848 0z"
+							fill = "#000000"
+							p-id = "233502"
+							stroke = "#000000"
+							strokeWidth = "6"
+						></path>
+					</svg>
+				</div>
+			</Tooltip>
+		</div>;
 	}
 }
 

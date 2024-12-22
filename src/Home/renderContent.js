@@ -30,6 +30,7 @@ const RenderContent = ({
 			
 		};
 		fetchContents();
+		console.log(currentNotebook);
 	} , [currentNotebook]);
 	
 	const onDeleteNote = (id) => {
@@ -37,7 +38,46 @@ const RenderContent = ({
 		setContents(contents.filter(content => content.id !== id));
 	};
 	
-	
+	class CardMode extends Component {
+		render () {
+			return <div className = "note-card-mode">
+				{ contents.map(({
+					id ,
+					noteContent ,
+				}) => {
+					return <div
+						key = { id }
+						className = {`note-card-mode-item ${currentNotebook.currentTheme}`}
+						onClick = { () => changeNote(noteContent , id) }
+					>
+						<span className = "note-card-mode-title">{ convertFromRaw(noteContent).getPlainText() }</span>
+						{/*note details : 时间 ,置顶 ,收藏 ,删除*/ }
+						<div className = "note-details">
+							<FormatTime id = { id } />
+							<div
+								className = "note-operation-buttons"
+								onClick = { (e) => {
+									e.stopPropagation();
+									
+								} }
+							>
+								<TopUpIcon />
+								<FavoriteIcon />
+								<div
+									onClick = { () => {
+										onDeleteNote(id);
+									} }
+								>
+									<DeleteIcon />
+								</div>
+							
+							</div>
+						</div>
+					</div>;
+				}) }
+			</div>;
+		}
+	}
 	class UlMode extends Component {
 		render () {
 			return <div className = "note-ul-mode">
@@ -47,7 +87,7 @@ const RenderContent = ({
 				}) => {
 					return <div
 						key = { id }
-						className = "note-ul-mode-item"
+						className = {`note-ul-mode-item ${currentNotebook.currentTheme}`}
 						onClick = { () => changeNote(noteContent , id) }
 					>
 						<span className = "note-ul-mode-title">{ convertFromRaw(noteContent).getPlainText() }</span>
@@ -62,7 +102,7 @@ const RenderContent = ({
 								} }
 							>
 								<TopUpIcon />
-								<UnselectedFavoriteIcon />
+								<FavoriteIcon />
 								<div
 									onClick = { () => {
 										onDeleteNote(id);
@@ -123,7 +163,7 @@ const RenderContent = ({
 					}) => (
 						<div
 							key = { id }
-							className = "note-grid-mode-item"
+							className = {`note-grid-mode-item ${currentNotebook.currentTheme}`}
 							onClick = { () => changeNote(noteContent , id) }
 						>
 							<span className = "note-grid-mode-title">{ convertFromRaw(noteContent).getPlainText() }</span>
@@ -137,7 +177,7 @@ const RenderContent = ({
 									} }
 								>
 									<TopUpIcon />
-									<UnselectedFavoriteIcon />
+									<FavoriteIcon />
 									<div
 										onClick = { () => {
 											onDeleteNote(id);
@@ -207,7 +247,10 @@ const RenderContent = ({
 				<EmptyIcon />
 				<p>还没有笔记 , 点击右下角按钮创建吧!</p>
 			</div>) : (<div className = "show-noteList-box">
-				{ ShowMode ? <UlMode /> : <GridMode /> }</div>) }
+				{ ShowMode ==='list-mode'&&<UlMode/> }
+				{ ShowMode ==='grid-mode'&&<GridMode/> }
+				{ ShowMode ==='card-mode'&&<CardMode/> }
+			</div>) }
 		
 		</div>
 	);
@@ -277,30 +320,28 @@ const EmptyIcon = () => {
 
 class DeleteIcon extends Component {
 	render () {
-		return <svg
-			className = "icon"
-			style = { {
-				width : '18px' ,
-				height : '18px' ,
-				verticalAlign : 'middle' ,
-				fill : 'currentColor' ,
-				overflow : 'hidden' ,
-			} }
-			viewBox = "0 0 1024 1024"
-			version = "1.1"
-			xmlns = "http://www.w3.org/2000/svg"
-			p-id = "3990"
-		>
-			<path
-				d = "M781.28 851.36a58.56 58.56 0 0 1-58.56 58.56H301.28a58.72 58.72 0 0 1-58.56-58.56V230.4h538.56z m-421.6-725.92a11.84 11.84 0 0 1 12-12h281.28a11.84 11.84 0 0 1 12 12V160H359.68zM956.8 160H734.72v-34.56a81.76 81.76 0 0 0-81.76-81.76H371.68a82.08 82.08 0 0 0-81.76 81.76V160H67.2a35.36 35.36 0 0 0 0 70.56h105.12v620.8a128.96 128.96 0 0 0 128.96 128.96h421.44a128.96 128.96 0 0 0 128.96-128.96V230.4H956.8a35.2 35.2 0 0 0 35.2-35.2 34.56 34.56 0 0 0-35.2-35.2zM512 804.16a35.2 35.2 0 0 0 35.2-35.36V393.92a35.2 35.2 0 1 0-70.4 0V768.8a35.2 35.2 0 0 0 35.2 35.36m-164.32 0a35.36 35.36 0 0 0 35.36-35.36V393.92a35.36 35.36 0 1 0-70.56 0V768.8a36.32 36.32 0 0 0 35.2 35.36m328.64 0a35.36 35.36 0 0 0 35.2-35.36V393.92a35.36 35.36 0 1 0-70.56 0V768.8a35.36 35.36 0 0 0 35.36 35.36"
-				fill = "#D81E06"
-				p-id = "3991"
-			></path>
-		</svg>;
+		return <div className = "note-buttons-common">
+			<svg
+				t = "1734625609334"
+				className = "delete-note-icon"
+				viewBox = "0 0 1024 1024"
+				version = "1.1"
+				xmlns = "http://www.w3.org/2000/svg"
+				p-id = "84258"
+				width = "16"
+				height = "16"
+			>
+				<path
+					d = "M725.333333 170.666667h213.333334v85.333333h-85.333334v640a42.666667 42.666667 0 0 1-42.666666 42.666667H213.333333a42.666667 42.666667 0 0 1-42.666666-42.666667V256H85.333333V170.666667h213.333334V85.333333h426.666666v85.333334zM384 384v341.333333h85.333333V384H384z m170.666667 0v341.333333h85.333333V384h-85.333333z"
+					p-id = "84259"
+					fill = "#bfbfbf"
+				></path>
+			</svg>
+		</div>
 	}
 }
 
-class UnselectedFavoriteIcon extends Component {
+class FavoriteIcon extends Component {
 	state = {
 		isFavorite : false ,
 	};
@@ -311,56 +352,48 @@ class UnselectedFavoriteIcon extends Component {
 	};
 	
 	render () {
-		return <svg
+		return <div
+			className = "note-buttons-common"
 			onClick = { this.handleFavorite }
-			className = { this.state.isFavorite ? 'star-active' : 'star' }
-			style = { {
-				width : '24px' ,
-				height : '24px' ,
-				verticalAlign : 'middle' ,
-				overflow : 'hidden' ,
-			} }
-			t = "1732367885599"
-			viewBox = "0 0 1024 1024"
-			version = "1.1"
-			xmlns = "http://www.w3.org/2000/svg"
-			p-id = "103841"
-			width = "18"
-			height = "18"
-			data-immersive-translate-walked = "9cfe9fc8-a3e8-4c35-aeea-d58e109df866"
 		>
-			<path
-				d = "M877.278357 375.394762l-219.339544-31.618115-98.800213-199.579501c-5.929036-11.857049-19.761066-19.760043-33.593096-19.760043s-25.689079 7.902994-33.593096 21.735024l-94.850252 201.558575-219.339544 31.614022c-13.83203 1.974981-25.689079 11.857049-29.640064 25.689079-3.953032 13.83203 0 27.66406 9.878998 37.544081L318.061986 598.685291 288.419875 819.999816c-1.974981 13.831007 3.953032 27.66406 13.831007 35.571147 5.929036 3.948939 13.83203 7.902994 21.736047 7.902994 5.928013 0 11.857049-1.979074 17.785062-3.954055L529.494443 754.790652l185.747471 102.755292c5.928013 1.973958 11.857049 3.948939 17.785062 3.948939 19.761066 0 35.5691-15.805988 35.5691-37.543058l0-7.902994-29.639041-219.339544 158.082388-158.082388c9.877975-9.882068 13.83203-23.714098 9.877975-37.546128C900.992455 387.247718 891.110387 377.369743 877.278357 375.394762L877.278357 375.394762zM367.462093 594.734306c1.974981-11.857049-1.978051-25.689079-11.857049-33.593096L203.450668 422.815795l213.411531-29.640064c11.857049-1.974981 23.710005-9.877975 29.639041-21.735024l79.043241-183.77249 86.944188 179.818435c5.928013 11.857049 15.810081 19.761066 29.642111 21.74014l207.482495 33.589003L701.409884 565.091172c-9.877975 7.904017-13.83203 21.735024-9.877975 33.593096l23.710005 205.507514-167.961386-98.801237c-9.878998-5.928013-23.711028-3.953032-35.5691 1.974981l-171.914418 94.850252L367.462093 594.734306 367.462093 594.734306z"
-				fill = "#dbdbdb"
-				p-id = "103842"
-				data-immersive-translate-walked = "9cfe9fc8-a3e8-4c35-aeea-d58e109df866"
-			></path>
-			<path
-				d = "M527.520485 160.494321 422.460708 363.108948 178.913832 412.227646 353.216647 588.236312 318.083475 827.689962 537.071002 725.359342 729.452567 817.4569 706.939831 594.376149 866.575598 424.50732 637.355009 383.575072Z"
-				fill = "#dbdbdb"
-				p-id = "103843"
-				data-immersive-translate-walked = "9cfe9fc8-a3e8-4c35-aeea-d58e109df866"
-			></path>
-		</svg>;
+			<svg
+				t = "1734625347615"
+				className = { this.state.isFavorite ? 'star-button-active' : 'star-button' }
+				viewBox = "0 0 1024 1024"
+				version = "1.1"
+				xmlns = "http://www.w3.org/2000/svg"
+				p-id = "74981"
+				width = "16"
+				height = "16"
+			>
+				<path
+					d = "M1003.52 390.826667c-6.826667-20.48-23.893333-34.133333-44.373333-37.546667l-273.066667-42.666667L563.2 49.493333C554.666667 29.013333 534.186667 17.066667 512 17.066667s-40.96 11.946667-51.2 32.426666l-122.88 261.12-273.066667 40.96c-20.48 3.413333-37.546667 17.066667-44.373333 37.546667-6.826667 20.48-1.706667 42.666667 13.653333 56.32l199.68 204.8L186.026667 938.666667c-3.413333 20.48 5.12 42.666667 23.893333 54.613333 17.066667 11.946667 40.96 13.653333 59.733333 3.413333L512 865.28l244.053333 136.533333c8.533333 3.413333 17.066667 6.826667 25.6 6.826667 30.72 0 56.32-25.6 56.32-56.32 0-6.826667-1.706667-11.946667-3.413333-17.066667l-44.373333-279.893333 199.68-204.8c15.36-17.066667 20.48-39.253333 13.653333-59.733333z"
+					fill = "#bfbfbf"
+					p-id = "74982"
+				></path>
+			</svg>
+		</div>;
 	}
 }
 
 const TopUpIcon = () => {
-	return <svg
-		t = "1732970778716"
-		className = "icon"
-		viewBox = "0 0 1024 1024"
-		version = "1.1"
-		xmlns = "http://www.w3.org/2000/svg"
-		p-id = "18866"
-		width = "18"
-		height = "18"
-	>
-		<path
-			d = "M1024 0v102.4H0V0h1024zM512 153.6l512 496.7936h-297.984L727.1936 1024h-429.056v-373.6064H0L512 153.6z"
-			fill = "#dbdbdb"
-			p-id = "18867"
-		></path>
-	</svg>;
+	return <div className = "note-buttons-common ">
+		<svg
+			t = "1734625720322"
+			className = "top-up-button"
+			viewBox = "0 0 1024 1024"
+			version = "1.1"
+			xmlns = "http://www.w3.org/2000/svg"
+			p-id = "85415"
+			width = "16"
+			height = "16"
+		>
+			<path
+				d = "M951.296 424.96L1024 352.256 671.744 0 599.04 72.704l70.144 70.656-168.96 168.96a296.96 296.96 0 0 0-286.72 75.264L143.36 458.24 72.704 387.584 0 460.8l245.248 245.248-139.776 139.776 72.704 72.704 140.288-140.288L563.2 1024l72.704-72.704-70.144-70.656 70.144-70.144a296.96 296.96 0 0 0 75.776-287.232l168.96-168.96z"
+				fill = "#bfbfbf"
+				p-id = "85416"
+			></path>
+		</svg>
+	</div>;
 };
 export default RenderContent;

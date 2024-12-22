@@ -27,6 +27,7 @@ export class NoteSidebar extends Component {
 	
 	state = {
 		siderbarWidth : 378 ,
+		isCollapse : true,
 	};
 	
 	componentDidMount () {
@@ -47,6 +48,7 @@ export class NoteSidebar extends Component {
 	getNotebookItems () {
 		return [
 			{
+				classNames : {header:this.state.isCollapse?'active-collapse':''},
 				key : 'notebookItems' ,
 				label : (<div className = "all-notebook-header">
 					<NoteBookIcon />
@@ -104,18 +106,20 @@ export class NoteSidebar extends Component {
 					<SettingIcon />
 					<span>设置</span>
 				</div> ,
-				children : <p>111</p> ,
+				children : <p>快捷键</p> ,
 			} , {
+				showArrow : false ,
 				key : 'feedbackItem' ,
 				label : <div className = "menu-item">
 					<FeedbackIcon />
 					<span>反馈</span>
 				</div> ,
 				children : <div className = "feedback-content">
-					亲爱的用户 :<br/>
-					如果您在使用笔记本软件的过程中有任何建议或发现了任何问题与 bug，欢迎随时反馈给我们。您的意见对我们非常重要！
+					亲爱的用户 :
 					<br />
-				   请发送邮件至：liqunzhang3@gmail.com
+					如果您在使用笔记本软件的过程中有任何建议或发现了任何问题与 bug，欢迎随时反馈给我们。
+					<br />
+					请发送邮件至：liqunzhang3@gmail.com
 					我们会认真查看并不断优化，为您提供更好的体验。</div> ,
 			} ,
 		];
@@ -131,7 +135,7 @@ export class NoteSidebar extends Component {
 			<ResizableBox
 				width = { siderCollapsed ? 0 : this.state.siderbarWidth }
 				axis = "x" // 只允许水平拖动
-				minConstraints = { [200 , 0] } // 设置最小宽度
+				minConstraints = { [290 , 0] } // 设置最小宽度
 				maxConstraints = { [480 , 0] } // 设置最大宽度
 				resizeHandles = { ['e'] } // 右边缘 east
 				onResizeStart = { (e , data) => {
@@ -158,7 +162,7 @@ export class NoteSidebar extends Component {
 					<div className = "sidebar-content-panel">
 						{/*用户信息*/ }
 						<Avatar
-							style = { { backgroundColor : '#dcdcdc' } }
+							style = { { backgroundColor : '#cecece' } }
 							icon = { <UserOutlined /> }
 						/>
 						<span>user name</span>
@@ -168,6 +172,7 @@ export class NoteSidebar extends Component {
 							<SearchIcon />
 							<span>搜索</span>
 						</div>
+						
 						{/*笔记本列表*/ }
 						<Collapse
 							items = { notebookItems }
@@ -175,8 +180,10 @@ export class NoteSidebar extends Component {
 							ghost
 							expandIconPosition = { 'end' }
 							accordion = { true }
+							onChange = { (key) => {
+								this.setState({ isCollapse : !this.state.isCollapse });
+							} }
 						/>
-						
 						
 						<div className = "sidebar-menu-list">
 							<div className = "menu-item">
@@ -236,6 +243,7 @@ class NoteBookIcon extends Component {
 	render () {
 		return <svg
 			t = "1734471615966"
+			style = { { marginLeft : '20px' } }
 			className = "icon"
 			viewBox = "0 0 1024 1024"
 			version = "1.1"
@@ -375,6 +383,7 @@ class SearchIcon extends Component {
 		</svg>;
 	}
 }
+
 const CopyMailIcon = () => {
 	return <svg
 		t = "1734555085112"
@@ -396,8 +405,8 @@ const CopyMailIcon = () => {
 			p-id = "9068"
 			fill = "#8a8a8a"
 		></path>
-	</svg>
-}
+	</svg>;
+};
 
 import { reaxel_sider } from './sider.reaxel';
 import { reaxper } from 'reaxes-react';
