@@ -212,11 +212,13 @@
 }
 
 .title-add span:first-of-type {
+	color: #555555;
+	font-weight: bold;
 	margin: 0 0 0 30px;
 }
 
 .title-add span:last-of-type {
-	color: #767676;
+	color: #555555;
 	font-size: 14px;
 	margin-right: 4px;
 }
@@ -294,11 +296,16 @@
 }
 
 .sidebar-content-panel .menu-item span {
+	color: #555555;
+	font-weight: bold;
 	margin-left: 30px;
 }
 
 .sidebar-content-panel .menu-item svg {
 	margin-left: 20px;
+}
+.sidebar-content-panel .menu-item svg path{
+	fill: #555555;
 }
 
 .sidebar-notebook-item {
@@ -467,7 +474,12 @@ body {
 }
 
 
-
+.pinned{
+	
+}
+.note-list-sub-title{
+	color: var(--primary-text-color);
+}
 /*宫格模式 ,卡片模式和列表模式分别设置不同的ul和noteItem,noteTitle*/
 .note-card-mode{
 	display: grid;
@@ -488,9 +500,8 @@ body {
 	border: var(--primary-border);
 }
 
-.note-card-mode-item:last-child{
-	margin-bottom: 20px;
-}
+
+
 
 .note-card-mode-item:hover {
 	cursor: pointer;
@@ -636,12 +647,14 @@ body {
 	fill: red;
 }
 .note-operation-buttons .note-buttons-common:hover .star-button path{
-	fill: #ffd700;
+	/*fill: #ffeead;*/
 }
-.note-operation-buttons .note-buttons-common:hover .top-up-button path{
+.note-operation-buttons .note-buttons-common:hover .pin-note-button path{
 	fill: #000000;
 }
-
+.pin-note path{
+	fill: #000000;
+}
 h2 {
 	font-family: Arial, sans-serif;
 	width: fit-content;
@@ -962,27 +975,27 @@ h2 {
 	transform: rotate(-180deg);
 }
 
-@keyframes jump {
-	0% {
-		transform: translateY(0);
-	}
-	50% {
-		transform: translateY(-10px);
-	}
-	100% {
-		transform: translateY(0);
-	}
-}
+
+
 
 .star-button {
-	transition: fill 0.3s ease;
+	cursor: pointer;
+	transition: fill 0.2s;
 }
 
-svg.star-button-active path {
-	fill: #ffd700; /* 改变颜色 */
-	animation: jump 2s ease infinite; /* 闪烁效果 */
+.star-button-active path{
+	fill: gold;
+}
+.star-button-active{
+	animation: shake-and-scale 0.5s ease-in-out;
 }
 
-.delete-notebook-button {
-	color: red;
+@keyframes shake-and-scale {
+	0%{ transform: rotate(0) scale(1.3); }
+	25% { transform: rotate(20deg) scale(1.3); }
+	50% { transform: rotate(-20deg) scale(1.3); }
+	75% { transform: rotate(5deg) scale(1.3); }
+	100% { transform: rotate(5deg) scale(1); }
 }
+
+

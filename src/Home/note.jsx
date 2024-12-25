@@ -23,8 +23,8 @@ const defaultNotebook = {
 	cover : coverDefault ,
 	id : 'default-notebook-id' ,
 	createdTime : dayjs().valueOf() ,
-	showMode : 'list-mode',//当前笔记显示模式
-	currentTheme :'blue-theme',//列表主题,类名
+	showMode : 'list-mode' ,//当前笔记显示模式
+	currentTheme : 'blue-theme' ,//列表主题,类名
 };
 
 class NotesApp extends Component {
@@ -43,6 +43,7 @@ class NotesApp extends Component {
 			activeModal : null ,
 			isModalOpen : false ,
 			notesAmount : 0 ,
+			showPinnedNotes : false ,
 		};
 	}
 	
@@ -83,8 +84,6 @@ class NotesApp extends Component {
 	}
 	
 	
-	
-	
 	handleAddNote = () => {
 		this.setState({
 			isAddNote : !this.state.isAddNote ,
@@ -109,6 +108,8 @@ class NotesApp extends Component {
 			notebook : currentNotebook.title ,
 			notebookID : currentNotebook.id ,
 			id : uuidv4() ,
+			isPinned : false ,
+			pinnedTime : null,
 		};
 		
 		//添加新note
@@ -161,8 +162,8 @@ class NotesApp extends Component {
 	handleDeleteNote = (id) => {
 		const {
 			noteListData ,
-			notesAmount,
-			currentNotebook
+			notesAmount ,
+			currentNotebook ,
 		} = this.state;
 		const updatedList = noteListData.filter((note) => note.id !== id);
 		const currentNotes = updatedList.filter(note => note.notebookID === currentNotebook.id);
@@ -184,6 +185,33 @@ class NotesApp extends Component {
 			currentID : id ,
 		});
 	};
+	//置顶note
+	handlePinNote = (id) => {
+		const {
+			noteListData ,
+			currentNotebook,
+		} = this.state;
+		let updatedNoteList = [...noteListData];
+		updatedNoteList = updatedNoteList.map(note => {
+			if ( note.id === id ) {
+				return {
+					...note ,
+					isPinned : !note.isPinned ,
+					pinnedTime: !note.isPinned ? Date.now() : null,
+				};
+			}
+			return note;
+		});
+		// const currentNoteList = updatedNoteList.filter(note => note.notebookID === currentNotebook.id);
+		// const pinnedNoteIndex = updatedNoteList.findIndex(note => note.id === id);
+		// const [pinnedNote] = updatedNoteList.splice(pinnedNoteIndex , 1);
+		// updatedNoteList.unshift(pinnedNote);
+		this.setState({
+			noteListData : updatedNoteList ,
+		} , () => {
+			localStorage.setItem('note-info-array' , JSON.stringify(updatedNoteList));
+		});
+	};
 	
 	//控制sidebar显示/隐藏
 	toggleSidebar = () => {
@@ -191,7 +219,7 @@ class NotesApp extends Component {
 			console.log(this.state.isSidebarVisible);
 		});
 	};
-	//传给modal
+	//传给addNotebookModal
 	addNoteBook = (newNoteBook) => {
 		this.setState((prevState) => {
 			const updatedNotebooks = [
@@ -213,7 +241,8 @@ class NotesApp extends Component {
 			selectedNotebookId : notebook.id ,
 		});
 	};
-	//笔记本 : 重命名 换封面
+	
+	//笔记本 : 重命名 换封面 主题 模式
 	updateNotebookInfo = (key , value) => {
 		const {
 			noteBookData ,
@@ -243,6 +272,7 @@ class NotesApp extends Component {
 			localStorage.setItem('notebook-array' , JSON.stringify(this.state.noteBookData));
 		});
 	};
+	
 	//删除笔记本
 	deleteNotebook = () => {
 		const {
@@ -285,7 +315,6 @@ class NotesApp extends Component {
 	};
 	
 	
-	
 	render () {
 		const addNoteBtnClass = this.state.isAddNote ? 'add-new-button-disappear' : 'add-new-button';
 		
@@ -293,7 +322,7 @@ class NotesApp extends Component {
 			
 			<AddNewNotebtn
 				onClick = { this.handleAddNote }
-				className = {` ${addNoteBtnClass} ${this.state.currentNotebook.currentTheme}` }
+				className = { ` ${ addNoteBtnClass } ${ this.state.currentNotebook.currentTheme }` }
 			/>
 			{ this.state.isAddNote === true ? (
 				<>
@@ -324,6 +353,7 @@ class NotesApp extends Component {
 						  updateNotebookInfo = { this.updateNotebookInfo }
 						  openModal = { this.handleOpenModal }
 						  notesAmount = { this.state.notesAmount }
+						  pinNote = { this.handlePinNote }
 					  />
 					  
 					  {/*添加笔记本 Modal*/ }
@@ -339,7 +369,7 @@ class NotesApp extends Component {
 								  id : uuidv4() ,
 								  createdTime : dayjs().valueOf() ,
 								  showMode : 'list-mode' ,
-								  currentTheme :'blue-theme'
+								  currentTheme : 'blue-theme' ,
 							  };
 							  this.addNoteBook(newNoteBook);
 						  }

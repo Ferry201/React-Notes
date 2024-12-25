@@ -4,6 +4,7 @@ import { convertFromRaw } from 'draft-js';
 import './note.css';
 import Masonry from 'masonry-layout';
 import dayjs from 'dayjs';
+import {message} from 'antd';
 
 
 const RenderContent = ({
@@ -11,6 +12,7 @@ const RenderContent = ({
 	deleteNote ,
 	ShowMode ,
 	currentNotebook ,
+	pinNote ,
 }) => {
 	
 	const storedContents = JSON.parse(localStorage.getItem('note-info-array')) || [];
@@ -22,99 +24,180 @@ const RenderContent = ({
 			const allNoteContents = currentNotes.map(({
 				id ,
 				noteContent ,
+				isPinned ,
+				pinnedTime ,
 			}) => ({
 				id ,
 				noteContent ,
+				isPinned ,
+				pinnedTime ,
 			}));
 			setContents(allNoteContents);
 			
 		};
 		fetchContents();
-		console.log(currentNotebook);
 	} , [currentNotebook]);
 	
 	const onDeleteNote = (id) => {
 		deleteNote(id);
 		setContents(contents.filter(content => content.id !== id));
 	};
+	const onPinNote = (id) => {
+		
+		pinNote(id);
+		setContents((prevNotes) =>
+			prevNotes.map((note) =>
+				note.id === id
+				? {
+						...note ,
+						isPinned : !note.isPinned ,
+						pinnedTime : !note.isPinned ? Date.now() : null , // 置顶记录时间，取消置顶重置时间
+					}
+				: note ,
+			) ,
+		);
+	};
+	const pinnedNotes = contents.filter((note) => note.isPinned) // 已置顶的笔记
+	.sort((a , b) => b.pinnedTime - a.pinnedTime); // 按置顶时间降序排列，后置顶的排前面
+	// const pinnedNotes = contents.filter(note => note.isPinned === true);
+	const otherNotes = contents.filter(note => !note.isPinned);
 	
-	class CardMode extends Component {
+	//通用部分
+	class NoteList extends Component {
 		render () {
-			return <div className = "note-card-mode">
-				{ contents.map(({
-					id ,
-					noteContent ,
-				}) => {
-					return <div
-						key = { id }
-						className = {`note-card-mode-item ${currentNotebook.currentTheme}`}
-						onClick = { () => changeNote(noteContent , id) }
+			const {
+				id ,
+				noteContent ,
+				isPinned ,
+				itemClassName ,
+				titleClassName ,
+			} = this.props;
+			
+			return <div
+				key = { id }
+				className = { `${ itemClassName } ${ currentNotebook.currentTheme }` }
+				onClick = { () => changeNote(noteContent , id) }
+			>
+				<span className = { `${ titleClassName }` }>{ convertFromRaw(noteContent).getPlainText() }</span>
+				{/*note details : 时间 ,置顶 ,收藏 ,删除*/ }
+				<div className = "note-details">
+					<FormatTime id = { id } />
+					<div
+						className = "note-operation-buttons"
+						onClick = { (e) => {
+							e.stopPropagation();
+						} }
 					>
-						<span className = "note-card-mode-title">{ convertFromRaw(noteContent).getPlainText() }</span>
-						{/*note details : 时间 ,置顶 ,收藏 ,删除*/ }
-						<div className = "note-details">
-							<FormatTime id = { id } />
-							<div
-								className = "note-operation-buttons"
-								onClick = { (e) => {
-									e.stopPropagation();
-									
-								} }
-							>
-								<TopUpIcon />
-								<FavoriteIcon />
-								<div
-									onClick = { () => {
-										onDeleteNote(id);
-									} }
-								>
-									<DeleteIcon />
-								</div>
-							
-							</div>
+						<PinNoteIcon
+							isPinned = { isPinned }
+							handlePinNote = { () => {
+								onPinNote(id);
+							} }
+						/>
+						<FavoriteIcon />
+						<div
+							onClick = { () => {
+								onDeleteNote(id);
+							} }
+						>
+							<DeleteIcon />
 						</div>
-					</div>;
-				}) }
+					
+					</div>
+				</div>
 			</div>;
 		}
 	}
+	
+	class CardMode extends Component {
+		render () {
+			return <div>
+				{ pinnedNotes.length > 0 && <div>
+					<p className='note-list-sub-title'>已置顶</p>
+					<div className = "note-card-mode">
+						{ pinnedNotes.map(({
+							id ,
+							noteContent ,
+							isPinned ,
+						}) => {
+							return <NoteList
+								id = { id }
+								noteContent = { noteContent }
+								isPinned = { isPinned }
+								key = { id }
+								itemClassName = "note-card-mode-item"
+								titleClassName = "note-card-mode-title"
+							/>;
+						}) }
+					</div>
+				</div> }
+				{ otherNotes.length > 0 && <div>
+					{ pinnedNotes.length > 0 && <p className = "note-list-sub-title">其他</p> }
+					<div className = "note-card-mode">
+						{ otherNotes.map(({
+							id ,
+							noteContent ,
+							isPinned ,
+						}) => {
+							return <NoteList
+								id = { id }
+								noteContent = { noteContent }
+								isPinned = { isPinned }
+								key = { id }
+								itemClassName = "note-card-mode-item"
+								titleClassName = "note-card-mode-title"
+							/>;
+						}) }
+					</div>
+				</div> }
+			
+			</div>;
+		}
+	}
+	
 	class UlMode extends Component {
 		render () {
-			return <div className = "note-ul-mode">
-				{ contents.map(({
-					id ,
-					noteContent ,
-				}) => {
-					return <div
-						key = { id }
-						className = {`note-ul-mode-item ${currentNotebook.currentTheme}`}
-						onClick = { () => changeNote(noteContent , id) }
-					>
-						<span className = "note-ul-mode-title">{ convertFromRaw(noteContent).getPlainText() }</span>
-						{/*note details : 时间 ,置顶 ,收藏 ,删除*/ }
-						<div className = "note-details">
-							<FormatTime id = { id } />
-							<div
-								className = "note-operation-buttons"
-								onClick = { (e) => {
-									e.stopPropagation();
-									
-								} }
-							>
-								<TopUpIcon />
-								<FavoriteIcon />
-								<div
-									onClick = { () => {
-										onDeleteNote(id);
-									} }
-								>
-									<DeleteIcon />
-								</div>
-							
-							</div>
-						</div>
-					</div>;
-				}) }
+			return <div>
+				{ pinnedNotes.length > 0 && <div>
+					<p className='note-list-sub-title'>已置顶</p>
+					<div className = "note-ul-mode">
+						{ pinnedNotes.map(({
+							id ,
+							noteContent ,
+							isPinned ,
+						}) => {
+							return <NoteList
+								id = { id }
+								noteContent = { noteContent }
+								isPinned = { isPinned }
+								key = { id }
+								itemClassName = "note-ul-mode-item"
+								titleClassName = "note-ul-mode-title"
+							/>;
+						}) }
+					</div>
+				</div> }
+				
+				{ otherNotes.length > 0 && <div>
+					{ pinnedNotes.length > 0 && <p className = "note-list-sub-title">其他</p> }
+					<div className = "note-ul-mode">
+						{ otherNotes.map(({
+							id ,
+							noteContent ,
+							isPinned ,
+						}) => {
+							return <NoteList
+								id = { id }
+								noteContent = { noteContent }
+								isPinned = { isPinned }
+								key = { id }
+								itemClassName = "note-ul-mode-item"
+								titleClassName = "note-ul-mode-title"
+							/>;
+						}) }
+					</div>
+				</div> }
+			
 			</div>;
 		}
 	}
@@ -122,78 +205,109 @@ const RenderContent = ({
 	class GridMode extends Component {
 		constructor (props) {
 			super(props);
-			this.gridRef = React.createRef(); // 使用 ref 引用 DOM 元素
+			this.gridRefPinned = React.createRef(); // 使用一个 ref 引用已置顶笔记的 DOM 元素
+			this.gridRefOther = React.createRef(); // 使用另一个 ref 引用其他笔记的 DOM 元素
 		}
 		
 		componentDidMount () {
 			// 确保在组件挂载后初始化 Masonry 砖石/瀑布流布局
-			if ( this.gridRef.current ) {//确保在访问 this.gridRef.current 之前，current 属性已经指向了一个有效的 DOM 元素。
-				//初始时ref的 current 属性是 null。只有在组件挂载后，current 才会指向实际的 DOM 元素
-				this.masonry = new Masonry(this.gridRef.current , {
+			if ( this.gridRefPinned.current ) {
+				this.masonryPinned = new Masonry(this.gridRefPinned.current , {
 					itemSelector : '.note-grid-mode-item' , // grid-item 选择器
-					columnWidth : '.note-grid-mode-item' ,  // 每个 item 的宽度
-					percentPosition : true ,      // 设置百分比定位
-					gutter : 16 ,                  // 设置间距（可选）
+					columnWidth : '.note-grid-mode-item' , // 每个 item 的宽度
+					percentPosition : true , // 设置百分比定位
+					gutter : 16 , // 设置间距
+				});
+			}
+			if ( this.gridRefOther.current ) {
+				this.masonryOther = new Masonry(this.gridRefOther.current , {
+					itemSelector : '.note-grid-mode-item' ,
+					columnWidth : '.note-grid-mode-item' ,
+					percentPosition : true ,
+					gutter : 16 ,
 				});
 			}
 		}
 		
 		componentDidUpdate () {
-			if ( this.masonry ) {
-				this.masonry.layout(); // 重新触发 Masonry 布局
+			// 如果已置顶的笔记更新，重新布局
+			if ( this.masonryPinned ) {
+				this.masonryPinned.layout();
+			}
+			// 如果其他笔记更新，重新布局
+			if ( this.masonryOther ) {
+				this.masonryOther.layout();
 			}
 		}
 		
 		componentWillUnmount () {
 			// 在组件卸载时销毁 Masonry 实例
-			if ( this.masonry ) {
-				this.masonry.destroy();
+			if ( this.masonryPinned ) {
+				this.masonryPinned.destroy();
+			}
+			if ( this.masonryOther ) {
+				this.masonryOther.destroy();
 			}
 		}
 		
 		render () {
 			return (
-				<div
-					className = "note-grid-mode"
-					ref = { this.gridRef }
-				>
-					{ contents.map(({
-						id ,
-						noteContent ,
-					}) => (
-						<div
-							key = { id }
-							className = {`note-grid-mode-item ${currentNotebook.currentTheme}`}
-							onClick = { () => changeNote(noteContent , id) }
-						>
-							<span className = "note-grid-mode-title">{ convertFromRaw(noteContent).getPlainText() }</span>
-							
-							<div className = "note-details">
-								<FormatTime id = { id } />
-								<div
-									className = "note-operation-buttons"
-									onClick = { (e) => {
-										e.stopPropagation();
-									} }
-								>
-									<TopUpIcon />
-									<FavoriteIcon />
-									<div
-										onClick = { () => {
-											onDeleteNote(id);
-										} }
-									>
-										<DeleteIcon />
-									</div>
-								
-								</div>
+				<div>
+					{ pinnedNotes.length > 0 && (
+						<div>
+							<p className='note-list-sub-title'>已置顶</p>
+							<div
+								className = "note-grid-mode"
+								ref = { this.gridRefPinned }
+							>
+								{ pinnedNotes.map(({
+										id ,
+										noteContent ,
+										isPinned ,
+									}) => {
+										return <NoteList
+											id = { id }
+											noteContent = { noteContent }
+											isPinned = { isPinned }
+											key = { id }
+											itemClassName = "note-grid-mode-item"
+											titleClassName = "note-grid-mode-title"
+										/>;
+									},
+								) }
 							</div>
 						</div>
-					)) }
+					) }
+					{ otherNotes.length > 0 && (
+						<div>
+							{ pinnedNotes.length > 0 && <p className = "note-list-sub-title">其他</p> }
+							
+							<div
+								className = "note-grid-mode"
+								ref = { this.gridRefOther }
+							>
+								{ otherNotes.map(({
+									id ,
+									noteContent ,
+									isPinned ,
+								}) => {
+									return <NoteList
+										id = { id }
+										noteContent = { noteContent }
+										isPinned = { isPinned }
+										key = { id }
+										itemClassName = "note-grid-mode-item"
+										titleClassName = "note-grid-mode-title"
+									/>
+								}) }
+							</div>
+						</div>
+					) }
 				</div>
 			);
 		}
 	}
+	
 	
 	const FormatTime = ({ id }) => {
 		const [timeIDArray , setTimeIDArray] = useState([]);
@@ -247,9 +361,9 @@ const RenderContent = ({
 				<EmptyIcon />
 				<p>还没有笔记 , 点击右下角按钮创建吧!</p>
 			</div>) : (<div className = "show-noteList-box">
-				{ ShowMode ==='list-mode'&&<UlMode/> }
-				{ ShowMode ==='grid-mode'&&<GridMode/> }
-				{ ShowMode ==='card-mode'&&<CardMode/> }
+				{ ShowMode === 'list-mode' && <UlMode /> }
+				{ ShowMode === 'grid-mode' && <GridMode /> }
+				{ ShowMode === 'card-mode' && <CardMode /> }
 			</div>) }
 		
 		</div>
@@ -337,7 +451,7 @@ class DeleteIcon extends Component {
 					fill = "#bfbfbf"
 				></path>
 			</svg>
-		</div>
+		</div>;
 	}
 }
 
@@ -353,7 +467,7 @@ class FavoriteIcon extends Component {
 	
 	render () {
 		return <div
-			className = "note-buttons-common"
+			className = "note-buttons-common star-container"
 			onClick = { this.handleFavorite }
 		>
 			<svg
@@ -372,15 +486,27 @@ class FavoriteIcon extends Component {
 					p-id = "74982"
 				></path>
 			</svg>
+			
+			<div className = "particles"></div>
 		</div>;
 	}
 }
 
-const TopUpIcon = () => {
-	return <div className = "note-buttons-common ">
+const PinNoteIcon = ({
+	isPinned ,
+	handlePinNote ,
+}) => {
+	const [pin , setPin] = useState(isPinned); // 本地状态，初始化为 isPinned
+	return <div
+		className = "note-buttons-common"
+		onClick = { () => {
+			setPin(!pin);
+			handlePinNote();
+		} }
+	>
 		<svg
 			t = "1734625720322"
-			className = "top-up-button"
+			className = { `pin-note-button ${ pin ? 'pin-note' : '' }` }
 			viewBox = "0 0 1024 1024"
 			version = "1.1"
 			xmlns = "http://www.w3.org/2000/svg"

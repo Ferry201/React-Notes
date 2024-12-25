@@ -120,7 +120,8 @@ class NoteManagePanel extends Reaxlass {
 			onToggleSidebar ,
 			currentNotebook ,
 			notesAmount ,
-			updateNotebookInfo
+			updateNotebookInfo,
+			pinNote,
 		} = this.props;
 		const {
 			isHover ,
@@ -224,6 +225,7 @@ class NoteManagePanel extends Reaxlass {
 				deleteNote = { onDeleteNote }
 				ShowMode = { currentNotebook.showMode }
 				currentNotebook = { currentNotebook }
+				pinNote = { pinNote }
 			/>
 		
 		
