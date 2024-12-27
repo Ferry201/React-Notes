@@ -9,11 +9,11 @@
 /*	--primary-text-color: #000;*/
 /*	--primary-border: 1px solid #cccccc;*/
 /*}*/
-.default-theme{
-	--primary-background-color: #fff;
-	--primary-text-color: #000;
-	--primary-border: 1px solid #cccccc;
-	--header-icon-background:#eeeeee
+.gray-theme{
+	--primary-background-color: #e7e7e7;
+	--primary-text-color: #424242;
+	--primary-border: 1px solid #ffffff;
+	--header-icon-background: #ffffff
 }
 .blue-theme {
 	--primary-background-color: #e7eeff;
@@ -46,7 +46,7 @@
 	--header-icon-background:#ffffff
 }
 .pink-theme{
-	--primary-background-color: #ffe7e7;
+	--primary-background-color: #ffeeee;
 	--primary-text-color: #ff697e;
 	--primary-border: 1px solid #ffffff;
 	--header-icon-background:#ffffff
@@ -60,7 +60,7 @@
 }
 .gradient-theme-blue-purple{
 	--primary-background-color: linear-gradient(to top, #a8edea 0%, #fed6e3 100%);
-	--primary-text-color: #3ed0ca;
+	--primary-text-color: #2ba49f;
 	--primary-border: 1px solid #ffffff;
 	--header-icon-background:#ffffff;
 }
@@ -72,10 +72,23 @@
 }
 .gradient-theme-green-blue{
 	--primary-background-color: linear-gradient(to top, rgb(182, 244, 146), rgb(51, 139, 147));
-	--primary-text-color: rgb(115, 231, 42);
+	--primary-text-color: rgb(107, 233, 34);
 	--primary-border: 1px solid #ffffff;
 	--header-icon-background:#ffffff;
 }
+.image-background-one{
+	--primary-background-color: url('https://images.unsplash.com/photo-1554189097-ffe88e998a2b?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTUxfHxBYnN0cmFjdCUyMEFydCUyMEJhY2tncm91bmR8ZW58MHx8MHx8fDA%3D') no-repeat center/cover;
+	--primary-text-color: rgb(51 132 131);
+	--primary-border: 1px solid #ffffff;
+	--header-icon-background:#ffffff;
+}
+.image-background-two{
+	--primary-background-color: url('https://cdn.pixabay.com/photo/2017/02/13/03/57/papertexture-2061711_1280.jpg') no-repeat center/cover;
+	--primary-text-color: rgb(0, 0, 0);
+	--primary-border: 1px solid #ffffff;
+	--header-icon-background:#ffffff;
+}
+
 
 .add-new-button svg path:first-child{
 	fill: var(--primary-text-color);
@@ -213,11 +226,13 @@
 }
 
 .title-add span:first-of-type {
+	color: #555555;
+	font-weight: bold;
 	margin: 0 0 0 30px;
 }
 
 .title-add span:last-of-type {
-	color: #767676;
+	color: #555555;
 	font-size: 14px;
 	margin-right: 4px;
 }
@@ -295,11 +310,16 @@
 }
 
 .sidebar-content-panel .menu-item span {
+	color: #555555;
+	font-weight: bold;
 	margin-left: 30px;
 }
 
 .sidebar-content-panel .menu-item svg {
 	margin-left: 20px;
+}
+.sidebar-content-panel .menu-item svg path{
+	fill: #555555;
 }
 
 .sidebar-notebook-item {
@@ -468,7 +488,13 @@ body {
 }
 
 
-
+.pinned{
+	
+}
+.note-list-sub-title{
+	margin: 4px 0 8px 0;
+	color: var(--primary-text-color);
+}
 /*宫格模式 ,卡片模式和列表模式分别设置不同的ul和noteItem,noteTitle*/
 .note-card-mode{
 	display: grid;
@@ -489,9 +515,8 @@ body {
 	border: var(--primary-border);
 }
 
-.note-card-mode-item:last-child{
-	margin-bottom: 20px;
-}
+
+
 
 .note-card-mode-item:hover {
 	cursor: pointer;
@@ -596,12 +621,17 @@ body {
 	width: 100%;
 }
 .note-time {
-	width: 30%;
+	margin-right: 4px;
 	font-size: 12px;
 	color: #8b8a8a;
 }
+.show-note-book-text{
+	color: var(--primary-text-color);
+	margin-right: 4px;
+	font-size: 12px;
+}
 .note-operation-buttons {
-	width: 70%;
+	width: 50%;
 	visibility: hidden;
 	user-select: none;
 	cursor: pointer;
@@ -637,12 +667,14 @@ body {
 	fill: red;
 }
 .note-operation-buttons .note-buttons-common:hover .star-button path{
-	fill: #ffd700;
+	/*fill: #ffeead;*/
 }
-.note-operation-buttons .note-buttons-common:hover .top-up-button path{
+.note-operation-buttons .note-buttons-common:hover .pin-note-button path{
 	fill: #000000;
 }
-
+.pin-note path{
+	fill: #000000;
+}
 h2 {
 	font-family: Arial, sans-serif;
 	width: fit-content;
@@ -963,30 +995,30 @@ h2 {
 	transform: rotate(-180deg);
 }
 
-@keyframes jump {
-	0% {
-		transform: translateY(0);
-	}
-	50% {
-		transform: translateY(-10px);
-	}
-	100% {
-		transform: translateY(0);
-	}
-}
+
+
 
 .star-button {
-	transition: fill 0.3s ease;
+	cursor: pointer;
+	transition: fill 0.2s;
 }
 
-svg.star-button-active path {
-	fill: #ffd700; /* 改变颜色 */
-	animation: jump 2s ease infinite; /* 闪烁效果 */
+.star-button-active path{
+	fill: gold;
+}
+.star-button-active{
+	animation: shake-and-scale 0.5s ease-in-out;
 }
 
-.delete-notebook-button {
-	color: red;
+@keyframes shake-and-scale {
+	0%{ transform: rotate(0) scale(1.3); }
+	25% { transform: rotate(20deg) scale(1.3); }
+	50% { transform: rotate(-20deg) scale(1.3); }
+	75% { transform: rotate(5deg) scale(1.3); }
+	100% { transform: rotate(5deg) scale(1); }
 }
+
+
 
 body, html {
 	height: 100%;
