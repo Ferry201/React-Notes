@@ -20,9 +20,19 @@ import coverTwelve from './img-collection/cover-12.png';
 import coverThirteen from './img-collection/cover-13.png';
 import coverFourteen from './img-collection/cover-14.png';
 import coverFifteen from './img-collection/cover-15.png';
+import coverSixteen from './img-collection/cover-16.png';
+import coverSeventeen from './img-collection/cover-17.png';
+import coverEighteen from './img-collection/cover-18.png';
+import coverNineteen from './img-collection/cover-19.png';
+import coverTwenty from './img-collection/cover-20.png';
+import coverTwentyOne from './img-collection/cover-21.png';
+import coverTwentyTwo from './img-collection/cover-22.png';
+import coverTwentyThree from './img-collection/cover-23.png';
 
 const books = [
 	{ cover : coverDefault } ,
+	{ cover : coverTwentyOne } ,
+	{ cover : coverTwentyTwo } ,
 	{ cover : coverOne } ,
 	{ cover : coverTwo } ,
 	{ cover : coverThree } ,
@@ -38,6 +48,13 @@ const books = [
 	{ cover : coverThirteen } ,
 	{ cover : coverFourteen } ,
 	{ cover : coverFifteen } ,
+	{ cover : coverSixteen } ,
+	{ cover : coverSeventeen } ,
+	{ cover : coverEighteen } ,
+	{ cover : coverNineteen } ,
+	{ cover : coverTwenty } ,
+	{ cover : coverTwentyThree } ,
+	
 ];
 
 

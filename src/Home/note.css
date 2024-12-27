@@ -8,11 +8,11 @@
 /*	--primary-text-color: #000;*/
 /*	--primary-border: 1px solid #cccccc;*/
 /*}*/
-.default-theme{
-	--primary-background-color: #fff;
-	--primary-text-color: #000;
-	--primary-border: 1px solid #cccccc;
-	--header-icon-background:#eeeeee
+.gray-theme{
+	--primary-background-color: #e7e7e7;
+	--primary-text-color: #424242;
+	--primary-border: 1px solid #ffffff;
+	--header-icon-background: #ffffff
 }
 .blue-theme {
 	--primary-background-color: #e7eeff;
@@ -45,7 +45,7 @@
 	--header-icon-background:#ffffff
 }
 .pink-theme{
-	--primary-background-color: #ffe7e7;
+	--primary-background-color: #ffeeee;
 	--primary-text-color: #ff697e;
 	--primary-border: 1px solid #ffffff;
 	--header-icon-background:#ffffff
@@ -59,7 +59,7 @@
 }
 .gradient-theme-blue-purple{
 	--primary-background-color: linear-gradient(to top, #a8edea 0%, #fed6e3 100%);
-	--primary-text-color: #3ed0ca;
+	--primary-text-color: #2ba49f;
 	--primary-border: 1px solid #ffffff;
 	--header-icon-background:#ffffff;
 }
@@ -71,10 +71,23 @@
 }
 .gradient-theme-green-blue{
 	--primary-background-color: linear-gradient(to top, rgb(182, 244, 146), rgb(51, 139, 147));
-	--primary-text-color: rgb(115, 231, 42);
+	--primary-text-color: rgb(107, 233, 34);
 	--primary-border: 1px solid #ffffff;
 	--header-icon-background:#ffffff;
 }
+.image-background-one{
+	--primary-background-color: url('https://images.unsplash.com/photo-1554189097-ffe88e998a2b?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTUxfHxBYnN0cmFjdCUyMEFydCUyMEJhY2tncm91bmR8ZW58MHx8MHx8fDA%3D') no-repeat center/cover;
+	--primary-text-color: rgb(51 132 131);
+	--primary-border: 1px solid #ffffff;
+	--header-icon-background:#ffffff;
+}
+.image-background-two{
+	--primary-background-color: url('https://cdn.pixabay.com/photo/2017/02/13/03/57/papertexture-2061711_1280.jpg') no-repeat center/cover;
+	--primary-text-color: rgb(0, 0, 0);
+	--primary-border: 1px solid #ffffff;
+	--header-icon-background:#ffffff;
+}
+
 
 .add-new-button svg path:first-child{
 	fill: var(--primary-text-color);
@@ -478,6 +491,7 @@ body {
 	
 }
 .note-list-sub-title{
+	margin: 4px 0 8px 0;
 	color: var(--primary-text-color);
 }
 /*宫格模式 ,卡片模式和列表模式分别设置不同的ul和noteItem,noteTitle*/
@@ -606,12 +620,17 @@ body {
 	width: 100%;
 }
 .note-time {
-	width: 30%;
+	margin-right: 4px;
 	font-size: 12px;
 	color: #8b8a8a;
 }
+.show-note-book-text{
+	color: var(--primary-text-color);
+	margin-right: 4px;
+	font-size: 12px;
+}
 .note-operation-buttons {
-	width: 70%;
+	width: 50%;
 	visibility: hidden;
 	user-select: none;
 	cursor: pointer;

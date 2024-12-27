@@ -4,7 +4,7 @@ import { convertFromRaw } from 'draft-js';
 import './note.css';
 import Masonry from 'masonry-layout';
 import dayjs from 'dayjs';
-import {message} from 'antd';
+import { message } from 'antd';
 
 
 const RenderContent = ({
@@ -13,27 +13,26 @@ const RenderContent = ({
 	ShowMode ,
 	currentNotebook ,
 	pinNote ,
+	favoriteNote ,//收藏笔记
+	isShowFavorites ,//是否展示收藏夹笔记列表
 }) => {
 	
 	const storedContents = JSON.parse(localStorage.getItem('note-info-array')) || [];
 	const [contents , setContents] = useState([]);
+	let isShowFavoritesNotes = isShowFavorites;
+	if ( currentNotebook.id === 'favorites-notes-id' ) {
+		isShowFavoritesNotes = true;
+	}
 	
 	useEffect(() => {
 		const fetchContents = () => {
-			const currentNotes = storedContents.filter(note => note.notebookID === currentNotebook.id);
-			const allNoteContents = currentNotes.map(({
-				id ,
-				noteContent ,
-				isPinned ,
-				pinnedTime ,
-			}) => ({
-				id ,
-				noteContent ,
-				isPinned ,
-				pinnedTime ,
-			}));
-			setContents(allNoteContents);
-			
+			if ( isShowFavoritesNotes ) {
+				const FavoritesNotes = storedContents.filter(note => note.isFavorited === true);
+				setContents(FavoritesNotes);
+			} else {
+				const currentNotes = storedContents.filter(note => note.notebookID === currentNotebook.id);
+				setContents(currentNotes);
+			}
 		};
 		fetchContents();
 	} , [currentNotebook]);
@@ -42,8 +41,8 @@ const RenderContent = ({
 		deleteNote(id);
 		setContents(contents.filter(content => content.id !== id));
 	};
+	
 	const onPinNote = (id) => {
-		
 		pinNote(id);
 		setContents((prevNotes) =>
 			prevNotes.map((note) =>
@@ -57,6 +56,26 @@ const RenderContent = ({
 			) ,
 		);
 	};
+	
+	const onFavoriteNote = (id) => {
+		const targetNote = contents.find(note => note.id === id);
+		if ( currentNotebook.id === 'favorites-notes-id' && targetNote.isFavorited === true ) {
+			setContents(contents.filter(content => content.id !== id));
+		}
+		
+		favoriteNote(id);
+		setContents((prevNotes) =>
+			prevNotes.map((note) =>
+				note.id === id
+				? {
+						...note ,
+						isFavorited : !note.isFavorited ,
+					}
+				: note ,
+			) ,
+		);
+	};
+	
 	const pinnedNotes = contents.filter((note) => note.isPinned) // 已置顶的笔记
 	.sort((a , b) => b.pinnedTime - a.pinnedTime); // 按置顶时间降序排列，后置顶的排前面
 	// const pinnedNotes = contents.filter(note => note.isPinned === true);
@@ -69,8 +88,10 @@ const RenderContent = ({
 				id ,
 				noteContent ,
 				isPinned ,
+				isFavorited ,
 				itemClassName ,
 				titleClassName ,
+				notebook ,
 			} = this.props;
 			
 			return <div
@@ -79,9 +100,12 @@ const RenderContent = ({
 				onClick = { () => changeNote(noteContent , id) }
 			>
 				<span className = { `${ titleClassName }` }>{ convertFromRaw(noteContent).getPlainText() }</span>
-				{/*note details : 时间 ,置顶 ,收藏 ,删除*/ }
+				{/*note details : 时间 ,置顶 ,收藏 ,删除 , 显示收藏夹时显示所属书籍*/ }
 				<div className = "note-details">
 					<FormatTime id = { id } />
+					{ isShowFavoritesNotes && <div
+						className = { `show-note-book-text ${ currentNotebook.currentTheme }` }
+					>|{ notebook }</div> }
 					<div
 						className = "note-operation-buttons"
 						onClick = { (e) => {
@@ -94,7 +118,12 @@ const RenderContent = ({
 								onPinNote(id);
 							} }
 						/>
-						<FavoriteIcon />
+						<FavoriteIcon
+							isFavorited = { isFavorited }
+							handleFavoriteNote = { () => {
+								onFavoriteNote(id);
+							} }
+						/>
 						<div
 							onClick = { () => {
 								onDeleteNote(id);
@@ -113,20 +142,24 @@ const RenderContent = ({
 		render () {
 			return <div>
 				{ pinnedNotes.length > 0 && <div>
-					<p className='note-list-sub-title'>已置顶</p>
+					<p className = "note-list-sub-title">已置顶</p>
 					<div className = "note-card-mode">
 						{ pinnedNotes.map(({
 							id ,
 							noteContent ,
 							isPinned ,
+							isFavorited ,
+							notebook ,
 						}) => {
 							return <NoteList
 								id = { id }
 								noteContent = { noteContent }
 								isPinned = { isPinned }
+								isFavorited = { isFavorited }
 								key = { id }
 								itemClassName = "note-card-mode-item"
 								titleClassName = "note-card-mode-title"
+								notebook = { notebook }
 							/>;
 						}) }
 					</div>
@@ -138,14 +171,18 @@ const RenderContent = ({
 							id ,
 							noteContent ,
 							isPinned ,
+							isFavorited ,
+							notebook ,
 						}) => {
 							return <NoteList
 								id = { id }
 								noteContent = { noteContent }
 								isPinned = { isPinned }
+								isFavorited = { isFavorited }
 								key = { id }
 								itemClassName = "note-card-mode-item"
 								titleClassName = "note-card-mode-title"
+								notebook = { notebook }
 							/>;
 						}) }
 					</div>
@@ -159,20 +196,24 @@ const RenderContent = ({
 		render () {
 			return <div>
 				{ pinnedNotes.length > 0 && <div>
-					<p className='note-list-sub-title'>已置顶</p>
+					<p className = "note-list-sub-title">已置顶</p>
 					<div className = "note-ul-mode">
 						{ pinnedNotes.map(({
 							id ,
 							noteContent ,
 							isPinned ,
+							isFavorited ,
+							notebook ,
 						}) => {
 							return <NoteList
 								id = { id }
 								noteContent = { noteContent }
 								isPinned = { isPinned }
+								isFavorited = { isFavorited }
 								key = { id }
 								itemClassName = "note-ul-mode-item"
 								titleClassName = "note-ul-mode-title"
+								notebook = { notebook }
 							/>;
 						}) }
 					</div>
@@ -185,14 +226,18 @@ const RenderContent = ({
 							id ,
 							noteContent ,
 							isPinned ,
+							isFavorited ,
+							notebook ,
 						}) => {
 							return <NoteList
 								id = { id }
 								noteContent = { noteContent }
 								isPinned = { isPinned }
+								isFavorited = { isFavorited }
 								key = { id }
 								itemClassName = "note-ul-mode-item"
 								titleClassName = "note-ul-mode-title"
+								notebook = { notebook }
 							/>;
 						}) }
 					</div>
@@ -255,7 +300,7 @@ const RenderContent = ({
 				<div>
 					{ pinnedNotes.length > 0 && (
 						<div>
-							<p className='note-list-sub-title'>已置顶</p>
+							<p className = "note-list-sub-title">已置顶</p>
 							<div
 								className = "note-grid-mode"
 								ref = { this.gridRefPinned }
@@ -264,16 +309,20 @@ const RenderContent = ({
 										id ,
 										noteContent ,
 										isPinned ,
+										isFavorited ,
+										notebook ,
 									}) => {
 										return <NoteList
 											id = { id }
 											noteContent = { noteContent }
 											isPinned = { isPinned }
+											isFavorited = { isFavorited }
 											key = { id }
 											itemClassName = "note-grid-mode-item"
 											titleClassName = "note-grid-mode-title"
+											notebook = { notebook }
 										/>;
-									},
+									} ,
 								) }
 							</div>
 						</div>
@@ -290,15 +339,19 @@ const RenderContent = ({
 									id ,
 									noteContent ,
 									isPinned ,
+									isFavorited ,
+									notebook ,
 								}) => {
 									return <NoteList
 										id = { id }
 										noteContent = { noteContent }
 										isPinned = { isPinned }
+										isFavorited = { isFavorited }
 										key = { id }
 										itemClassName = "note-grid-mode-item"
 										titleClassName = "note-grid-mode-title"
-									/>
+										notebook = { notebook }
+									/>;
 								}) }
 							</div>
 						</div>
@@ -456,8 +509,9 @@ class DeleteIcon extends Component {
 }
 
 class FavoriteIcon extends Component {
+	
 	state = {
-		isFavorite : false ,
+		isFavorite : this.props.isFavorited ,
 	};
 	handleFavorite = () => {
 		this.setState({ isFavorite : !this.state.isFavorite } , () => {
@@ -466,9 +520,17 @@ class FavoriteIcon extends Component {
 	};
 	
 	render () {
+		const {
+			isFavorited ,
+			handleFavoriteNote ,
+		} = this.props;
 		return <div
 			className = "note-buttons-common star-container"
-			onClick = { this.handleFavorite }
+			onClick = { () => {
+				handleFavoriteNote();
+				this.handleFavorite();
+				// this.setState({isFavorite:!this.state.isFavorite})
+			} }
 		>
 			<svg
 				t = "1734625347615"
@@ -486,8 +548,6 @@ class FavoriteIcon extends Component {
 					p-id = "74982"
 				></path>
 			</svg>
-			
-			<div className = "particles"></div>
 		</div>;
 	}
 }

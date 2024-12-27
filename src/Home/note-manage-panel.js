@@ -114,6 +114,8 @@ class NoteManagePanel extends Reaxlass {
 	
 	render () {
 		const {
+			isAddNote,
+			handleAddNote,
 			onChangeNote ,
 			onDeleteNote ,
 			OnSwitchMode ,
@@ -122,6 +124,8 @@ class NoteManagePanel extends Reaxlass {
 			notesAmount ,
 			updateNotebookInfo,
 			pinNote,
+			favoriteNote,
+			isShowFavorites,
 		} = this.props;
 		const {
 			isHover ,
@@ -132,6 +136,8 @@ class NoteManagePanel extends Reaxlass {
 			siderCollapsed ,
 			resizing ,
 		} = reaxel_sider();
+		const addNoteBtnClass = isAddNote ? 'add-new-button-disappear' : 'add-new-button';
+		
 		return <div className = { `note-container${ resizing ? ' resizing' : '' } ${ currentNotebook.currentTheme }` }>
 			{/*顶部工具栏*/ }
 			<div className = { `main-section-header ${ currentNotebook.currentTheme }` }>
@@ -178,7 +184,7 @@ class NoteManagePanel extends Reaxlass {
 					  (<h2>{ this.state.title }({ notesAmount })</h2>) }
 					
 					{/*笔记本下拉操作菜单*/ }
-					{ !isRenaming && <Dropdown
+					{ !isRenaming&&currentNotebook.id !== 'favorites-notes-id' && <Dropdown
 						placement = "bottomLeft"
 						menu = { {
 							items : this.state.noteFeaturesMenu ,
@@ -226,9 +232,15 @@ class NoteManagePanel extends Reaxlass {
 				ShowMode = { currentNotebook.showMode }
 				currentNotebook = { currentNotebook }
 				pinNote = { pinNote }
+				favoriteNote={favoriteNote}
+				isShowFavorites={isShowFavorites}
 			/>
-		
-		
+			
+			{ currentNotebook.id !== 'favorites-notes-id' && <AddNewNotebtn
+				onClick = { handleAddNote }
+				className = { ` ${ addNoteBtnClass } ${ currentNotebook.currentTheme }` }
+			/> }
+			
 		</div>;
 	}
 };
@@ -305,6 +317,10 @@ const ThemeSelector = ({ selectTheme ,theme}) => {
 					key : 'green-theme' ,
 				} ,
 				{
+					label : <div>灰色</div> ,
+					key : 'gray-theme' ,
+				} ,
+				{
 					label : <div>橙色</div> ,
 					key : 'orange-theme' ,
 				} ,
@@ -313,25 +329,44 @@ const ThemeSelector = ({ selectTheme ,theme}) => {
 					key : 'pink-theme' ,
 				} ,
 				{
-					label : <div>黑白</div> ,
-					key : 'default-theme' ,
+					key : 'gradient-color-list' ,
+					label : <div>渐变背景</div> ,
+					children : [
+						{
+							label : <div>渐变1</div>,
+							key :'gradient-theme-blue-yellow'
+						},
+						{
+							label : <div>渐变2</div>,
+							key :'gradient-theme-blue-purple'
+						},
+						{
+							label : <div>渐变3</div>,
+							key :'gradient-theme-red-gray'
+						},
+						{
+							label : <div>渐变4</div>,
+							key :'gradient-theme-green-blue'
+						},
+					] ,
 				} ,
 				{
-					label : <div>渐变1</div>,
-					key :'gradient-theme-blue-yellow'
-				},
-				{
-					label : <div>渐变2</div>,
-					key :'gradient-theme-blue-purple'
-				},
-				{
-					label : <div>渐变3</div>,
-					key :'gradient-theme-red-gray'
-				},
-				{
-					label : <div>渐变4</div>,
-					key :'gradient-theme-green-blue'
-				},
+					key : 'image-list' ,
+					label : <div>图片背景</div> ,
+					children : [
+						{
+							label : <div>图片1</div>,
+							key :'image-background-one'
+						},
+						{
+							label : <div>图片2</div>,
+							key :'image-background-two'
+						},
+						
+					] ,
+				} ,
+				
+				
 				
 			] ,
 		} ,
@@ -452,10 +487,7 @@ const GridModeIcon = () => {
 			zIndex = "1"
 		>
 			<div
-				className = { `notelist-header-icon grid-mode-icon-box`}
-				onClick = { () => {
-					// onSwitchNoteMode('grid-mode');
-				} }
+				className ='notelist-header-icon'
 			>
 				<svg
 					t = "1734630128020"
@@ -637,6 +669,47 @@ class LeftExpandIcon extends Component {
 		</div>;
 	}
 }
-
+class AddNewNotebtn extends Component {
+	constructor () {
+		super();
+	}
+	render () {
+		const {
+			onClick ,
+			className ,
+		} = this.props;
+		return <div
+			className = { className }
+			onClick = { onClick }
+		>
+			<svg
+				t = "1731896096497"
+				className = "icon"
+				viewBox = "0 0 1024 1024"
+				version = "1.1"
+				xmlns = "http://www.w3.org/2000/svg"
+				p-id = "29491"
+				width = "50"
+				height = "50"
+			>
+				<path
+					d = "M512 512m-512 0a512 512 0 1 0 1024 0 512 512 0 1 0-1024 0Z"
+					p-id = "29492"
+				></path>
+				<path
+					d = "M215.578947 485.052632m26.947369 0l538.947368 0q26.947368 0 26.947369 26.947368l0 0q0 26.947368-26.947369 26.947368l-538.947368 0q-26.947368 0-26.947369-26.947368l0 0q0-26.947368 26.947369-26.947368Z"
+					fill = "#FFFFFF"
+					p-id = "29493"
+				></path>
+				<path
+					d = "M485.052632 808.421053m0-26.947369l0-538.947368q0-26.947368 26.947368-26.947369l0 0q26.947368 0 26.947368 26.947369l0 538.947368q0 26.947368-26.947368 26.947369l0 0q-26.947368 0-26.947368-26.947369Z"
+					fill = "#FFFFFF"
+					p-id = "29494"
+				></path>
+			</svg>
+		</div>;
+		
+	}
+}
 
 export { NoteManagePanel };

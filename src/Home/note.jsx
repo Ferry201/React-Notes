@@ -43,7 +43,7 @@ class NotesApp extends Component {
 			activeModal : null ,
 			isModalOpen : false ,
 			notesAmount : 0 ,
-			showPinnedNotes : false ,
+			showFavoritedNotes : false ,
 		};
 	}
 	
@@ -52,12 +52,27 @@ class NotesApp extends Component {
 		if ( this.state.currentNotebook && prevState.currentNotebook && this.state.currentNotebook.id !== prevState.currentNotebook.id ) {
 			localStorage.setItem('current-notebook' , JSON.stringify(this.state.currentNotebook));
 			
-			const currentNotes = this.state.noteListData.filter(note => note.notebookID === this.state.currentNotebook.id);
-			this.setState({ notesAmount : currentNotes.length });
+			if(this.state.currentNotebook.id === 'favorites-notes-id'){
+				const favoritedNotes = this.state.noteListData.filter(note => note.isFavorited === true);
+				this.setState({ notesAmount : favoritedNotes.length });
+			}else{
+				const currentNotes = this.state.noteListData.filter(note => note.notebookID === this.state.currentNotebook.id);
+				this.setState({ notesAmount : currentNotes.length });
+			}
+		}
+		if ( this.state.noteListData && prevState.noteListData && this.state.noteListData !== prevState.noteListData) {
+			if(this.state.currentNotebook.id === 'favorites-notes-id'){
+				const favoritedNotes = this.state.noteListData.filter(note => note.isFavorited === true);
+				this.setState({ notesAmount : favoritedNotes.length });
+			}else{
+				const currentNotes = this.state.noteListData.filter(note => note.notebookID === this.state.currentNotebook.id);
+				this.setState({ notesAmount : currentNotes.length });
+			}
 		}
 		if ( this.state.activeModal === 'deleteConfirm' && this.state.noteBookData.length === 1 ) {
 			message.error('至少需要一个笔记本存在 , 不能删除最后一个笔记本!');
 		}
+		
 	}
 	
 	
@@ -68,6 +83,11 @@ class NotesApp extends Component {
 			noteListData : storedNoteData ,
 			notesAmount : currentNotes.length ,
 		});
+		
+		if(this.state.currentNotebook.id === 'favorites-notes-id'){
+			const favoritedNotes = storedNoteData.filter(note => note.isFavorited === true);
+			this.setState({ notesAmount : favoritedNotes.length });
+		}
 		
 		const storedNoteBooks = localStorage.getItem('notebook-array');
 		if ( storedNoteBooks === null ) {
@@ -80,7 +100,11 @@ class NotesApp extends Component {
 			// 如果有数据，从 localStorage 中加载
 			this.setState({ noteBookData : JSON.parse(storedNoteBooks) });
 		}
-		this.setState({ selectedNotebookId : this.state.currentNotebook.id });
+		
+		this.setState({
+			selectedNotebookId : this.state.currentNotebook.id ,
+		});
+		
 	}
 	
 	
@@ -107,10 +131,20 @@ class NotesApp extends Component {
 			saveTime : saveTime ,
 			notebook : currentNotebook.title ,
 			notebookID : currentNotebook.id ,
-			id : uuidv4() ,
+			id : currentID||uuidv4() ,
 			isPinned : false ,
-			pinnedTime : null,
+			pinnedTime : null ,
+			isFavorited : false ,
 		};
+		
+		//在收藏夹修改已存在笔记时:
+		if (currentNotebook.id === 'favorites-notes-id' && currentID !== null) {
+			const oldNote = noteInfoArray.find(note => note.id === currentID);
+			if (oldNote) {
+				newNoteInfo.notebookID = oldNote.notebookID; // 保留原来的 notebookID
+				newNoteInfo.notebook = oldNote.notebook;     // 保留原来的 notebook 名称
+			}
+		}
 		
 		//添加新note
 		if ( currentID === null ) {
@@ -143,6 +177,13 @@ class NotesApp extends Component {
 			}
 			noteInfoArray = noteInfoArray.filter((note) => note.id !== currentID);
 			
+			newNoteInfo = {
+				...newNoteInfo ,
+				isPinned : oldNote.isPinned ,
+				pinnedTime : oldNote.pinnedTime ,
+				isFavorited : oldNote.isFavorited ,
+			};
+			
 			noteInfoArray.unshift(newNoteInfo);
 			localStorage.setItem('note-info-array' , JSON.stringify(noteInfoArray));
 			const currentNotes = noteInfoArray.filter(note => note.notebookID === currentNotebook.id);
@@ -166,13 +207,19 @@ class NotesApp extends Component {
 			currentNotebook ,
 		} = this.state;
 		const updatedList = noteListData.filter((note) => note.id !== id);
-		const currentNotes = updatedList.filter(note => note.notebookID === currentNotebook.id);
-		localStorage.setItem('note-info-array' , JSON.stringify(updatedList));
+		let currentNotes;
+		if(currentNotebook.id === 'favorites-notes-id' ){
+			currentNotes = noteListData.filter(note => note.isFavorited === true);
+		}else{
+			currentNotes = updatedList.filter(note => note.notebookID === currentNotebook.id);
+		}
 		
 		this.setState({
 			noteListData : updatedList ,
 			currentID : null ,
 			notesAmount : currentNotes.length ,
+		},()=>{
+			localStorage.setItem('note-info-array' , JSON.stringify(updatedList));
 		});
 	};
 	
@@ -189,7 +236,7 @@ class NotesApp extends Component {
 	handlePinNote = (id) => {
 		const {
 			noteListData ,
-			currentNotebook,
+			currentNotebook ,
 		} = this.state;
 		let updatedNoteList = [...noteListData];
 		updatedNoteList = updatedNoteList.map(note => {
@@ -197,22 +244,40 @@ class NotesApp extends Component {
 				return {
 					...note ,
 					isPinned : !note.isPinned ,
-					pinnedTime: !note.isPinned ? Date.now() : null,
+					pinnedTime : !note.isPinned ? Date.now() : null ,
 				};
 			}
 			return note;
 		});
-		// const currentNoteList = updatedNoteList.filter(note => note.notebookID === currentNotebook.id);
-		// const pinnedNoteIndex = updatedNoteList.findIndex(note => note.id === id);
-		// const [pinnedNote] = updatedNoteList.splice(pinnedNoteIndex , 1);
-		// updatedNoteList.unshift(pinnedNote);
 		this.setState({
 			noteListData : updatedNoteList ,
 		} , () => {
 			localStorage.setItem('note-info-array' , JSON.stringify(updatedNoteList));
 		});
 	};
-	
+	//收藏note
+	handleFavoriteNote = (id) => {
+		const {
+			noteListData ,
+			currentNotebook ,
+		} = this.state;
+		let updatedNoteList = [...noteListData];
+		updatedNoteList = updatedNoteList.map(note => {
+			if ( note.id === id ) {
+				return {
+					...note ,
+					isFavorited : !note.isFavorited ,
+				};
+			}
+			return note;
+		});
+		
+		this.setState({
+			noteListData : updatedNoteList ,
+		} , () => {
+			localStorage.setItem('note-info-array' , JSON.stringify(updatedNoteList));
+		});
+	};
 	//控制sidebar显示/隐藏
 	toggleSidebar = () => {
 		this.setState(prevState => ({ isSidebarVisible : !prevState.isSidebarVisible }) , () => {
@@ -231,14 +296,14 @@ class NotesApp extends Component {
 			};
 		} , () => {
 			localStorage.setItem('notebook-array' , JSON.stringify(this.state.noteBookData));
-			this.handleToggleNoteBook(newNoteBook);//添加后立刻显示新添加笔记本页面
 		});
 	};
 	//传给sidebar
 	handleToggleNoteBook = (notebook) => {
 		this.setState({
 			currentNotebook : notebook ,
-			selectedNotebookId : notebook.id ,
+			selectedNotebookId : notebook.id ,//添加后立刻显示新添加笔记本页面
+			showFavoritedNotes : false ,
 		});
 	};
 	
@@ -314,16 +379,40 @@ class NotesApp extends Component {
 		this.setState({ activeModal : null });
 	};
 	
+	//点击收藏夹:
+	handleClickFavorites = () => {
+		const {
+			noteBookData ,
+			noteListData ,
+		} = this.state;
+		let favorites = noteBookData.find(item => item.id === 'favorites-notes-id');
+		if ( favorites === undefined ) {
+			const newNoteBook = {
+				title : '收藏夹' ,
+				cover : 'null' ,
+				id : 'favorites-notes-id' ,
+				createdTime : dayjs().valueOf() ,
+				showMode : 'list-mode' ,
+				currentTheme : 'blue-theme' ,
+			};
+			this.addNoteBook(newNoteBook);
+			favorites = newNoteBook;
+		}
+		const favoritedNotes = noteListData.filter(note => note.isFavorited === true);
+		this.setState({
+			showFavoritedNotes : true ,
+			currentNotebook : favorites ,
+			selectedNotebookId : favorites.id ,
+			notesAmount : favoritedNotes.length,
+		});
+		console.log(this.state.showFavoritedNotes);
+	};
 	
 	render () {
-		const addNoteBtnClass = this.state.isAddNote ? 'add-new-button-disappear' : 'add-new-button';
 		
 		return <div className = "container">
 			
-			<AddNewNotebtn
-				onClick = { this.handleAddNote }
-				className = { ` ${ addNoteBtnClass } ${ this.state.currentNotebook.currentTheme }` }
-			/>
+			
 			{ this.state.isAddNote === true ? (
 				<>
 					<RichTextEditor
@@ -343,8 +432,13 @@ class NotesApp extends Component {
 						  handleToggleNoteBook = { this.handleToggleNoteBook }
 						  selectedNotebookId = { this.state.selectedNotebookId }
 						  openModal = { this.handleOpenModal }
+						  clickFavorites = { this.handleClickFavorites }
 					  />
+					  
+					  
 					  <NoteManagePanel
+						  isAddNote = { this.state.isAddNote }
+						  handleAddNote = { this.handleAddNote }
 						  onChangeNote = { this.handleChangeNote }
 						  onDeleteNote = { this.handleDeleteNote }
 						  onToggleSidebar = { this.toggleSidebar }
@@ -354,6 +448,8 @@ class NotesApp extends Component {
 						  openModal = { this.handleOpenModal }
 						  notesAmount = { this.state.notesAmount }
 						  pinNote = { this.handlePinNote }
+						  favoriteNote = { this.handleFavoriteNote }
+						  isShowFavorites = { this.state.showFavoritedNotes }
 					  />
 					  
 					  {/*添加笔记本 Modal*/ }
@@ -372,6 +468,7 @@ class NotesApp extends Component {
 								  currentTheme : 'blue-theme' ,
 							  };
 							  this.addNoteBook(newNoteBook);
+							  this.handleToggleNoteBook(newNoteBook);
 						  }
 						  }
 						  closeModal = { () => this.handleCloseModal() }
@@ -432,49 +529,5 @@ const showDeleteConfirm = (title , open , clickOk , clickCancel) => {
 	});
 };
 
-
-class AddNewNotebtn extends Component {
-	constructor () {
-		super();
-	}
-	
-	render () {
-		const {
-			onClick ,
-			className ,
-		} = this.props;
-		return <div
-			className = { className }
-			onClick = { onClick }
-		>
-			<svg
-				t = "1731896096497"
-				className = "icon"
-				viewBox = "0 0 1024 1024"
-				version = "1.1"
-				xmlns = "http://www.w3.org/2000/svg"
-				p-id = "29491"
-				width = "50"
-				height = "50"
-			>
-				<path
-					d = "M512 512m-512 0a512 512 0 1 0 1024 0 512 512 0 1 0-1024 0Z"
-					p-id = "29492"
-				></path>
-				<path
-					d = "M215.578947 485.052632m26.947369 0l538.947368 0q26.947368 0 26.947369 26.947368l0 0q0 26.947368-26.947369 26.947368l-538.947368 0q-26.947368 0-26.947369-26.947368l0 0q0-26.947368 26.947369-26.947368Z"
-					fill = "#FFFFFF"
-					p-id = "29493"
-				></path>
-				<path
-					d = "M485.052632 808.421053m0-26.947369l0-538.947368q0-26.947368 26.947368-26.947369l0 0q26.947368 0 26.947368 26.947369l0 538.947368q0 26.947368-26.947368 26.947369l0 0q-26.947368 0-26.947368-26.947369Z"
-					fill = "#FFFFFF"
-					p-id = "29494"
-				></path>
-			</svg>
-		</div>;
-		
-	}
-}
 
 export default NotesApp;

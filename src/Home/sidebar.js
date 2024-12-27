@@ -2,20 +2,15 @@ import { ResizableBox } from 'react-resizable';
 import 'react-resizable/css/styles.css';
 import React , { Component , useState } from 'react';
 import { UserOutlined } from '@ant-design/icons';
-import { Avatar , Space , Divider , message } from 'antd';
+import { Avatar , Space , Divider , message , Collapse } from 'antd';
 import './note.css';
 import { DownOutlined , UpOutlined } from '@ant-design/icons';
 import { v4 as uuidv4 } from 'uuid';
 import dayjs from "dayjs";
 import coverDefault from './img-collection/cover-default.png';
 
-import { Collapse } from 'antd';
 
-const text = `
-  A dog is a type of domesticated animal.
-  Known for its loyalty and faithfulness,
-  it can be found as a welcome guest in many households across the world.
-`;
+
 
 
 @reaxper
@@ -27,7 +22,7 @@ export class NoteSidebar extends Component {
 	
 	state = {
 		siderbarWidth : 378 ,
-		isCollapse : true,
+		isCollapse : true ,
 	};
 	
 	componentDidMount () {
@@ -46,6 +41,7 @@ export class NoteSidebar extends Component {
 	};
 	
 	getNotebookItems () {
+		const notebooks = this.props.noteBookArray.filter(notebook => notebook.id !== 'favorites-notes-id');
 		return [
 			{
 				classNames : { header : this.state.isCollapse ? 'active-collapse' : '' } ,
@@ -54,7 +50,7 @@ export class NoteSidebar extends Component {
 					<NoteBookIcon />
 					<div className = "title-add">
 						<span>笔记本</span>
-						<span>({ this.props.noteBookArray.length })</span>
+						<span>({ notebooks.length })</span>
 						<div
 							onClick = { (e) => e.stopPropagation() } // 阻止冒泡
 							className = "add-notebook-icon-box"
@@ -68,7 +64,7 @@ export class NoteSidebar extends Component {
 					</div>
 				</div>) ,
 				children : (<div className = "sub-menu-content">
-					{ this.props.noteBookArray.map((book , index) => {
+					{ notebooks.map((book , index) => {
 						const isSelected = this.props.selectedNotebookId === book.id;
 						return (<div
 							key = { index }
@@ -162,11 +158,11 @@ export class NoteSidebar extends Component {
 					<div className = "sidebar-content-panel">
 						{/*用户信息*/ }
 						<div className = "menu-item">
-							{/*<Avatar*/}
-							{/*	style = { { backgroundColor : '#cecece' } }*/}
-							{/*	icon = { <UserOutlined /> }*/}
-							{/*/>*/}
-							<AvatarIcon/>
+							{/*<Avatar*/ }
+							{/*	style = { { backgroundColor : '#cecece' } }*/ }
+							{/*	icon = { <UserOutlined /> }*/ }
+							{/*/>*/ }
+							<AvatarIcon />
 							<span>user name</span>
 						</div>
 						<Divider style = { { borderColor : '#e4e4e4' } } />
@@ -189,7 +185,7 @@ export class NoteSidebar extends Component {
 						/>
 						
 						<div className = "sidebar-menu-list">
-							<div className = "menu-item">
+							<div className = "menu-item" onClick={this.props.clickFavorites}>
 								<MarkNoteIcon />
 								<span>收藏夹</span>
 							</div>
@@ -411,7 +407,7 @@ const CopyMailIcon = () => {
 	</svg>;
 };
 
-const AvatarIcon=()=> {
+const AvatarIcon = () => {
 	return <svg
 		t = "1735076297817"
 		className = "icon"
@@ -427,7 +423,7 @@ const AvatarIcon=()=> {
 			fill = "#040000"
 			p-id = "2415"
 		></path>
-	</svg>
-}
+	</svg>;
+};
 import { reaxel_sider } from './sider.reaxel';
 import { reaxper } from 'reaxes-react';
