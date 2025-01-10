@@ -6,6 +6,7 @@ import { message } from 'antd';
 const GetContentButton = forwardRef((props , ref) => {
 	const {
 		children ,
+		noteTitle,
 		editorState ,
 		onSave ,
 		...refProps
@@ -28,14 +29,14 @@ const GetContentButton = forwardRef((props , ref) => {
 		// console.log('Content stored' , rawContentState);
 		const saveTime = dayjs().valueOf();
 		
-		onSave(rawContentState , saveTime);
+		onSave(noteTitle,rawContentState , saveTime);
 	};
 	
-	return <button
+	return <div
 		{ ...refProps }
 		onClick = { storeContent }
 		ref = { ref }
-	>{ children }</button>;
+	>{ children }</div>;
 });
 
 export default GetContentButton;

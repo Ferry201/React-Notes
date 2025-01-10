@@ -3,8 +3,6 @@ import { Reaxlass , reaxper } from 'reaxes-react';
 import { reaxel_sider } from '@src/Home/sider.reaxel';
 import { Modal , Dropdown , Space , Tooltip } from 'antd';
 import { ExclamationCircleFilled } from '@ant-design/icons';
-
-const { confirm } = Modal;
 import RenderContent from '@src/Home/renderContent';
 import './note.css';
 import dayjs from "dayjs";
@@ -28,6 +26,7 @@ class NoteManagePanel extends Reaxlass {
 	}
 	
 	
+	
 	componentDidUpdate (prevProps) {
 		if ( prevProps.currentNotebook.id !== this.props.currentNotebook.id ) {
 			this.setState({
@@ -36,6 +35,7 @@ class NoteManagePanel extends Reaxlass {
 			});
 		}
 	}
+	
 	
 	generateNoteFeaturesMenu = () => {
 		return [
@@ -69,7 +69,7 @@ class NoteManagePanel extends Reaxlass {
 				label : <div>分享</div> ,
 				key : 'share-notebook' ,
 			} , {
-				label : <div className = "delete-notebook-button">删除笔记本</div> ,
+				label : <div className = "dropdown-delete-notebook-button">删除笔记本</div> ,
 				key : 'delete-notebook' ,
 			} ,
 		];
@@ -112,20 +112,23 @@ class NoteManagePanel extends Reaxlass {
 	};
 	
 	
+	
 	render () {
 		const {
-			isAddNote,
-			handleAddNote,
 			onChangeNote ,
 			onDeleteNote ,
 			OnSwitchMode ,
 			onToggleSidebar ,
 			currentNotebook ,
 			notesAmount ,
-			updateNotebookInfo,
-			pinNote,
-			favoriteNote,
-			isShowFavorites,
+			updateNotebookInfo ,
+			pinNote ,
+			favoriteNote ,
+			isShowFavorites ,
+			noteList ,
+			openModal,
+			onSave,
+			onCancel,
 		} = this.props;
 		const {
 			isHover ,
@@ -136,7 +139,7 @@ class NoteManagePanel extends Reaxlass {
 			siderCollapsed ,
 			resizing ,
 		} = reaxel_sider();
-		const addNoteBtnClass = isAddNote ? 'add-new-button-disappear' : 'add-new-button';
+		
 		
 		return <div className = { `note-container${ resizing ? ' resizing' : '' } ${ currentNotebook.currentTheme }` }>
 			{/*顶部工具栏*/ }
@@ -184,7 +187,7 @@ class NoteManagePanel extends Reaxlass {
 					  (<h2>{ this.state.title }({ notesAmount })</h2>) }
 					
 					{/*笔记本下拉操作菜单*/ }
-					{ !isRenaming&&currentNotebook.id !== 'favorites-notes-id' && <Dropdown
+					{ !isRenaming && currentNotebook.id !== 'favorites-notes-id' && <Dropdown
 						placement = "bottomLeft"
 						menu = { {
 							items : this.state.noteFeaturesMenu ,
@@ -227,27 +230,35 @@ class NoteManagePanel extends Reaxlass {
 			
 			{/*Note List*/ }
 			<RenderContent
+				noteList = { noteList }
 				changeNote = { onChangeNote }
 				deleteNote = { onDeleteNote }
 				ShowMode = { currentNotebook.showMode }
 				currentNotebook = { currentNotebook }
 				pinNote = { pinNote }
-				favoriteNote={favoriteNote}
-				isShowFavorites={isShowFavorites}
+				favoriteNote = { favoriteNote }
+				isShowFavorites = { isShowFavorites }
+				openModal = { openModal }
+				onSave = { onSave }
+				onCancel = { onCancel }
 			/>
 			
-			{ currentNotebook.id !== 'favorites-notes-id' && <AddNewNotebtn
-				onClick = { handleAddNote }
-				className = { ` ${ addNoteBtnClass } ${ currentNotebook.currentTheme }` }
-			/> }
-			
+			{/*<input type = "text" className = { `add-new-note-input ${ currentNotebook.currentTheme }` } placeholder = "输入笔记..."/>*/ }
+			{/*<AddNewNotebtn*/ }
+			{/*	onClick = { () => {*/ }
+			{/*		this.props.openModal('addNewNote');*/ }
+			{/*	} }*/ }
+			{/*	className = { ` add-new-button ${ currentNotebook.currentTheme }` }*/ }
+			{/*/> */ }
+		
+		
 		</div>;
 	}
 };
 //显示模式选择器
 const ModeSelector = ({
 	onSwitchNoteMode ,
-	showMode,
+	showMode ,
 }) => {
 	const modeOptions = [
 		{
@@ -271,7 +282,7 @@ const ModeSelector = ({
 		} ,
 	];
 	return (<Dropdown
-		destroyPopupOnHide={true}
+		destroyPopupOnHide = { true }
 		placement = "bottom"
 		menu = { {
 			items : modeOptions ,
@@ -287,13 +298,16 @@ const ModeSelector = ({
 			<Space>
 				{ showMode === 'list-mode' ? <ListModeIcon /> :
 				  showMode === 'card-mode' ? <CardModeIcon /> : <GridModeIcon /> }
-				{/*<ListModeIcon/>*/}
+				{/*<ListModeIcon/>*/ }
 			</Space>
 		</a>
 	</Dropdown>);
 };
 //主题颜色选择器
-const ThemeSelector = ({ selectTheme ,theme}) => {
+const ThemeSelector = ({
+	selectTheme ,
+	theme ,
+}) => {
 	const themeOptions = [
 		{
 			key : 'themeOptions' ,
@@ -333,21 +347,21 @@ const ThemeSelector = ({ selectTheme ,theme}) => {
 					label : <div>渐变背景</div> ,
 					children : [
 						{
-							label : <div>渐变1</div>,
-							key :'gradient-theme-blue-yellow'
-						},
+							label : <div>渐变1</div> ,
+							key : 'gradient-theme-blue-yellow' ,
+						} ,
 						{
-							label : <div>渐变2</div>,
-							key :'gradient-theme-blue-purple'
-						},
+							label : <div>渐变2</div> ,
+							key : 'gradient-theme-blue-purple' ,
+						} ,
 						{
-							label : <div>渐变3</div>,
-							key :'gradient-theme-red-gray'
-						},
+							label : <div>渐变3</div> ,
+							key : 'gradient-theme-red-gray' ,
+						} ,
 						{
-							label : <div>渐变4</div>,
-							key :'gradient-theme-green-blue'
-						},
+							label : <div>渐变4</div> ,
+							key : 'gradient-theme-green-blue' ,
+						} ,
 					] ,
 				} ,
 				{
@@ -355,33 +369,32 @@ const ThemeSelector = ({ selectTheme ,theme}) => {
 					label : <div>图片背景</div> ,
 					children : [
 						{
-							label : <div>图片1</div>,
-							key :'image-background-one'
-						},
+							label : <div>图片1</div> ,
+							key : 'image-background-one' ,
+						} ,
 						{
-							label : <div>图片2</div>,
-							key :'image-background-two'
-						},
-						
+							label : <div>图片2</div> ,
+							key : 'image-background-two' ,
+						} ,
+					
 					] ,
 				} ,
-				
-				
-				
+			
+			
 			] ,
 		} ,
 	
 	
 	];
 	return (<Dropdown
-		destroyPopupOnHide={true}
+		destroyPopupOnHide = { true }
 		placement = "bottom"
 		menu = { {
 			items : themeOptions ,
 			selectable : true ,
 			defaultSelectedKeys : [theme] ,
 			onClick : ({ key }) => {
-				selectTheme('currentTheme',key);
+				selectTheme('currentTheme' , key);
 			} ,
 		} }
 		trigger = { ['click'] }
@@ -433,7 +446,7 @@ const ListModeIcon = () => {
 			zIndex = "1"
 		>
 			<div
-				className = { `notelist-header-icon list-mode-icon-box`}
+				className = { `notelist-header-icon list-mode-icon-box` }
 			>
 				<svg
 					xmlns = "http://www.w3.org/2000/svg"
@@ -487,7 +500,7 @@ const GridModeIcon = () => {
 			zIndex = "1"
 		>
 			<div
-				className ='notelist-header-icon'
+				className = "notelist-header-icon"
 			>
 				<svg
 					t = "1734630128020"
@@ -669,47 +682,13 @@ class LeftExpandIcon extends Component {
 		</div>;
 	}
 }
-class AddNewNotebtn extends Component {
-	constructor () {
-		super();
-	}
-	render () {
-		const {
-			onClick ,
-			className ,
-		} = this.props;
-		return <div
-			className = { className }
-			onClick = { onClick }
-		>
-			<svg
-				t = "1731896096497"
-				className = "icon"
-				viewBox = "0 0 1024 1024"
-				version = "1.1"
-				xmlns = "http://www.w3.org/2000/svg"
-				p-id = "29491"
-				width = "50"
-				height = "50"
-			>
-				<path
-					d = "M512 512m-512 0a512 512 0 1 0 1024 0 512 512 0 1 0-1024 0Z"
-					p-id = "29492"
-				></path>
-				<path
-					d = "M215.578947 485.052632m26.947369 0l538.947368 0q26.947368 0 26.947369 26.947368l0 0q0 26.947368-26.947369 26.947368l-538.947368 0q-26.947368 0-26.947369-26.947368l0 0q0-26.947368 26.947369-26.947368Z"
-					fill = "#FFFFFF"
-					p-id = "29493"
-				></path>
-				<path
-					d = "M485.052632 808.421053m0-26.947369l0-538.947368q0-26.947368 26.947368-26.947369l0 0q26.947368 0 26.947368 26.947369l0 538.947368q0 26.947368-26.947368 26.947369l0 0q-26.947368 0-26.947368-26.947369Z"
-					fill = "#FFFFFF"
-					p-id = "29494"
-				></path>
-			</svg>
-		</div>;
-		
-	}
-}
+
+
+
+
+
+
+
+
 
 export { NoteManagePanel };

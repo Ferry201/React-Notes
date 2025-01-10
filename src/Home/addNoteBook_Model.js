@@ -146,6 +146,7 @@ const NoteBookModal = ({
 			<Modal
 				title = { showTitleInput && "新建笔记本" }
 				open = { open }
+				// centered
 				onOk = { handleOk }
 				onCancel = { handleCancel }
 				cancelText = "取消"

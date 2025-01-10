@@ -1,84 +1,158 @@
 import React , { useState , useRef , useEffect , Component } from 'react';
-import { Editor , EditorState , ContentState , convertFromRaw , convertToRaw , RichUtils , AtomicBlockUtils , Modifier } from 'draft-js';
+import { Editor , EditorState , ContentState , convertFromRaw , convertToRaw , RichUtils , AtomicBlockUtils , Modifier , SelectionState } from 'draft-js';
 import 'draft-js/dist/Draft.css';
 import GetContentButton from '@src/Home/GetContentButton';
 import { FaPaintBrush , FaBold , FaItalic , FaUnderline , FaStrikethrough , FaAlignLeft , FaAlignCenter , FaAlignRight , FaAlignJustify , FaListOl , FaListUl , FaImage } from 'react-icons/fa';
 import './richTextEditor.css';
-import { Popover , Tooltip , Modal } from 'antd';
+import { Popover , Tooltip , Modal , Dropdown } from 'antd';
 import dayjs from "dayjs";
+import { GithubPicker } from 'react-color';
+import { CirclePicker } from 'react-color';
 
-//todo:选中分区
 
-//及时保存
+//todo:选中分区,及时保存
+
+const textAlignStyleMap = {
+	'TEXT_ALIGN_LEFT' : { textAlign : 'left' } ,
+	'TEXT_ALIGN_CENTER' : { textAlign : 'center' } ,
+	'TEXT_ALIGN_RIGHT' : { textAlign : 'right' } ,
+	'TEXT_ALIGN_JUSTIFY' : { textAlign : 'justify' } , // 两端对齐
+};
+
 const fontSizeStyleMap = {
 	'FONT_SIZE_10' : { fontSize : '10px' } ,
 	'FONT_SIZE_12' : { fontSize : '12px' } ,
 	'FONT_SIZE_14' : { fontSize : '14px' } ,
 	'FONT_SIZE_16' : { fontSize : '16px' } ,
 	'FONT_SIZE_18' : { fontSize : '18px' } ,
+	'FONT_SIZE_20' : { fontSize : '20px' } ,
+	'FONT_SIZE_22' : { fontSize : '22px' } ,
 	'FONT_SIZE_24' : { fontSize : '24px' } ,
 	'FONT_SIZE_32' : { fontSize : '32px' } ,
 };
-const selectColorContent = (
-	<div>
-		<p>Content</p>
-		<p>Content</p>
-	</div>
-);
-const colorStyleMap = {
-	RED : { backgroundColor : '#f04d4d' } ,
-	GREEN : { backgroundColor : '#78e568' } ,
-	BLUE : { backgroundColor : '#68c7e7' } ,
-	PINK : { backgroundColor : '#f7dbdb' } ,
-	PURPLE : { backgroundColor : '#dac9f8' } ,
-	ORANGE : { backgroundColor : '#f4a255' } ,
-	TEAL : { backgroundColor : '#91eded' } ,
-	GRAY : { backgroundColor : '#edeeec' } ,
+
+const backgroundColorStyleMap = {
+	BG_RED : { backgroundColor : '#ff3939' } ,
+	BG_Crimson : { backgroundColor : '#e599a9' } ,
+	BG_PINK : { backgroundColor : '#f5c9d2' } ,
+	BG_ORANGE : { backgroundColor : '#ed7050' } ,
+	BG_LIGHT_ORANGE : { backgroundColor : '#ffcca7' } ,
+	BG_YELLOW : { backgroundColor : '#f4e755' } ,
+	BG_LIGHT_YELLOW : { backgroundColor : '#f1ff95' } ,
+	BG_GREEN : { backgroundColor : '#519232' } ,
+	BG_LIGHT_GREEN : { backgroundColor : '#7bf84d' } ,
+	BG_CYAN : { backgroundColor : '#38ceab' } ,
+	BG_LIGHT_CYAN : { backgroundColor : '#8df7e9' } ,
+	BG_BLUE : { backgroundColor : '#40a9ff' } ,
+	BG_LIGHT_BLUE : { backgroundColor : '#86b8e8' } ,
+	BG_PURPLE : { backgroundColor : '#7e58e8' } ,
+	BG_AMARANTH : { backgroundColor : '#dd79c1' } ,
+	BG_LIGHT_PURPLE : { backgroundColor : '#ceb7fd' } ,
+	BG_GRAY : { backgroundColor : '#c7c7c7' } ,
+	BG_LIGHT_GRAY : { backgroundColor : '#e3e3e3' } ,
 };
-const AddNoteModal = ({
-	onSave ,
-	initialContent ,
-	onCancel ,
-	children ,
-}) => {
-	const [isModalOpen , setIsModalOpen] = useState(false);
-	const showModal = () => {
-		setIsModalOpen(true);
+const fontColorStyleMap = {
+	FONT_RED : { color : '#f04d4d' } ,
+	FONT_ORANGE : { color : '#f4a255' } ,
+	FONT_GREEN : { color : '#4fec3a' } ,
+	FONT_PINK : { color : '#339b33' } ,
+	FONT_BLUE : { color : '#68c7e7' } ,
+	FONT_PURPLE : { color : '#ab7cf7' } ,
+};
+
+const ColorPicker = ({ onSelectColor }) => {
+	const [color , setColor] = useState('#ffffff');
+	
+	const handleChangeComplete = (color) => {
+		setColor(color.hex); // 找到对应的键
+		const colorKey = Object.keys(fontColorStyleMap).find(key => fontColorStyleMap[key].color === color.hex);
+		if ( typeof onSelectColor === 'function' ) {
+			onSelectColor(colorKey);
+		}
 	};
+	const colors = Object.values(fontColorStyleMap).map(style => style.color);
+	return (<div>
+		<CirclePicker
+			color = { color }
+			onChangeComplete = { handleChangeComplete }
+			colors = { colors }
+		/>
+	</div>);
+};
+const BackgroundColorPicker = ({ onSelectColor }) => {
+	const [color , setColor] = useState('#ffffff');
+	
+	const handleChangeComplete = (color) => {
+		setColor(color.hex); // 找到对应的键
+		const colorKey = Object.keys(backgroundColorStyleMap).find(key => backgroundColorStyleMap[key].backgroundColor === color.hex);
+		onSelectColor(colorKey);
+	};
+	const colors = Object.values(backgroundColorStyleMap).map(style => style.backgroundColor);
+	return (<div>
+		<CirclePicker
+			color = { color }
+			onChangeComplete = { handleChangeComplete }
+			colors = { colors }
+		/>
+	</div>);
+};
+
+const AddNewNoteModal = ({
+	open ,
+	onCloseModal ,
+	onCancel ,
+	onSave ,
+	initialTitle,
+	initialContent ,
+}) => {
+	
+	
 	const handleCancel = () => {
-		setIsModalOpen(false);
+		onCloseModal();
 	};
 	
 	const handleOk = () => {
-		setIsModalOpen(false);
+		
 	};
 	return <div>
-		<div onClick = { showModal }>{ children }</div>
 		<Modal
-			open = { isModalOpen }
+			open = { open }
 			onOk = { handleOk }
-			onCancel = { handleCancel }
+			style = { { top : 80 } }
+			onCancel = { onCloseModal }
 			cancelText = "取消"
 			okText = "创建"
-			width = { 500 }
-			height={300}
+			width = { 800 }
+			height = { 300 }
 			destroyOnClose = { true }
 			keyboard = { true }
+			wrapClassName = "edit-note-modal"
+			closable = { false }
+			// footer={null}
 		>
 			<RichTextEditor
 				onSave = { onSave }
+				initialTitle={initialTitle}
 				initialContent = { initialContent }
 				onCancel = { onCancel }
+				showAllOptions = { true }
 			/>
 		</Modal>
 	</div>;
 };
+
+
 const RichTextEditor = ({
 	onSave ,
+	initialTitle,
 	initialContent ,
 	onCancel ,
+	showAllOptions = undefined ,
+	openModal ,
+	cancelExpandNoteEditSection,
 }) => {
 	const editorRef = useRef(null);
+	const [noteTitle , setNoteTitle] = useState('');
 	useEffect(() => {
 		editorRef.current.focus();
 	} , []);
@@ -87,7 +161,10 @@ const RichTextEditor = ({
 		if ( initialContent ) {
 			setEditorState(EditorState.moveFocusToEnd(EditorState.createWithContent(convertFromRaw(initialContent))));
 		}
-	} , [initialContent]);
+		if(initialTitle){
+			setNoteTitle(initialTitle)
+		}
+	} , [initialTitle,initialContent]);
 	const [textAlignment , setTextAlignment] = useState('left');//对齐
 	const saveContent = () => {
 		const rawContentState = convertToRaw(editorState.getCurrentContent());
@@ -160,120 +237,158 @@ const RichTextEditor = ({
 		const fontSize = event.target.value;
 		setEditorState(RichUtils.toggleInlineStyle(editorState , `FONT_SIZE_${ fontSize }`));
 	};
-	
-	const onColorChange = (color) => {
-		setEditorState(RichUtils.toggleInlineStyle(editorState , color));
+	const onBackgroundColorChange = (color) => {
+		const newEditorState = RichUtils.toggleInlineStyle(editorState , color);
+		setEditorState(newEditorState);
 	};
+	const onFontColorChange = (color) => {
+		const newEditorState = RichUtils.toggleInlineStyle(editorState , color);
+		setEditorState(newEditorState);
+	};
+	
+	const selectBackgroundColorContent = (
+		<div>
+			<div className = "color-popover-title">字体背景颜色选择</div>
+			<BackgroundColorPicker onSelectColor = { onBackgroundColorChange } />
+		</div>
+	);
+	const selectColorContent = (
+		<div>
+			<div className = "color-popover-title">字体颜色选择</div>
+			<ColorPicker onSelectColor = { onFontColorChange } />
+		</div>
+	);
+	
 	
 	return (
 		<div
 			style = { {
 				height : '100%' ,
 				width : '100%' ,
-				padding : '20px' ,
 				boxSizing : 'border-box' ,
 			} }
 		>
-			<div className = "rich-text-options">
-				<Tooltip
-					title = "返回并保存"
-				>
-					<GetContentButton
-						editorState = { editorState }
-						onSave = { onSave }
+			{ showAllOptions && <div>
+				<div className = "modal-top-bar">
+					<div className = "modal-top-left-bar"><Tooltip
+						title = "返回并保存"
 					>
-						<ReturnIcon />
-					</GetContentButton>
-				</Tooltip>
-				<Tooltip title = "加粗">
-					<button onClick = { onBoldClick }><FaBold /></button>
-				</Tooltip>
-				<Tooltip title = "斜体">
-					<button onClick = { onItalicClick }><FaItalic /></button>
-				</Tooltip>
-				<Tooltip title = "下划线">
-					<button onClick = { onUnderlineClick }><FaUnderline /></button>
-				</Tooltip>
-				<Tooltip title = "删除线">
-					<button onClick = { onStrikethroughClick }><FaStrikethrough /></button>
-				</Tooltip>
-				<Tooltip title = "文本靠左">
-					<button onClick = { onAlignLeft }><FaAlignLeft /></button>
-				</Tooltip>
-				<Tooltip title = "文本居中">
-					<button onClick = { onAlignCenter }><FaAlignCenter /></button>
-				</Tooltip>
-				<Tooltip title = "文本靠右">
-					<button onClick = { onAlignRight }><FaAlignRight /></button>
-				</Tooltip>
-				<Tooltip title = "添加图片">
-					<button onClick = { onAddImage }><FaImage /></button>
-				</Tooltip>
-				<Tooltip title = "有序列表">
-					<button onClick = { onOrderedList }><FaListOl /></button>
-				</Tooltip>
-				<Tooltip title = "无序列表">
-					<button onClick = { onUnorderedList }><FaListUl /></button>
-				</Tooltip>
-				<Tooltip title = "字号">
-					<button><FontSizeIcon /></button>
-				</Tooltip>
-				<Tooltip></Tooltip>
+						<GetContentButton
+							noteTitle={noteTitle}
+							editorState = { editorState }
+							onSave = { onSave }
+						>
+							<ReturnIcon />
+						</GetContentButton>
+					</Tooltip></div>
+					
+					<div className = "modal-top-right-bar">
+						<Tooltip title = "保存"><GetContentButton
+							noteTitle={noteTitle}
+							editorState = { editorState }
+							onSave = { onSave }
+						> <SaveIcon /></GetContentButton></Tooltip>
+						<Tooltip title = "退出且不保存修改">
+							<div
+								className = "cancel-edit-icon"
+								onClick = { onCancel }
+							><CancelEditIcon />
+							</div>
+						</Tooltip>
+					</div>
+				</div>
+				
+				<div className = "rich-text-options">
+					
+					<Tooltip title = "加粗">
+						<button onClick = { onBoldClick }><FaBold /></button>
+					</Tooltip>
+					<Tooltip title = "斜体">
+						<button onClick = { onItalicClick }><FaItalic /></button>
+					</Tooltip>
+					<Tooltip title = "下划线">
+						<button onClick = { onUnderlineClick }><FaUnderline /></button>
+					</Tooltip>
+					<Tooltip title = "删除线">
+						<button onClick = { onStrikethroughClick }><FaStrikethrough /></button>
+					</Tooltip>
+					<Tooltip title = "文本靠左">
+						<button onClick = { onAlignLeft }><FaAlignLeft /></button>
+					</Tooltip>
+					<Tooltip title = "文本居中">
+						<button onClick = { onAlignCenter }><FaAlignCenter /></button>
+					</Tooltip>
+					<Tooltip title = "文本靠右">
+						<button onClick = { onAlignRight }><FaAlignRight /></button>
+					</Tooltip>
+					<Tooltip title = "添加图片">
+						<button onClick = { onAddImage }><FaImage /></button>
+					</Tooltip>
+					<Tooltip title = "有序列表">
+						<button onClick = { onOrderedList }><FaListOl /></button>
+					</Tooltip>
+					<Tooltip title = "无序列表">
+						<button onClick = { onUnorderedList }><FaListUl /></button>
+					</Tooltip>
+					<Tooltip title = "字号">
+						<button><FontSizeIcon /></button>
+					</Tooltip>
+					<Tooltip></Tooltip>
+					
+					
+					<select
+						onChange = { onFontSizeChange }
+						defaultValue = "10"
+					>
+						<option value = "12">12</option>
+						<option value = "14">14</option>
+						<option value = "16">16</option>
+						<option value = "18">18</option>
+						<option value = "20">20</option>
+						<option value = "22">22</option>
+						<option value = "24">24</option>
+						<option value = "32">32</option>
+					</select>
+					{/* 字体颜色选择器 */ }
+					<Popover
+						content = { selectColorContent }
+					>
+						<button>
+							<FontColorIcon />
+						</button>
+					</Popover>
+					{/* 背景颜色选择器 */ }
+					<Popover
+						content = { selectBackgroundColorContent }
+					>
+						<button>
+							<FontBackgroundIcon />
+						</button>
+					</Popover>
 				
 				
-				<select
-					onChange = { onFontSizeChange }
-					defaultValue = "10"
-				>
-					<option value = "10">10</option>
-					<option value = "12">12</option>
-					<option value = "14">14</option>
-					<option value = "16">16</option>
-					<option value = "18">18</option>
-					<option value = "24">24</option>
-					<option value = "32">32</option>
-				</select>
-				<button>
-					<FontColorIcon />
-				</button>
-				<Popover
-					content = { selectColorContent }
-					title = "Title"
-				>
-					<button><FontBackgroundIcon /></button>
-				</Popover>
-				<select
-					onChange = { (e) => onColorChange(e.target.value) }
-					defaultValue = ""
-				>
-					<option value = "">Select Color</option>
-					<option value = "RED">Red</option>
-					<option value = "GREEN">Green</option>
-					<option value = "BLUE">Blue</option>
-					<option value = "PINK">Pink</option>
-					<option value = "PURPLE">Purple</option>
-					<option value = "ORANGE">Orange</option>
-					<option value = "TEAL">Teal</option>
-					<option value = "GRAY">Gray</option>
-				</select>
-				<Tooltip title = "保存"><GetContentButton
-					editorState = { editorState }
-					onSave = { onSave }
-				> <SaveIcon /></GetContentButton></Tooltip>
-				<Tooltip title = "退出且不保存修改">
-					<button
-						onClick = { onCancel }
-					><CancelEditIcon />
-					</button>
-				</Tooltip>
+				</div>
+			</div> }
+			{/*笔记标题输入区*/ }
+			<div>
+				<input
+					type = "text"
+					className = "note-item-title-input"
+					placeholder = "标题"
+					value={noteTitle}
+					onChange = { (e) => {
+						setNoteTitle(e.target.value);
+					} }
+				/>
 			</div>
+			
 			<div
 				style = { {
+					fontSize : "16px" ,
 					borderBottomLeftRadius : '6px' ,
 					borderBottomRightRadius : '6px' ,
 					background : 'white' ,
-					height : '100%' ,
-					maxHeight : 'calc(100% - 30px)' ,
+					maxHeight : showAllOptions ? 'calc(100% - 110px)' : '100%' ,
 					padding : '10px' ,
 					overflowY : 'scroll' ,
 					width : '100%' ,
@@ -284,18 +399,176 @@ const RichTextEditor = ({
 				<Editor
 					ref = { editorRef }
 					editorState = { editorState }
-					customStyleMap = { { ...fontSizeStyleMap , ...colorStyleMap } }
+					customStyleMap = { { ...fontSizeStyleMap , ...backgroundColorStyleMap , ...fontColorStyleMap } }
 					handleKeyCommand = { handleKeyCommand }
 					onChange = { setEditorState }
 					placeholder = "输入笔记..."
+					className = "rich-text-input"
 					textAlignment = { textAlignment }
 				/>
-			
 			</div>
+			{/*操作区: 富文本, 撤销, 复原, 添加按钮*/ }
+			{ !showAllOptions && <div className = "edit-note-options">
+				<div className = "edit-note-icons">
+					<RichTextIcon
+						onClick = { () => {
+							openModal('addNewNote');
+						} }
+					/>
+					<UndoIcon />
+					<RedoIcon />
+				</div>
+				
+				<GetContentButton
+					noteTitle={noteTitle}
+					editorState = { editorState }
+					onSave = { onSave }
+				>
+					<AddNewNotebtn
+						onClick = { cancelExpandNoteEditSection }
+						className = { `add-new-button` }
+					/>
+				</GetContentButton>
+			
+			</div> }
+		
 		
 		</div>
 	);
 };
+
+const RichTextIcon = ({ onClick }) => {
+	return <>
+		<Tooltip
+			title = "富文本编辑模式"
+			placement = "bottom"
+			zIndex = "1"
+		>
+			<div
+				className = "edit-note-option-item rich-text-option"
+				onClick = { onClick }
+			>
+				<svg
+					t = "1736052458233"
+					className = "icon"
+					viewBox = "0 0 1024 1024"
+					version = "1.1"
+					xmlns = "http://www.w3.org/2000/svg"
+					p-id = "29795"
+					width = "18"
+					height = "18"
+				>
+					<path
+						d = "M736 149.333a160 160 0 0 1 160 160V736a160 160 0 0 1-160 160H309.333a160 160 0 0 1-160-160V309.333a160 160 0 0 1 160-160z m0 64H309.333a96 96 0 0 0-96 96V736a96 96 0 0 0 96 96H736a96 96 0 0 0 96-96V309.333a96 96 0 0 0-96-96zM736 672a32 32 0 0 1 3.072 63.85L736 736H309.333a32 32 0 0 1-3.072-63.85l3.072-0.15H736z m0-128a32 32 0 0 1 3.072 63.85L736 608H533.93a32 32 0 0 1-3.071-63.85l3.072-0.15H736zM394.667 330.667H480a32 32 0 0 1 3.072 63.85l-3.072 0.15h-53.333v138.666a32 32 0 0 1-63.851 3.072l-0.15-3.072V394.667h-53.333a32 32 0 0 1-3.072-63.851l3.072-0.15h85.334zM736 416a32 32 0 0 1 3.072 63.85L736 480H608.064a32 32 0 0 1-3.072-63.85l3.072-0.15H736z"
+						p-id = "29796"
+					></path>
+				</svg>
+			</div>
+		</Tooltip></>;
+};
+
+const UndoIcon = () => {
+	return <>
+		
+		<Tooltip
+			title = "撤销"
+			placement = "bottom"
+			zIndex = "1"
+		>
+			<div className = "edit-note-option-item undo-option">
+				<svg
+					t = "1736053234010"
+					className = "icon"
+					viewBox = "0 0 1024 1024"
+					version = "1.1"
+					xmlns = "http://www.w3.org/2000/svg"
+					p-id = "36096"
+					width = "16"
+					height = "16"
+				>
+					<path
+						d = "M672.704 864.704 256.704 864.704C239.024 864.704 224.704 850.368 224.704 832.704 224.704 815.024 239.024 800.704 256.704 800.704L672.704 800.704C778.736 800.704 864.704 714.736 864.704 608.704 864.704 502.656 778.736 416.704 672.704 416.704L202.16 416.704 341.792 556.144C353.776 568.112 353.776 587.52 341.792 599.488 329.792 611.472 310.336 611.472 298.352 599.488L104 405.424C92.016 393.456 92.016 374.032 104 362.064L298.352 167.984C310.336 156.016 329.792 156.016 341.792 167.984 353.776 179.968 353.776 199.376 341.792 211.344L200.24 352.704 672.704 352.704C814.08 352.704 928.704 467.312 928.704 608.704 928.704 750.08 814.08 864.704 672.704 864.704Z"
+						p-id = "36097"
+					></path>
+				</svg>
+			</div>
+		</Tooltip>
+	</>;
+};
+const RedoIcon = () => {
+	return <>
+		<Tooltip
+			title = "复原"
+			placement = "bottom"
+			zIndex = "1"
+		>
+			<div className = "edit-note-option-item redo-option">
+				<svg
+					t = "1736054033789"
+					className = "icon"
+					viewBox = "0 0 1024 1024"
+					version = "1.1"
+					xmlns = "http://www.w3.org/2000/svg"
+					p-id = "38179"
+					width = "16"
+					height = "16"
+				>
+					<path
+						d = "M725.333333 859.733333H362.666667c-141.376 0-256-114.624-256-256s114.624-256 256-256h458.666666a32 32 0 0 1 0 64H362.666667a192 192 0 0 0 0 384h362.666666a32 32 0 0 1 0 64z"
+						p-id = "38180"
+					></path>
+					<path
+						d = "M689.066667 589.013333a32.64 32.64 0 0 1-22.613334-9.386666 32.213333 32.213333 0 0 1 0-45.226667l154.666667-154.666667-154.666667-154.453333a32.213333 32.213333 0 0 1 0-45.226667 31.786667 31.786667 0 0 1 45.226667 0l177.28 177.066667c5.973333 6.016 9.322667 14.144 9.386667 22.613333a32 32 0 0 1-9.386667 22.613334l-177.28 177.28a31.786667 31.786667 0 0 1-22.613333 9.386666z"
+						p-id = "38181"
+					></path>
+				</svg>
+			</div>
+		</Tooltip>
+	</>;
+};
+
+class AddNewNotebtn extends Component {
+	constructor () {
+		super();
+	}
+	
+	render () {
+		const {
+			onClick ,
+		} = this.props;
+		return <div>
+			<Tooltip
+				title = "添加笔记"
+				placement = "bottom"
+				zIndex = "1"
+			>
+				<div
+					className = "add-new-button"
+					onClick = { onClick }
+				>
+					<svg
+						t = "1736084509838"
+						className = "icon"
+						viewBox = "0 0 1024 1024"
+						version = "1.1"
+						xmlns = "http://www.w3.org/2000/svg"
+						p-id = "128954"
+						width = "16"
+						height = "16"
+					>
+						<path
+							d = "M482 481.3V130.1c0-17.6 14.3-31.9 31.9-31.9 17.6 0 31.9 14.3 31.9 31.9v351.2H897c17.6 0 31.9 14.3 31.9 31.9 0 17.6-14.3 31.9-31.9 31.9H545.8v351.2c0 17.6-14.3 31.9-31.9 31.9-17.6 0-31.9-14.3-31.9-31.9V545.1H130.8c-17.6 0-31.9-14.3-31.9-31.9 0-17.6 14.3-31.9 31.9-31.9H482z"
+							p-id = "128955"
+							fill = "#515151"
+						></path>
+					</svg>
+				</div>
+			</Tooltip>
+		</div>;
+		
+	}
+}
+
 const ReturnIcon = () => {
 	return <svg
 		t = "1731789813468"
@@ -316,67 +589,55 @@ const ReturnIcon = () => {
 };
 const FontColorIcon = () => {
 	return <svg
-		t = "1732054047634"
+		t = "1736317344428"
 		className = "icon"
 		viewBox = "0 0 1024 1024"
 		version = "1.1"
 		xmlns = "http://www.w3.org/2000/svg"
-		p-id = "30521"
+		p-id = "3249"
 		width = "16"
 		height = "16"
 	>
 		<path
-			d = "M1013.763272 901.117134H10.236925c-5.630255 0-10.236827 4.606572-10.236827 10.247063v102.398976c0 5.630255 4.606572 10.236827 10.236827 10.236827H1013.763272c5.630255 0 10.236827-4.606572 10.236826-10.236827V911.35396c0-5.630255-4.606572-10.236827-10.236826-10.236826zM181.376192 798.707921h108.796993c5.374334 0 10.247063-3.460047 11.905429-8.701303l68.740291-212.485809h280.570943l68.09537 212.485809c1.658366 5.118413 6.398017 8.701303 11.905429 8.701303h114.038248c1.412682 0 2.815127-0.255921 4.104968-0.634684 6.520859-2.303286 9.980906-9.346223 7.67762-15.877318L590.849255 8.445382c-1.791445-4.995571-6.531095-8.445382-11.77235-8.445382H448.127419c-5.374334 0-10.103748 3.326969-11.772351 8.445382L169.603841 782.195919c-0.511841 1.279603-0.634683 2.692285-0.634683 4.094731-0.133079 6.787016 5.497176 12.417271 12.407034 12.417271z m327.54774-660.602894h5.251492l107.261469 337.661725H400.515938l108.407994-337.661725z m0 0"
-			fill = "#2C2C2C"
-			p-id = "30522"
+			d = "M438.613333 1.024L146.033778 768.227556h139.150222l60.643556-179.029334h297.358222l65.479111 179.029334h139.150222L555.235556 1.024H438.613333z m55.921778 163.043556l107.064889 318.008888H382.691556l111.843555-318.065777v0.056889zM85.333333 1024h818.403556v-153.429333H85.333333z"
+			fill = "#1296db"
+			p-id = "3250"
 		></path>
 	</svg>;
 };
 const FontBackgroundIcon = () => {
 	return <svg
-		t = "1732054918948"
+		t = "1736317429584"
 		className = "icon"
 		viewBox = "0 0 1024 1024"
 		version = "1.1"
 		xmlns = "http://www.w3.org/2000/svg"
-		p-id = "46995"
-		width = "24"
-		height = "24"
+		p-id = "4454"
+		width = "16"
+		height = "16"
 	>
 		<path
-			d = "M325.76 531.072l-30.208-30.208 77.76-127.04-41.28-41.344 203.392-204.352 328.704 328.704-203.456 204.288-40.896-40.832L492.8 698.048l-32.96-32.96-37.44 38.912-0.768-0.832H160l131.456-136.64 0.128 0.064 34.176-35.52z m73.536-199.68l262.912 262.848 134.72-136.32-262.976-262.912-134.784 136.32 0.128 0.128z m186.624 254.976L407.232 407.68l-51.84 84.672 145.856 145.92 84.672-51.84z m244.032-95.68l-33.024-32.704 33.024 32.64z"
-			fill = "#222222"
-			p-id = "46996"
-		></path>
-		<path
-			d = "M920 832H136a8 8 0 0 0-8 8v80c0 4.416 3.584 8 8 8h784a8 8 0 0 0 8-8v-80a8 8 0 0 0-8-8z"
-			fill = "#f4ea2a"
-			p-id = "46997"
-			data-spm-anchor-id = "a313x.search_index.0.i72.60a13a81mlwiRV"
-			className = "selected"
+			d = "M25.6 0h972.8v1024H25.6V0z m819.2 921.6L562.688 102.4H461.312L179.2 921.6h105.4208l72.2944-224.0512h307.2L739.328 921.6H844.8z m-210.8416-317.6448H386.048l110.4384-341.0432c4.7104-12.6464 9.0624-31.5904 13.056-56.832h2.048c3.328 27.4432 6.9632 46.4384 11.008 56.832l111.4112 340.992z"
+			fill = "#1296db"
+			p-id = "4455"
 		></path>
 	</svg>;
 };
 const CancelEditIcon = () => {
 	return <svg
-		t = "1732055345513"
+		t = "1736318427766"
 		className = "icon"
 		viewBox = "0 0 1024 1024"
 		version = "1.1"
 		xmlns = "http://www.w3.org/2000/svg"
-		p-id = "51687"
-		width = "16"
-		height = "16"
+		p-id = "6351"
+		width = "18"
+		height = "18"
 	>
 		<path
-			d = "M710.776471 650.541176L572.235294 512l156.611765-156.611765c12.047059-12.047059 12.047059-24.094118-6.02353-42.164706-18.070588-18.070588-36.141176-18.070588-42.164705-6.023529L518.023529 457.788235 367.435294 307.2s-24.094118-30.117647-48.188235-6.023529c-30.117647 30.117647-18.070588 42.164706-6.02353 54.211764l156.611765 156.611765-162.635294 162.635294c-12.047059 12.047059-30.117647 24.094118-6.023529 54.211765 30.117647 30.117647 54.211765 0 60.235294-6.02353l162.635294-162.635294 144.564706 144.564706c6.023529 6.023529 30.117647 36.141176 60.235294 6.02353 18.070588-30.117647-18.070588-60.235294-18.070588-60.235295z"
-			fill = "#D0021B"
-			p-id = "51688"
-		></path>
-		<path
-			d = "M512 0C228.894118 0 0 228.894118 0 512S228.894118 1024 512 1024 1024 795.105882 1024 512 795.105882 0 512 0z m0 951.717647c-246.964706 0-445.741176-198.776471-445.741176-445.741176C66.258824 259.011765 265.035294 60.235294 512 60.235294s445.741176 198.776471 445.741176 445.741177c0 252.988235-198.776471 445.741176-445.741176 445.741176z"
-			fill = "#D0021B"
-			p-id = "51689"
+			d = "M842.947458 778.116917 576.847937 512.013303 842.946434 245.883083c8.67559-8.674567 13.447267-20.208251 13.43908-32.477692-0.008186-12.232602-4.7727-23.715121-13.414521-32.332383-8.655124-8.677637-20.149922-13.450337-32.384571-13.4575-12.286838 0-23.808242 4.771677-32.474622 13.434987L512.019443 447.143876 245.88206 181.050496c-8.66331-8.66331-20.175505-13.434987-32.416294-13.434987-12.239765 0-23.75196 4.770653-32.414247 13.43294-8.66024 8.636704-13.428847 20.12434-13.437034 32.356942-0.008186 12.269441 4.76349 23.803125 13.437034 32.476669l266.135336 266.13022L181.050496 778.11794c-8.664334 8.66331-13.43601 20.173458-13.43601 32.41527 0 12.239765 4.7727 23.752983 13.437034 32.417317 8.662287 8.66331 20.173458 13.43294 32.413224 13.43294 12.240789 0 23.754007-4.770653 32.416294-13.43294l266.134313-266.100544 266.101567 266.100544c8.66331 8.66331 20.185738 13.43294 32.4429 13.43294 12.265348-0.008186 23.74889-4.771677 32.369222-13.412474C860.81643 825.081555 860.821547 795.991006 842.947458 778.116917z"
+			fill = "#272636"
+			p-id = "6352"
 		></path>
 	</svg>;
 };
@@ -420,7 +681,7 @@ const SaveIcon = () => {
 		></path>
 	</svg>;
 };
-export { AddNoteModal };
+export { AddNewNoteModal };
 export default RichTextEditor;
 
 

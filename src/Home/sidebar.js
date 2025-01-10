@@ -21,7 +21,7 @@ export class NoteSidebar extends Component {
 	}
 	
 	state = {
-		siderbarWidth : 378 ,
+		siderbarWidth : 388 ,
 		isCollapse : true ,
 	};
 	
@@ -44,7 +44,10 @@ export class NoteSidebar extends Component {
 		const notebooks = this.props.noteBookArray.filter(notebook => notebook.id !== 'favorites-notes-id');
 		return [
 			{
-				classNames : { header : this.state.isCollapse ? 'active-collapse' : '' } ,
+				classNames : {
+					header : this.state.isCollapse ? 'active-collapse' : '' ,
+					body : 'notebook-lists-content',
+				} ,
 				key : 'notebookItems' ,
 				label : (<div className = "all-notebook-header">
 					<NoteBookIcon />
@@ -98,7 +101,7 @@ export class NoteSidebar extends Component {
 		const feedback_setting_Items = [
 			{
 				key : 'settingItem' ,
-				label : <div className = "menu-item">
+				label : <div className = "collapse-header">
 					<SettingIcon />
 					<span>设置</span>
 				</div> ,
@@ -106,7 +109,7 @@ export class NoteSidebar extends Component {
 			} , {
 				showArrow : false ,
 				key : 'feedbackItem' ,
-				label : <div className = "menu-item">
+				label : <div className = "collapse-header">
 					<FeedbackIcon />
 					<span>反馈</span>
 				</div> ,
@@ -131,7 +134,7 @@ export class NoteSidebar extends Component {
 			<ResizableBox
 				width = { siderCollapsed ? 0 : this.state.siderbarWidth }
 				axis = "x" // 只允许水平拖动
-				minConstraints = { [290 , 0] } // 设置最小宽度
+				minConstraints = { [296 , 0] } // 设置最小宽度
 				maxConstraints = { [480 , 0] } // 设置最大宽度
 				resizeHandles = { ['e'] } // 右边缘 east
 				onResizeStart = { (e , data) => {
@@ -242,7 +245,7 @@ class NoteBookIcon extends Component {
 	render () {
 		return <svg
 			t = "1734471615966"
-			style = { { marginLeft : '20px' } }
+			style = { { marginLeft : '16px' } }
 			className = "icon"
 			viewBox = "0 0 1024 1024"
 			version = "1.1"
@@ -310,6 +313,7 @@ class RecycleBinIcon extends Component {
 class SettingIcon extends Component {
 	render () {
 		return <svg
+			style = { { marginLeft : '16px' } }
 			t = "1734470471720"
 			className = "icon"
 			viewBox = "0 0 1024 1024"
@@ -335,6 +339,7 @@ class SettingIcon extends Component {
 
 const FeedbackIcon = () => {
 	return <svg
+		style = { { marginLeft : '16px' } }
 		t = "1734469824786"
 		className = "icon"
 		viewBox = "0 0 1024 1024"

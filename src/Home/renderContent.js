@@ -1,13 +1,16 @@
-import React , { useEffect , useState } from 'react';
+import React , { useEffect , useState , useRef } from 'react';
 import { Component } from 'react';
 import { convertFromRaw } from 'draft-js';
 import './note.css';
 import Masonry from 'masonry-layout';
+import GetContentButton from '@src/Home/GetContentButton';
 import dayjs from 'dayjs';
-import { message } from 'antd';
+import { message , Tooltip } from 'antd';
+import RichTextEditor from '../RichTextEditor/RichTextEditor';
 
 
 const RenderContent = ({
+	noteList ,
 	changeNote ,
 	deleteNote ,
 	ShowMode ,
@@ -15,28 +18,74 @@ const RenderContent = ({
 	pinNote ,
 	favoriteNote ,//收藏笔记
 	isShowFavorites ,//是否展示收藏夹笔记列表
+	openModal ,
+	onSave ,
+	onCancel ,
 }) => {
+	const inputAddNoteRef = React.useRef();
+	const wrapperRef = React.useRef();
 	
-	const storedContents = JSON.parse(localStorage.getItem('note-info-array')) || [];
+	let storedContents = JSON.parse(localStorage.getItem('note-info-array')) || [];
 	const [contents , setContents] = useState([]);
+	const [isExpandNoteEditSection , setIsExpandNoteEditSection] = useState(false);
+	
+	let notes = noteList;
 	let isShowFavoritesNotes = isShowFavorites;
 	if ( currentNotebook.id === 'favorites-notes-id' ) {
 		isShowFavoritesNotes = true;
 	}
+	useEffect(() => {
+		if ( isShowFavoritesNotes ) {
+			const FavoritesNotes = notes.filter(note => note.isFavorited === true);
+			setContents(FavoritesNotes);
+		} else {
+			const currentNotes = notes.filter(note => note.notebookID === currentNotebook.id);
+			setContents(currentNotes);
+		}
+	} , [currentNotebook , notes]);
 	
 	useEffect(() => {
-		const fetchContents = () => {
-			if ( isShowFavoritesNotes ) {
-				const FavoritesNotes = storedContents.filter(note => note.isFavorited === true);
-				setContents(FavoritesNotes);
-			} else {
-				const currentNotes = storedContents.filter(note => note.notebookID === currentNotebook.id);
-				setContents(currentNotes);
-			}
+		
+		if ( isExpandNoteEditSection && inputAddNoteRef.current ) {
+			inputAddNoteRef.current.focus();
+		}
+		// 添加全局事件监听
+		document.addEventListener('mousedown' , handleClickOutside);
+		document.addEventListener('keydown' , handleEscapeKey);
+		
+		// 清除全局事件监听,相当于componentWillUnmount
+		return () => {
+			document.removeEventListener('mousedown' , handleClickOutside);
+			document.removeEventListener('keydown' , handleEscapeKey);
 		};
-		fetchContents();
-	} , [currentNotebook]);
-	
+	} , [currentNotebook , notes , isExpandNoteEditSection]);
+	const handleClickOutside = (event) => {
+		// 如果点击的区域不在输入框范围内，收起输入框
+		if ( wrapperRef.current && !wrapperRef.current.contains(event.target) ) {
+			setIsExpandNoteEditSection(false);
+		}
+	};
+	const handleEscapeKey = (event) => {
+		// 如果按下 ESC 键，收起输入框
+		if ( event.key === 'Escape' ) {
+			setIsExpandNoteEditSection(false);
+		}
+	};
+	const handleCancelEdit = () => {
+		setIsExpandNoteEditSection(false);
+	};
+	const handleExpandNoteEditSection = () => {
+		setIsExpandNoteEditSection(true);
+	};
+	const handleInputNote = (e) => {
+		const textarea = inputAddNoteRef.current;
+		textarea.style.height = "auto"; // 重置高度
+		textarea.style.height = `${ textarea.scrollHeight }px`;//输入笔记内容时根据内容自动调整高度
+		
+	};
+	const onAddNote = () => {
+		
+	};
 	const onDeleteNote = (id) => {
 		deleteNote(id);
 		setContents(contents.filter(content => content.id !== id));
@@ -44,42 +93,37 @@ const RenderContent = ({
 	
 	const onPinNote = (id) => {
 		pinNote(id);
-		setContents((prevNotes) =>
-			prevNotes.map((note) =>
-				note.id === id
-				? {
-						...note ,
-						isPinned : !note.isPinned ,
-						pinnedTime : !note.isPinned ? Date.now() : null , // 置顶记录时间，取消置顶重置时间
-					}
-				: note ,
-			) ,
-		);
+		setContents((prevNotes) => prevNotes.map((note) => note.id === id ? {
+			...note ,
+			isPinned : !note.isPinned ,
+			pinnedTime : !note.isPinned ? Date.now() : null , // 置顶记录时间，取消置顶重置时间
+		} : note ) );
 	};
 	
 	const onFavoriteNote = (id) => {
 		const targetNote = contents.find(note => note.id === id);
+		//取消收藏时从收藏夹列表删除
 		if ( currentNotebook.id === 'favorites-notes-id' && targetNote.isFavorited === true ) {
 			setContents(contents.filter(content => content.id !== id));
 		}
 		
 		favoriteNote(id);
-		setContents((prevNotes) =>
-			prevNotes.map((note) =>
-				note.id === id
-				? {
-						...note ,
-						isFavorited : !note.isFavorited ,
-					}
-				: note ,
-			) ,
-		);
+		setContents((prevNotes) => prevNotes.map((note) => note.id === id ? {
+			...note ,
+			isFavorited : !note.isFavorited ,
+			favoritedTime : !note.isFavorited ? Date.now() : null ,//记录收藏时间
+		} : note ) );
 	};
 	
-	const pinnedNotes = contents.filter((note) => note.isPinned) // 已置顶的笔记
-	.sort((a , b) => b.pinnedTime - a.pinnedTime); // 按置顶时间降序排列，后置顶的排前面
-	// const pinnedNotes = contents.filter(note => note.isPinned === true);
-	const otherNotes = contents.filter(note => !note.isPinned);
+	let pinnedNotes;
+	let otherNotes;
+	if ( isShowFavoritesNotes ) {
+		pinnedNotes = contents.sort((a , b) => b.favoritedTime - a.favoritedTime); // 按收藏时间降序排列，新收藏的排前面
+	} else {
+		pinnedNotes = contents.filter((note) => note.isPinned) // 已置顶的笔记
+		.sort((a , b) => b.pinnedTime - a.pinnedTime); // 按置顶时间降序排列，新置顶的排前面
+		otherNotes = contents.filter(note => !note.isPinned);
+	}
 	
 	//通用部分
 	class NoteList extends Component {
@@ -87,6 +131,7 @@ const RenderContent = ({
 			const {
 				id ,
 				noteContent ,
+				noteTitle,
 				isPinned ,
 				isFavorited ,
 				itemClassName ,
@@ -97,8 +142,9 @@ const RenderContent = ({
 			return <div
 				key = { id }
 				className = { `${ itemClassName } ${ currentNotebook.currentTheme }` }
-				onClick = { () => changeNote(noteContent , id) }
+				onClick = { () => changeNote(noteTitle,noteContent , id) }
 			>
+				{ noteTitle && <span className = "note-item-title">{ noteTitle }</span> }
 				<span className = { `${ titleClassName }` }>{ convertFromRaw(noteContent).getPlainText() }</span>
 				{/*note details : 时间 ,置顶 ,收藏 ,删除 , 显示收藏夹时显示所属书籍*/ }
 				<div className = "note-details">
@@ -112,12 +158,13 @@ const RenderContent = ({
 							e.stopPropagation();
 						} }
 					>
-						<PinNoteIcon
+						{ !isShowFavoritesNotes && <PinNoteIcon
 							isPinned = { isPinned }
 							handlePinNote = { () => {
 								onPinNote(id);
 							} }
-						/>
+						/> }
+						
 						<FavoriteIcon
 							isFavorited = { isFavorited }
 							handleFavoriteNote = { () => {
@@ -142,11 +189,12 @@ const RenderContent = ({
 		render () {
 			return <div>
 				{ pinnedNotes.length > 0 && <div>
-					<p className = "note-list-sub-title">已置顶</p>
+					{ !isShowFavoritesNotes && <p className = "note-list-sub-title">已置顶</p> }
 					<div className = "note-card-mode">
 						{ pinnedNotes.map(({
 							id ,
 							noteContent ,
+							noteTitle,
 							isPinned ,
 							isFavorited ,
 							notebook ,
@@ -154,22 +202,25 @@ const RenderContent = ({
 							return <NoteList
 								id = { id }
 								noteContent = { noteContent }
+								noteTitle={noteTitle}
 								isPinned = { isPinned }
 								isFavorited = { isFavorited }
 								key = { id }
 								itemClassName = "note-card-mode-item"
-								titleClassName = "note-card-mode-title"
+								titleClassName = "note-card-mode-content"
 								notebook = { notebook }
 							/>;
 						}) }
 					</div>
 				</div> }
-				{ otherNotes.length > 0 && <div>
+				
+				{ !isShowFavoritesNotes && <div>{ otherNotes.length > 0 && <div>
 					{ pinnedNotes.length > 0 && <p className = "note-list-sub-title">其他</p> }
 					<div className = "note-card-mode">
 						{ otherNotes.map(({
 							id ,
 							noteContent ,
+							noteTitle,
 							isPinned ,
 							isFavorited ,
 							notebook ,
@@ -177,16 +228,17 @@ const RenderContent = ({
 							return <NoteList
 								id = { id }
 								noteContent = { noteContent }
+								noteTitle={noteTitle}
 								isPinned = { isPinned }
 								isFavorited = { isFavorited }
 								key = { id }
 								itemClassName = "note-card-mode-item"
-								titleClassName = "note-card-mode-title"
+								titleClassName = "note-card-mode-content"
 								notebook = { notebook }
 							/>;
 						}) }
 					</div>
-				</div> }
+				</div> }</div> }
 			
 			</div>;
 		}
@@ -196,11 +248,12 @@ const RenderContent = ({
 		render () {
 			return <div>
 				{ pinnedNotes.length > 0 && <div>
-					<p className = "note-list-sub-title">已置顶</p>
+					{ !isShowFavoritesNotes && <p className = "note-list-sub-title">已置顶</p> }
 					<div className = "note-ul-mode">
 						{ pinnedNotes.map(({
 							id ,
 							noteContent ,
+							noteTitle,
 							isPinned ,
 							isFavorited ,
 							notebook ,
@@ -208,23 +261,25 @@ const RenderContent = ({
 							return <NoteList
 								id = { id }
 								noteContent = { noteContent }
+								noteTitle={noteTitle}
 								isPinned = { isPinned }
 								isFavorited = { isFavorited }
 								key = { id }
 								itemClassName = "note-ul-mode-item"
-								titleClassName = "note-ul-mode-title"
+								titleClassName = "note-ul-mode-content"
 								notebook = { notebook }
 							/>;
 						}) }
 					</div>
 				</div> }
 				
-				{ otherNotes.length > 0 && <div>
+				{ !isShowFavoritesNotes && <div>{ otherNotes.length > 0 && <div>
 					{ pinnedNotes.length > 0 && <p className = "note-list-sub-title">其他</p> }
 					<div className = "note-ul-mode">
 						{ otherNotes.map(({
 							id ,
 							noteContent ,
+							noteTitle,
 							isPinned ,
 							isFavorited ,
 							notebook ,
@@ -232,16 +287,17 @@ const RenderContent = ({
 							return <NoteList
 								id = { id }
 								noteContent = { noteContent }
+								noteTitle={noteTitle}
 								isPinned = { isPinned }
 								isFavorited = { isFavorited }
 								key = { id }
 								itemClassName = "note-ul-mode-item"
-								titleClassName = "note-ul-mode-title"
+								titleClassName = "note-ul-mode-content"
 								notebook = { notebook }
 							/>;
 						}) }
 					</div>
-				</div> }
+				</div> }</div> }
 			
 			</div>;
 		}
@@ -296,39 +352,36 @@ const RenderContent = ({
 		}
 		
 		render () {
-			return (
-				<div>
-					{ pinnedNotes.length > 0 && (
-						<div>
-							<p className = "note-list-sub-title">已置顶</p>
+			return (<div>
+					{ pinnedNotes.length > 0 && (<div>
+							{ !isShowFavoritesNotes && <p className = "note-list-sub-title">已置顶</p> }
 							<div
 								className = "note-grid-mode"
 								ref = { this.gridRefPinned }
 							>
 								{ pinnedNotes.map(({
-										id ,
-										noteContent ,
-										isPinned ,
-										isFavorited ,
-										notebook ,
-									}) => {
-										return <NoteList
-											id = { id }
-											noteContent = { noteContent }
-											isPinned = { isPinned }
-											isFavorited = { isFavorited }
-											key = { id }
-											itemClassName = "note-grid-mode-item"
-											titleClassName = "note-grid-mode-title"
-											notebook = { notebook }
-										/>;
-									} ,
-								) }
+									id ,
+									noteContent ,
+									noteTitle,
+									isPinned ,
+									isFavorited ,
+									notebook ,
+								}) => {
+									return <NoteList
+										id = { id }
+										noteContent = { noteContent }
+										noteTitle={noteTitle}
+										isPinned = { isPinned }
+										isFavorited = { isFavorited }
+										key = { id }
+										itemClassName = "note-grid-mode-item"
+										titleClassName = "note-grid-mode-content"
+										notebook = { notebook }
+									/>;
+								} ) }
 							</div>
-						</div>
-					) }
-					{ otherNotes.length > 0 && (
-						<div>
+						</div>) }
+					{ !isShowFavoritesNotes && <div>{ otherNotes.length > 0 && (<div>
 							{ pinnedNotes.length > 0 && <p className = "note-list-sub-title">其他</p> }
 							
 							<div
@@ -338,6 +391,7 @@ const RenderContent = ({
 								{ otherNotes.map(({
 									id ,
 									noteContent ,
+									noteTitle,
 									isPinned ,
 									isFavorited ,
 									notebook ,
@@ -345,19 +399,18 @@ const RenderContent = ({
 									return <NoteList
 										id = { id }
 										noteContent = { noteContent }
+										noteTitle={noteTitle}
 										isPinned = { isPinned }
 										isFavorited = { isFavorited }
 										key = { id }
 										itemClassName = "note-grid-mode-item"
-										titleClassName = "note-grid-mode-title"
+										titleClassName = "note-grid-mode-content"
 										notebook = { notebook }
 									/>;
 								}) }
 							</div>
-						</div>
-					) }
-				</div>
-			);
+						</div>) }</div> }
+				</div>);
 		}
 	}
 	
@@ -368,7 +421,7 @@ const RenderContent = ({
 		useEffect(() => {
 			const fetchTimeArray = () => {
 				
-				let initialTimeArray = storedContents.map(({
+				let initialTimeArray = notes.map(({
 					id ,
 					saveTime ,
 				}) => ({
@@ -402,25 +455,51 @@ const RenderContent = ({
 			};
 		} , []);
 		
-		return (
-			<div className = "note-time">{ timeIDArray.find(item => item.id === id)?.relativeTime }</div>
-		);
+		return (<div className = "note-time">{ timeIDArray.find(item => item.id === id)?.relativeTime }</div>);
 		
 	};
 	
-	return (
-		<div className = "show-mode-box">
+	return (<div className = "show-mode-box">
+			{/*输入笔记区*/ }
+			{ currentNotebook.id !== 'favorites-notes-id' && <div className = "add-new-note-section">
+				{ isExpandNoteEditSection ? <div
+					ref = { wrapperRef }
+					className = { `note-info-input-section ${ currentNotebook.currentTheme }` }
+				>
+					<div className = "input-and-edit">
+						{/*<input*/ }
+						{/*  className = { `note-title-input ${ currentNotebook.currentTheme }` }*/ }
+						{/*  type = "text"*/ }
+						{/*  placeholder = "标题"*/ }
+						{/*/>*/ }
+						<RichTextEditor
+							onSave = { onSave }
+							onCancel = { onCancel }
+							showAllOptions = { false }
+							openModal = { openModal }
+							cancelExpandNoteEditSection={handleCancelEdit}
+						/>
+					</div>
+					<div className = "edit-item-cancel-button">
+						<CancelEditIcon handleCancel = { handleCancelEdit } />
+					</div>
+				</div> : <input
+					  onClick = { handleExpandNoteEditSection }
+					  type = "text"
+					  className = { `add-note-input ${ currentNotebook.currentTheme }` }
+					  placeholder = "输入笔记内容..."
+				  /> }
+			</div> }
+			
 			{ contents.length === 0 ? (<div className = "empty-container">
 				<EmptyIcon />
-				<p>还没有笔记 , 点击右下角按钮创建吧!</p>
+				{ isShowFavoritesNotes ? <p>收藏夹空空如也</p> : <p>还没有笔记 , 点击上方输入框创建吧 !</p> }
 			</div>) : (<div className = "show-noteList-box">
 				{ ShowMode === 'list-mode' && <UlMode /> }
 				{ ShowMode === 'grid-mode' && <GridMode /> }
 				{ ShowMode === 'card-mode' && <CardMode /> }
 			</div>) }
-		
-		</div>
-	);
+		</div>);
 };
 
 
@@ -581,5 +660,75 @@ const PinNoteIcon = ({
 			></path>
 		</svg>
 	</div>;
+};
+
+class AddNewNotebtn extends Component {
+	constructor () {
+		super();
+	}
+	
+	render () {
+		const {
+			onClick ,
+		} = this.props;
+		return <div>
+			<Tooltip
+				title = "添加笔记"
+				placement = "bottom"
+				zIndex = "1"
+			>
+				<div
+					className = 'add-new-button'
+					onClick = { onClick }
+				>
+					<svg
+						t = "1736084509838"
+						className = "icon"
+						viewBox = "0 0 1024 1024"
+						version = "1.1"
+						xmlns = "http://www.w3.org/2000/svg"
+						p-id = "128954"
+						width = "16"
+						height = "16"
+					>
+						<path
+							d = "M482 481.3V130.1c0-17.6 14.3-31.9 31.9-31.9 17.6 0 31.9 14.3 31.9 31.9v351.2H897c17.6 0 31.9 14.3 31.9 31.9 0 17.6-14.3 31.9-31.9 31.9H545.8v351.2c0 17.6-14.3 31.9-31.9 31.9-17.6 0-31.9-14.3-31.9-31.9V545.1H130.8c-17.6 0-31.9-14.3-31.9-31.9 0-17.6 14.3-31.9 31.9-31.9H482z"
+							p-id = "128955"
+							fill = "#515151"
+						></path>
+					</svg>
+				</div>
+			</Tooltip>
+		</div>;
+		
+	}
+}
+
+const CancelEditIcon = ({ handleCancel }) => {
+	return <>
+		<Tooltip
+			title = "取消编辑"
+			placement = "bottom"
+			zIndex = "1"
+		>
+			<svg
+				onClick = { handleCancel }
+				t = "1736085320917"
+				className = "icon"
+				viewBox = "0 0 1024 1024"
+				version = "1.1"
+				xmlns = "http://www.w3.org/2000/svg"
+				p-id = "136123"
+				width = "14"
+				height = "14"
+			>
+				<path
+					d = "M103.34374999 866.46875001l354.65625001-354.65625001L103.34374999 157.0625c-14.90625001-14.90625001-14.90625001-39.09375001 2e-8-54 14.90625001-14.90625001 39.09375001-14.90625001 54 0L512 457.71874999 866.75 103.0625c14.90625001-14.90625001 39.09375001-14.90625001 54 0 14.90625001 14.90625001 14.90625001 39.09375001 0 54L566 511.71874999 920.75 866.46875001c14.90625001 14.90625001 14.90625001 39.09375001 0 53.99999998-7.50000001 7.40625001-17.25 11.15625001-27 11.15625001s-19.50000001-3.75-27-11.15625001L512.09375001 565.71875001 157.34374999 920.375c-7.50000001 7.40625001-17.25 11.15625001-26.99999998 11.15625001-9.75 0-19.50000001-3.75-27-11.15625001-14.90625001-14.90625001-14.90625001-39 0-53.90625001z"
+					fill = "#707070"
+					p-id = "136124"
+				></path>
+			</svg>
+		</Tooltip>
+	</>;
 };
 export default RenderContent;

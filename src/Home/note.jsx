@@ -15,7 +15,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { current } from "@reduxjs/toolkit";
 import coverDefault from "@src/Home/img-collection/cover-default.png";
 import dayjs from "dayjs";
-import { AddNoteModal } from '../RichTextEditor/RichTextEditor';
+import { AddNewNoteModal } from '../RichTextEditor/RichTextEditor';
 import { NoteBookModal } from "@src/Home/addNoteBook_Model";
 
 const defaultNotebook = {
@@ -33,8 +33,8 @@ class NotesApp extends Component {
 		
 		this.state = {
 			currentContent : '' ,
+			currentNoteTitle:"",
 			currentID : null ,
-			isAddNote : false ,
 			noteListData : [] ,
 			noteBookData : [] ,
 			isSidebarVisible : false ,
@@ -52,21 +52,23 @@ class NotesApp extends Component {
 		if ( this.state.currentNotebook && prevState.currentNotebook && this.state.currentNotebook.id !== prevState.currentNotebook.id ) {
 			localStorage.setItem('current-notebook' , JSON.stringify(this.state.currentNotebook));
 			
-			if(this.state.currentNotebook.id === 'favorites-notes-id'){
+			if ( this.state.currentNotebook.id === 'favorites-notes-id' ) {
 				const favoritedNotes = this.state.noteListData.filter(note => note.isFavorited === true);
 				this.setState({ notesAmount : favoritedNotes.length });
-			}else{
+			} else {
 				const currentNotes = this.state.noteListData.filter(note => note.notebookID === this.state.currentNotebook.id);
 				this.setState({ notesAmount : currentNotes.length });
 			}
 		}
-		if ( this.state.noteListData && prevState.noteListData && this.state.noteListData !== prevState.noteListData) {
-			if(this.state.currentNotebook.id === 'favorites-notes-id'){
+		if ( this.state.noteListData && prevState.noteListData && this.state.noteListData !== prevState.noteListData ) {
+			if ( this.state.currentNotebook.id === 'favorites-notes-id' ) {
 				const favoritedNotes = this.state.noteListData.filter(note => note.isFavorited === true);
 				this.setState({ notesAmount : favoritedNotes.length });
-			}else{
+			} else {
 				const currentNotes = this.state.noteListData.filter(note => note.notebookID === this.state.currentNotebook.id);
-				this.setState({ notesAmount : currentNotes.length });
+				this.setState({
+					notesAmount : currentNotes.length ,
+				});
 			}
 		}
 		if ( this.state.activeModal === 'deleteConfirm' && this.state.noteBookData.length === 1 ) {
@@ -84,7 +86,7 @@ class NotesApp extends Component {
 			notesAmount : currentNotes.length ,
 		});
 		
-		if(this.state.currentNotebook.id === 'favorites-notes-id'){
+		if ( this.state.currentNotebook.id === 'favorites-notes-id' ) {
 			const favoritedNotes = storedNoteData.filter(note => note.isFavorited === true);
 			this.setState({ notesAmount : favoritedNotes.length });
 		}
@@ -108,39 +110,33 @@ class NotesApp extends Component {
 	}
 	
 	
-	handleAddNote = () => {
-		this.setState({
-			isAddNote : !this.state.isAddNote ,
-			currentContent : '' ,
-			currentID : null ,
-		});
-	};
-	
 	//保存note
-	handleSaveNote = (rawContentState , saveTime) => {
+	handleSaveNote = (noteTitle , rawContentState , saveTime) => {
 		const {
 			currentID ,
 			noteListData ,
 			currentNotebook ,
-			notesAmount ,
 		} = this.state;
+		
 		let noteInfoArray = [...noteListData];
-		//
+		
 		let newNoteInfo = {
 			noteContent : rawContentState ,
+			noteTitle:noteTitle,
 			saveTime : saveTime ,
 			notebook : currentNotebook.title ,
 			notebookID : currentNotebook.id ,
-			id : currentID||uuidv4() ,
+			id : currentID || uuidv4() ,
 			isPinned : false ,
 			pinnedTime : null ,
 			isFavorited : false ,
+			favoritedTime : null ,
 		};
 		
 		//在收藏夹修改已存在笔记时:
-		if (currentNotebook.id === 'favorites-notes-id' && currentID !== null) {
+		if ( currentNotebook.id === 'favorites-notes-id' && currentID !== null ) {
 			const oldNote = noteInfoArray.find(note => note.id === currentID);
-			if (oldNote) {
+			if ( oldNote ) {
 				newNoteInfo.notebookID = oldNote.notebookID; // 保留原来的 notebookID
 				newNoteInfo.notebook = oldNote.notebook;     // 保留原来的 notebook 名称
 			}
@@ -148,56 +144,48 @@ class NotesApp extends Component {
 		
 		//添加新note
 		if ( currentID === null ) {
-			noteInfoArray.unshift(newNoteInfo);
-			
-			localStorage.setItem('note-info-array' , JSON.stringify(noteInfoArray));
-			const currentNotes = noteInfoArray.filter(note => note.notebookID === currentNotebook.id);
-			//更新状态
-			this.setState({
-				isAddNote : false ,
-				noteListData : noteInfoArray ,
-				currentID : null ,
-				notesAmount : currentNotes.length ,
-			});
-		}
-		
-		//修改已存在的note, 分两种情况:1,修改原内容; 2,未修改
-		if ( currentID !== null ) {
+			noteInfoArray = [newNoteInfo , ...noteInfoArray];
+		} else {
+			//修改已存在的note, 分两种情况:1,修改原内容; 2,未修改
 			//rawContentState.blocks 中每个 block 代表的是编辑器中一个段落，而不是一个完整的文档.
 			// 所以当调用 rawContentState.blocks[0].text 时，只会取到第一块的文本内容。
 			// 如果有多行文本，通常会有多个 block，每个 block 里可能只有一行文本。
 			let oldNote = noteInfoArray.find((note) => note.id === currentID);
 			let oldNoteContent = oldNote.noteContent.blocks;
 			let newNoteContent = rawContentState.blocks;
-			
-			if ( isEqual(oldNoteContent , newNoteContent) ) {
+			let oldNoteTitle=oldNote.noteTitle;
+			let newNoteTitle=noteTitle;
+			console.log(oldNoteTitle);
+			console.log(newNoteTitle);
+			if ( isEqual(oldNoteContent , newNoteContent)&&isEqual(oldNoteTitle,newNoteTitle) ) {
 				console.log('没有变化');
-				this.setState({ isAddNote : false });
+				this.handleCloseModal();
 				return;
 			}
 			noteInfoArray = noteInfoArray.filter((note) => note.id !== currentID);
-			
-			newNoteInfo = {
+			noteInfoArray.unshift({
 				...newNoteInfo ,
 				isPinned : oldNote.isPinned ,
 				pinnedTime : oldNote.pinnedTime ,
 				isFavorited : oldNote.isFavorited ,
-			};
-			
-			noteInfoArray.unshift(newNoteInfo);
-			localStorage.setItem('note-info-array' , JSON.stringify(noteInfoArray));
-			const currentNotes = noteInfoArray.filter(note => note.notebookID === currentNotebook.id);
-			
-			//更新状态
-			this.setState({
-				isAddNote : false ,
-				noteListData : noteInfoArray ,
-				currentID : null ,
-				notesAmount : currentNotes.length ,
+				favoritedTime : oldNote.favoritedTime ,
 			});
 		}
 		
+		const currentNotes = noteInfoArray.filter(note => note.notebookID === currentNotebook.id);
+		//更新状态
+		this.setState({
+			noteListData : noteInfoArray ,
+			currentID : null ,
+			currentNoteTitle:null,
+			currentContent : null ,
+			notesAmount : currentNotes.length ,
+		} , () => {
+			this.handleCloseModal();
+			localStorage.setItem('note-info-array' , JSON.stringify(noteInfoArray));
+		});
 	};
+	
 	
 	//删除note
 	handleDeleteNote = (id) => {
@@ -206,31 +194,34 @@ class NotesApp extends Component {
 			notesAmount ,
 			currentNotebook ,
 		} = this.state;
-		const updatedList = noteListData.filter((note) => note.id !== id);
+		let updatedList = [...noteListData];
+		updatedList = updatedList.filter((note) => note.id !== id);
 		let currentNotes;
-		if(currentNotebook.id === 'favorites-notes-id' ){
-			currentNotes = noteListData.filter(note => note.isFavorited === true);
-		}else{
+		if ( currentNotebook.id === 'favorites-notes-id' ) {
+			currentNotes = updatedList.filter(note => note.isFavorited === true);
+		} else {
 			currentNotes = updatedList.filter(note => note.notebookID === currentNotebook.id);
 		}
 		
 		this.setState({
 			noteListData : updatedList ,
 			currentID : null ,
+			currentContent : null ,
+			currentNoteTitle : null ,
 			notesAmount : currentNotes.length ,
-		},()=>{
+		} , () => {
 			localStorage.setItem('note-info-array' , JSON.stringify(updatedList));
 		});
 	};
 	
 	//修改old note
-	handleChangeNote = (noteContent , id) => {
-		console.log(noteContent);
+	handleChangeNote = (noteTitle,noteContent , id) => {
 		this.setState({
-			isAddNote : !this.state.isAddNote ,
+			currentNoteTitle : noteTitle ,
 			currentContent : noteContent ,
 			currentID : id ,
 		});
+		this.handleOpenModal('addNewNote');
 	};
 	//置顶note
 	handlePinNote = (id) => {
@@ -267,6 +258,7 @@ class NotesApp extends Component {
 				return {
 					...note ,
 					isFavorited : !note.isFavorited ,
+					favoritedTime : !note.isFavorited ? Date.now() : null ,
 				};
 			}
 			return note;
@@ -312,8 +304,10 @@ class NotesApp extends Component {
 		const {
 			noteBookData ,
 			currentNotebook ,
+			noteListData ,
 		} = this.state;
 		let updatedNotebooks = [...noteBookData];
+		let updatedNotes = [...noteListData];
 		updatedNotebooks = updatedNotebooks.map(notebook => {
 			if ( notebook.id === currentNotebook.id ) {
 				return {
@@ -323,6 +317,19 @@ class NotesApp extends Component {
 			}
 			return notebook;
 		});
+		//重命名笔记时修改笔记列表中noteBook的值
+		if ( key === 'title' ) {
+			updatedNotes = updatedNotes.map((note) => {
+				if ( note.notebookID === currentNotebook.id ) {
+					return {
+						...note ,
+						notebook : value ,
+					};
+				}
+				return note;
+			});
+		}
+		
 		this.setState(prevState => {
 			const updatedNotebook = {
 				...prevState.currentNotebook ,
@@ -331,10 +338,12 @@ class NotesApp extends Component {
 			return {
 				currentNotebook : updatedNotebook ,
 				noteBookData : updatedNotebooks ,
+				noteListData : updatedNotes ,
 			};
 		} , () => {
 			localStorage.setItem('current-notebook' , JSON.stringify(this.state.currentNotebook));
 			localStorage.setItem('notebook-array' , JSON.stringify(this.state.noteBookData));
+			localStorage.setItem('note-info-array' , JSON.stringify(this.state.noteListData));
 		});
 	};
 	
@@ -403,104 +412,103 @@ class NotesApp extends Component {
 			showFavoritedNotes : true ,
 			currentNotebook : favorites ,
 			selectedNotebookId : favorites.id ,
-			notesAmount : favoritedNotes.length,
+			notesAmount : favoritedNotes.length ,
 		});
-		console.log(this.state.showFavoritedNotes);
 	};
 	
 	render () {
 		
 		return <div className = "container">
 			
+			{ this.state.activeModal === 'addNewNote' && <AddNewNoteModal
+				open = { this.state.isModalOpen }
+				onCloseModal = { () => this.handleCloseModal() }
+				onCancel = { this.handleCloseModal }
+				onSave = { this.handleSaveNote }
+				initialTitle = { this.state.currentNoteTitle }
+				initialContent = { this.state.currentContent }
+				openModal = { this.handleOpenModal }
+			/> }
 			
-			{ this.state.isAddNote === true ? (
-				<>
-					<RichTextEditor
-						onCancel = { this.handleAddNote }
-						onSave = { this.handleSaveNote }
-						initialContent = { this.state.currentContent }
-					/>
-				</>) : (
-				  <div
-					  style = { {
-						  display : 'flex' ,
-						  width : '100%' ,
-					  } }
-				  >
-					  <NoteSidebar
-						  noteBookArray = { this.state.noteBookData }
-						  handleToggleNoteBook = { this.handleToggleNoteBook }
-						  selectedNotebookId = { this.state.selectedNotebookId }
-						  openModal = { this.handleOpenModal }
-						  clickFavorites = { this.handleClickFavorites }
-					  />
-					  
-					  
-					  <NoteManagePanel
-						  isAddNote = { this.state.isAddNote }
-						  handleAddNote = { this.handleAddNote }
-						  onChangeNote = { this.handleChangeNote }
-						  onDeleteNote = { this.handleDeleteNote }
-						  onToggleSidebar = { this.toggleSidebar }
-						  sidebarIsVisible = { this.state.isSidebarVisible }
-						  currentNotebook = { this.state.currentNotebook }
-						  updateNotebookInfo = { this.updateNotebookInfo }
-						  openModal = { this.handleOpenModal }
-						  notesAmount = { this.state.notesAmount }
-						  pinNote = { this.handlePinNote }
-						  favoriteNote = { this.handleFavoriteNote }
-						  isShowFavorites = { this.state.showFavoritedNotes }
-					  />
-					  
-					  {/*添加笔记本 Modal*/ }
-					  { this.state.activeModal === 'addNotebook' && (<NoteBookModal
-						  showTitleInput = { true }
-						  onOk = { ({
-							  title ,
-							  cover ,
-						  }) => {
-							  const newNoteBook = {
-								  title ,
-								  cover ,
-								  id : uuidv4() ,
-								  createdTime : dayjs().valueOf() ,
-								  showMode : 'list-mode' ,
-								  currentTheme : 'blue-theme' ,
-							  };
-							  this.addNoteBook(newNoteBook);
-							  this.handleToggleNoteBook(newNoteBook);
-						  }
-						  }
-						  closeModal = { () => this.handleCloseModal() }
-						  open = { this.state.isModalOpen }
-					  />) }
-					  
-					  {/*修改笔记本封面 Modal*/ }
-					  { this.state.activeModal === 'changeCover' && (<NoteBookModal
-						  showTitleInput = { false }
-						  onOk = { ({ cover }) => {
-							  this.updateNotebookInfo('cover' , cover);
-						  } }
-						  closeModal = { () => this.handleCloseModal() }
-						  open = { this.state.isModalOpen }
-					  />) }
-					  
-					  {/*  删除笔记本确认框*/ }
-					  { this.state.activeModal === 'deleteConfirm' && this.state.noteBookData.length !== 1 ? (
-						  showDeleteConfirm(
-							  this.state.currentNotebook.title ,
-							  this.state.isModalOpen ,
-							  () => {
-								  this.deleteNotebook();
-								  this.handleCloseModal();
-							  } ,
-							  this.handleCloseModal ,
-						  )
-					  ) : null }
-				  
-				  </div>)
+			{ <div
+				style = { {
+					display : 'flex' ,
+					width : '100%' ,
+				} }
+			>
+				<NoteSidebar
+					noteBookArray = { this.state.noteBookData }
+					handleToggleNoteBook = { this.handleToggleNoteBook }
+					selectedNotebookId = { this.state.selectedNotebookId }
+					openModal = { this.handleOpenModal }
+					clickFavorites = { this.handleClickFavorites }
+				/>
 				
-			}
+				
+				<NoteManagePanel
+					noteList = { this.state.noteListData }
+					onChangeNote = { this.handleChangeNote }
+					onDeleteNote = { this.handleDeleteNote }
+					onToggleSidebar = { this.toggleSidebar }
+					sidebarIsVisible = { this.state.isSidebarVisible }
+					currentNotebook = { this.state.currentNotebook }
+					updateNotebookInfo = { this.updateNotebookInfo }
+					openModal = { this.handleOpenModal }
+					notesAmount = { this.state.notesAmount }
+					pinNote = { this.handlePinNote }
+					favoriteNote = { this.handleFavoriteNote }
+					isShowFavorites = { this.state.showFavoritedNotes }
+					onSave = { this.handleSaveNote }
+					onCancel = { this.handleCloseModal }
+				/>
+				
+				{/*添加笔记本 Modal*/ }
+				{ this.state.activeModal === 'addNotebook' && (<NoteBookModal
+					showTitleInput = { true }
+					onOk = { ({
+						title ,
+						cover ,
+					}) => {
+						const newNoteBook = {
+							title ,
+							cover ,
+							id : uuidv4() ,
+							createdTime : dayjs().valueOf() ,
+							showMode : 'list-mode' ,
+							currentTheme : 'blue-theme' ,
+						};
+						this.addNoteBook(newNoteBook);
+						this.handleToggleNoteBook(newNoteBook);
+					}
+					}
+					closeModal = { () => this.handleCloseModal() }
+					open = { this.state.isModalOpen }
+				/>) }
+				
+				{/*修改笔记本封面 Modal*/ }
+				{ this.state.activeModal === 'changeCover' && (<NoteBookModal
+					showTitleInput = { false }
+					onOk = { ({ cover }) => {
+						this.updateNotebookInfo('cover' , cover);
+					} }
+					closeModal = { () => this.handleCloseModal() }
+					open = { this.state.isModalOpen }
+				/>) }
+				
+				{/*  删除笔记本确认框*/ }
+				{ this.state.activeModal === 'deleteConfirm' && this.state.noteBookData.length !== 1 ? (
+					showDeleteConfirm(
+						this.state.currentNotebook.title ,
+						this.state.isModalOpen ,
+						() => {
+							this.deleteNotebook();
+							this.handleCloseModal();
+						} ,
+						this.handleCloseModal ,
+					)
+				) : null }
+			
+			</div> }
 		
 		
 		</div>;
