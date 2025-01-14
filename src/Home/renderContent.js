@@ -25,7 +25,6 @@ const RenderContent = ({
 	const inputAddNoteRef = React.useRef();
 	const wrapperRef = React.useRef();
 	
-	let storedContents = JSON.parse(localStorage.getItem('note-info-array')) || [];
 	const [contents , setContents] = useState([]);
 	const [isExpandNoteEditSection , setIsExpandNoteEditSection] = useState(false);
 	
@@ -34,6 +33,25 @@ const RenderContent = ({
 	if ( currentNotebook.id === 'favorites-notes-id' ) {
 		isShowFavoritesNotes = true;
 	}
+	const placeholders = [
+		'输入笔记...' ,
+		'记录你的闪光灵感✨' ,
+		'有什么心得吗？在这里记录下来吧',
+	];
+	
+	useEffect(() => {
+		let currentIndex = 0;
+		
+		const intervalId = setInterval(() => {
+			if ( inputAddNoteRef.current ) {
+				currentIndex = (currentIndex + 1) % placeholders.length;
+				inputAddNoteRef.current.placeholder=placeholders[currentIndex]
+			}
+		} , 5000);
+		
+		return () => clearInterval(intervalId); // 清理定时器，防止内存泄漏
+	} , [placeholders]);
+	
 	useEffect(() => {
 		if ( isShowFavoritesNotes ) {
 			const FavoritesNotes = notes.filter(note => note.isFavorited === true);
@@ -44,11 +62,8 @@ const RenderContent = ({
 		}
 	} , [currentNotebook , notes]);
 	
+	
 	useEffect(() => {
-		
-		if ( isExpandNoteEditSection && inputAddNoteRef.current ) {
-			inputAddNoteRef.current.focus();
-		}
 		// 添加全局事件监听
 		document.addEventListener('mousedown' , handleClickOutside);
 		document.addEventListener('keydown' , handleEscapeKey);
@@ -97,7 +112,7 @@ const RenderContent = ({
 			...note ,
 			isPinned : !note.isPinned ,
 			pinnedTime : !note.isPinned ? Date.now() : null , // 置顶记录时间，取消置顶重置时间
-		} : note ) );
+		} : note));
 	};
 	
 	const onFavoriteNote = (id) => {
@@ -112,7 +127,7 @@ const RenderContent = ({
 			...note ,
 			isFavorited : !note.isFavorited ,
 			favoritedTime : !note.isFavorited ? Date.now() : null ,//记录收藏时间
-		} : note ) );
+		} : note));
 	};
 	
 	let pinnedNotes;
@@ -131,7 +146,7 @@ const RenderContent = ({
 			const {
 				id ,
 				noteContent ,
-				noteTitle,
+				noteTitle ,
 				isPinned ,
 				isFavorited ,
 				itemClassName ,
@@ -142,7 +157,7 @@ const RenderContent = ({
 			return <div
 				key = { id }
 				className = { `${ itemClassName } ${ currentNotebook.currentTheme }` }
-				onClick = { () => changeNote(noteTitle,noteContent , id) }
+				onClick = { () => changeNote(noteTitle , noteContent , id) }
 			>
 				{ noteTitle && <span className = "note-item-title">{ noteTitle }</span> }
 				<span className = { `${ titleClassName }` }>{ convertFromRaw(noteContent).getPlainText() }</span>
@@ -194,7 +209,7 @@ const RenderContent = ({
 						{ pinnedNotes.map(({
 							id ,
 							noteContent ,
-							noteTitle,
+							noteTitle ,
 							isPinned ,
 							isFavorited ,
 							notebook ,
@@ -202,7 +217,7 @@ const RenderContent = ({
 							return <NoteList
 								id = { id }
 								noteContent = { noteContent }
-								noteTitle={noteTitle}
+								noteTitle = { noteTitle }
 								isPinned = { isPinned }
 								isFavorited = { isFavorited }
 								key = { id }
@@ -220,7 +235,7 @@ const RenderContent = ({
 						{ otherNotes.map(({
 							id ,
 							noteContent ,
-							noteTitle,
+							noteTitle ,
 							isPinned ,
 							isFavorited ,
 							notebook ,
@@ -228,7 +243,7 @@ const RenderContent = ({
 							return <NoteList
 								id = { id }
 								noteContent = { noteContent }
-								noteTitle={noteTitle}
+								noteTitle = { noteTitle }
 								isPinned = { isPinned }
 								isFavorited = { isFavorited }
 								key = { id }
@@ -253,7 +268,7 @@ const RenderContent = ({
 						{ pinnedNotes.map(({
 							id ,
 							noteContent ,
-							noteTitle,
+							noteTitle ,
 							isPinned ,
 							isFavorited ,
 							notebook ,
@@ -261,7 +276,7 @@ const RenderContent = ({
 							return <NoteList
 								id = { id }
 								noteContent = { noteContent }
-								noteTitle={noteTitle}
+								noteTitle = { noteTitle }
 								isPinned = { isPinned }
 								isFavorited = { isFavorited }
 								key = { id }
@@ -279,7 +294,7 @@ const RenderContent = ({
 						{ otherNotes.map(({
 							id ,
 							noteContent ,
-							noteTitle,
+							noteTitle ,
 							isPinned ,
 							isFavorited ,
 							notebook ,
@@ -287,7 +302,7 @@ const RenderContent = ({
 							return <NoteList
 								id = { id }
 								noteContent = { noteContent }
-								noteTitle={noteTitle}
+								noteTitle = { noteTitle }
 								isPinned = { isPinned }
 								isFavorited = { isFavorited }
 								key = { id }
@@ -353,64 +368,64 @@ const RenderContent = ({
 		
 		render () {
 			return (<div>
-					{ pinnedNotes.length > 0 && (<div>
-							{ !isShowFavoritesNotes && <p className = "note-list-sub-title">已置顶</p> }
-							<div
-								className = "note-grid-mode"
-								ref = { this.gridRefPinned }
-							>
-								{ pinnedNotes.map(({
-									id ,
-									noteContent ,
-									noteTitle,
-									isPinned ,
-									isFavorited ,
-									notebook ,
-								}) => {
-									return <NoteList
-										id = { id }
-										noteContent = { noteContent }
-										noteTitle={noteTitle}
-										isPinned = { isPinned }
-										isFavorited = { isFavorited }
-										key = { id }
-										itemClassName = "note-grid-mode-item"
-										titleClassName = "note-grid-mode-content"
-										notebook = { notebook }
-									/>;
-								} ) }
-							</div>
-						</div>) }
-					{ !isShowFavoritesNotes && <div>{ otherNotes.length > 0 && (<div>
-							{ pinnedNotes.length > 0 && <p className = "note-list-sub-title">其他</p> }
-							
-							<div
-								className = "note-grid-mode"
-								ref = { this.gridRefOther }
-							>
-								{ otherNotes.map(({
-									id ,
-									noteContent ,
-									noteTitle,
-									isPinned ,
-									isFavorited ,
-									notebook ,
-								}) => {
-									return <NoteList
-										id = { id }
-										noteContent = { noteContent }
-										noteTitle={noteTitle}
-										isPinned = { isPinned }
-										isFavorited = { isFavorited }
-										key = { id }
-										itemClassName = "note-grid-mode-item"
-										titleClassName = "note-grid-mode-content"
-										notebook = { notebook }
-									/>;
-								}) }
-							</div>
-						</div>) }</div> }
-				</div>);
+				{ pinnedNotes.length > 0 && (<div>
+					{ !isShowFavoritesNotes && <p className = "note-list-sub-title">已置顶</p> }
+					<div
+						className = "note-grid-mode"
+						ref = { this.gridRefPinned }
+					>
+						{ pinnedNotes.map(({
+							id ,
+							noteContent ,
+							noteTitle ,
+							isPinned ,
+							isFavorited ,
+							notebook ,
+						}) => {
+							return <NoteList
+								id = { id }
+								noteContent = { noteContent }
+								noteTitle = { noteTitle }
+								isPinned = { isPinned }
+								isFavorited = { isFavorited }
+								key = { id }
+								itemClassName = "note-grid-mode-item"
+								titleClassName = "note-grid-mode-content"
+								notebook = { notebook }
+							/>;
+						}) }
+					</div>
+				</div>) }
+				{ !isShowFavoritesNotes && <div>{ otherNotes.length > 0 && (<div>
+					{ pinnedNotes.length > 0 && <p className = "note-list-sub-title">其他</p> }
+					
+					<div
+						className = "note-grid-mode"
+						ref = { this.gridRefOther }
+					>
+						{ otherNotes.map(({
+							id ,
+							noteContent ,
+							noteTitle ,
+							isPinned ,
+							isFavorited ,
+							notebook ,
+						}) => {
+							return <NoteList
+								id = { id }
+								noteContent = { noteContent }
+								noteTitle = { noteTitle }
+								isPinned = { isPinned }
+								isFavorited = { isFavorited }
+								key = { id }
+								itemClassName = "note-grid-mode-item"
+								titleClassName = "note-grid-mode-content"
+								notebook = { notebook }
+							/>;
+						}) }
+					</div>
+				</div>) }</div> }
+			</div>);
 		}
 	}
 	
@@ -460,46 +475,44 @@ const RenderContent = ({
 	};
 	
 	return (<div className = "show-mode-box">
-			{/*输入笔记区*/ }
-			{ currentNotebook.id !== 'favorites-notes-id' && <div className = "add-new-note-section">
-				{ isExpandNoteEditSection ? <div
-					ref = { wrapperRef }
-					className = { `note-info-input-section ${ currentNotebook.currentTheme }` }
-				>
-					<div className = "input-and-edit">
-						{/*<input*/ }
-						{/*  className = { `note-title-input ${ currentNotebook.currentTheme }` }*/ }
-						{/*  type = "text"*/ }
-						{/*  placeholder = "标题"*/ }
-						{/*/>*/ }
-						<RichTextEditor
-							onSave = { onSave }
-							onCancel = { onCancel }
-							showAllOptions = { false }
-							openModal = { openModal }
-							cancelExpandNoteEditSection={handleCancelEdit}
-						/>
-					</div>
-					<div className = "edit-item-cancel-button">
-						<CancelEditIcon handleCancel = { handleCancelEdit } />
-					</div>
-				</div> : <input
-					  onClick = { handleExpandNoteEditSection }
-					  type = "text"
-					  className = { `add-note-input ${ currentNotebook.currentTheme }` }
-					  placeholder = "输入笔记内容..."
-				  /> }
-			</div> }
-			
-			{ contents.length === 0 ? (<div className = "empty-container">
-				<EmptyIcon />
-				{ isShowFavoritesNotes ? <p>收藏夹空空如也</p> : <p>还没有笔记 , 点击上方输入框创建吧 !</p> }
-			</div>) : (<div className = "show-noteList-box">
-				{ ShowMode === 'list-mode' && <UlMode /> }
-				{ ShowMode === 'grid-mode' && <GridMode /> }
-				{ ShowMode === 'card-mode' && <CardMode /> }
-			</div>) }
-		</div>);
+		{/*输入笔记区*/ }
+		{ currentNotebook.id !== 'favorites-notes-id' && <div className = "add-new-note-section">
+			{ isExpandNoteEditSection ? <div
+				ref = { wrapperRef }
+				className = { `note-info-input-section ${ currentNotebook.currentTheme }` }
+			>
+				<div className = "input-and-edit">
+					
+					<RichTextEditor
+						onSave = { onSave }
+						onCancel = { onCancel }
+						showAllOptions = { false }
+						openModal = { openModal }
+						cancelExpandNoteEditSection = { handleCancelEdit }
+						changeNoteEdit = { changeNote }
+					/>
+				</div>
+				<div className = "edit-item-cancel-button">
+					<CancelEditIcon handleCancel = { handleCancelEdit } />
+				</div>
+			</div> : <input
+				  ref = { inputAddNoteRef }
+				  onClick = { handleExpandNoteEditSection }
+				  type = "text"
+				  className = { `add-note-input ${ currentNotebook.currentTheme }` }
+				  placeholder = "输入笔记内容..."
+			  /> }
+		</div> }
+		
+		{ contents.length === 0 ? (<div className = "empty-container">
+			<EmptyIcon />
+			{ isShowFavoritesNotes ? <p>收藏夹空空如也</p> : <p>还没有笔记 , 点击上方输入框创建吧 !</p> }
+		</div>) : (<div className = "show-noteList-box">
+			{ ShowMode === 'list-mode' && <UlMode /> }
+			{ ShowMode === 'grid-mode' && <GridMode /> }
+			{ ShowMode === 'card-mode' && <CardMode /> }
+		</div>) }
+	</div>);
 };
 
 
@@ -678,7 +691,7 @@ class AddNewNotebtn extends Component {
 				zIndex = "1"
 			>
 				<div
-					className = 'add-new-button'
+					className = "add-new-button"
 					onClick = { onClick }
 				>
 					<svg

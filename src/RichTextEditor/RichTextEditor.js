@@ -2,7 +2,7 @@ import React , { useState , useRef , useEffect , Component } from 'react';
 import { Editor , EditorState , ContentState , convertFromRaw , convertToRaw , RichUtils , AtomicBlockUtils , Modifier , SelectionState } from 'draft-js';
 import 'draft-js/dist/Draft.css';
 import GetContentButton from '@src/Home/GetContentButton';
-import { FaPaintBrush , FaBold , FaItalic , FaUnderline , FaStrikethrough , FaAlignLeft , FaAlignCenter , FaAlignRight , FaAlignJustify , FaListOl , FaListUl , FaImage } from 'react-icons/fa';
+import { FaPaintBrush , FaBold , FaItalic , FaUnderline , FaStrikethrough , FaAlignLeft , FaAlignCenter , FaAlignRight , FaAlignJustify , FaListOl , FaListUl , FaImage,FaUndo,FaRedo } from 'react-icons/fa';
 import './richTextEditor.css';
 import { Popover , Tooltip , Modal , Dropdown } from 'antd';
 import dayjs from "dayjs";
@@ -70,6 +70,10 @@ const ColorPicker = ({ onSelectColor }) => {
 			onSelectColor(colorKey);
 		}
 	};
+	const removeColor = () => {
+		setColor('black'); // 将颜色设置为 null
+		onSelectColor(null); // 通知父组件去除颜色
+	};
 	const colors = Object.values(fontColorStyleMap).map(style => style.color);
 	return (<div>
 		<CirclePicker
@@ -77,6 +81,11 @@ const ColorPicker = ({ onSelectColor }) => {
 			onChangeComplete = { handleChangeComplete }
 			colors = { colors }
 		/>
+		<div
+			className = "eraser-icon"
+			onClick={removeColor}
+		><EraserIcon />去除颜色
+		</div>
 	</div>);
 };
 const BackgroundColorPicker = ({ onSelectColor }) => {
@@ -87,6 +96,10 @@ const BackgroundColorPicker = ({ onSelectColor }) => {
 		const colorKey = Object.keys(backgroundColorStyleMap).find(key => backgroundColorStyleMap[key].backgroundColor === color.hex);
 		onSelectColor(colorKey);
 	};
+	const removeColor = () => {
+		setColor('transparent'); // 将颜色设置为 null
+		onSelectColor(null); // 通知父组件去除颜色
+	};
 	const colors = Object.values(backgroundColorStyleMap).map(style => style.backgroundColor);
 	return (<div>
 		<CirclePicker
@@ -94,6 +107,11 @@ const BackgroundColorPicker = ({ onSelectColor }) => {
 			onChangeComplete = { handleChangeComplete }
 			colors = { colors }
 		/>
+		<div
+			className = "eraser-icon"
+			onClick = { removeColor }
+		><EraserIcon />去除颜色
+		</div>
 	</div>);
 };
 
@@ -150,15 +168,17 @@ const RichTextEditor = ({
 	showAllOptions = undefined ,
 	openModal ,
 	cancelExpandNoteEditSection,
+	changeNoteEdit,
 }) => {
 	const editorRef = useRef(null);
 	const [noteTitle , setNoteTitle] = useState('');
+	const [editorState , setEditorState] = useState(initialContent ? EditorState.createWithContent(convertFromRaw(initialContent)) : EditorState.createEmpty());
+	
 	useEffect(() => {
 		editorRef.current.focus();
 	} , []);
-	const [editorState , setEditorState] = useState(initialContent ? EditorState.createWithContent(convertFromRaw(initialContent)) : EditorState.createEmpty());
 	useEffect(() => {
-		if ( initialContent ) {
+		if ( initialContent) {
 			setEditorState(EditorState.moveFocusToEnd(EditorState.createWithContent(convertFromRaw(initialContent))));
 		}
 		if(initialTitle){
@@ -232,18 +252,32 @@ const RichTextEditor = ({
 	const onUnorderedList = () => {
 		setEditorState(RichUtils.toggleBlockType(editorState , 'unordered-list-item'));
 	};
+	const onUndo = () => {
+		setEditorState(EditorState.undo(editorState));
+	};
 	
+	const onRedo = () => {
+		setEditorState(EditorState.redo(editorState));
+	};
 	const onFontSizeChange = (event) => {
 		const fontSize = event.target.value;
 		setEditorState(RichUtils.toggleInlineStyle(editorState , `FONT_SIZE_${ fontSize }`));
 	};
 	const onBackgroundColorChange = (color) => {
-		const newEditorState = RichUtils.toggleInlineStyle(editorState , color);
-		setEditorState(newEditorState);
+		if(color===null){
+			setEditorState(RichUtils.toggleInlineStyle(editorState, 'REMOVE_BG_COLOR'));
+		}else{
+			const newEditorState = RichUtils.toggleInlineStyle(editorState , color);
+			setEditorState(newEditorState);
+		}
 	};
 	const onFontColorChange = (color) => {
-		const newEditorState = RichUtils.toggleInlineStyle(editorState , color);
-		setEditorState(newEditorState);
+		if(color===null){
+			setEditorState(RichUtils.toggleInlineStyle(editorState, 'REMOVE_FONT_COLOR'));
+		}else{
+			const newEditorState = RichUtils.toggleInlineStyle(editorState , color);
+			setEditorState(newEditorState);
+		}
 	};
 	
 	const selectBackgroundColorContent = (
@@ -299,7 +333,12 @@ const RichTextEditor = ({
 				</div>
 				
 				<div className = "rich-text-options">
-					
+					<Tooltip title = "撤销">
+						<button onClick = { onUndo }><FaUndo /></button>
+					</Tooltip>
+					<Tooltip title = "还原">
+						<button onClick = { onRedo }><FaRedo /></button>
+					</Tooltip>
 					<Tooltip title = "加粗">
 						<button onClick = { onBoldClick }><FaBold /></button>
 					</Tooltip>
@@ -399,7 +438,15 @@ const RichTextEditor = ({
 				<Editor
 					ref = { editorRef }
 					editorState = { editorState }
-					customStyleMap = { { ...fontSizeStyleMap , ...backgroundColorStyleMap , ...fontColorStyleMap } }
+					customStyleMap = { {
+						...fontSizeStyleMap , ...backgroundColorStyleMap , ...fontColorStyleMap ,
+						'REMOVE_BG_COLOR' : {
+							backgroundColor : 'transparent', // 或者你可以设置为 '#ffffff' 或者任何你认为的默认颜色
+						},
+						'REMOVE_FONT_COLOR':{
+							color:'#1f1f1f',
+						},
+					} }
 					handleKeyCommand = { handleKeyCommand }
 					onChange = { setEditorState }
 					placeholder = "输入笔记..."
@@ -413,10 +460,11 @@ const RichTextEditor = ({
 					<RichTextIcon
 						onClick = { () => {
 							openModal('addNewNote');
+							changeNoteEdit(noteTitle,convertToRaw(editorState.getCurrentContent()),null)
 						} }
 					/>
-					<UndoIcon />
-					<RedoIcon />
+						<div onClick = { onUndo }><UndoIcon /></div>
+						<div onClick = { onRedo }><RedoIcon /></div>
 				</div>
 				
 				<GetContentButton
@@ -568,7 +616,24 @@ class AddNewNotebtn extends Component {
 		
 	}
 }
-
+const EraserIcon=()=> {
+	return <svg
+		t = "1736596436734"
+		className = "icon"
+		viewBox = "0 0 1024 1024"
+		version = "1.1"
+		xmlns = "http://www.w3.org/2000/svg"
+		p-id = "3418"
+		width = "16"
+		height = "16"
+	>
+		<path
+			d = "M982.827818 408.890055a32.85895 32.85895 0 0 0 0-46.434253L629.96587 9.593854a32.85895 32.85895 0 0 0-46.434253 0L69.972616 523.104886a131.147983 131.147983 0 0 0 0 185.641074l278.845365 277.118471a131.33986 131.33986 0 0 0 92.484752 38.135569h421.64988a32.81098 32.81098 0 0 0 0-65.621961h-271.122312a65.66993 65.66993 0 0 1-46.434253-112.056214zM422.978472 875.966834a65.573992 65.573992 0 0 1-92.772568 0L116.502808 662.311707a65.573992 65.573992 0 0 1 0-92.772568L247.458914 438.439125l306.523633 306.523633-131.100014 131.004076z"
+			p-id = "3419"
+			fill = "#515151"
+		></path>
+	</svg>;
+}
 const ReturnIcon = () => {
 	return <svg
 		t = "1731789813468"

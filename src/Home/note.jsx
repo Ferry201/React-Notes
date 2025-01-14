@@ -1,22 +1,18 @@
 import './note.css';
 import React , { Component } from 'react';
-import { useRef , useState } from 'react';
-import { BrowserRouter as Router , Route , Routes , Link } from 'react-router-dom';
 import 'rc-tabs/assets/index.css';
-import { Checkbox , Dropdown , Space , Modal , message } from 'antd';
+import { message , Modal } from 'antd';
 import { ExclamationCircleFilled } from '@ant-design/icons';
-
-const { confirm } = Modal;
-import RichTextEditor from '../RichTextEditor/RichTextEditor';
+import { AddNewNoteModal } from '../RichTextEditor/RichTextEditor';
 import isEqual from 'lodash/isEqual';
 import { NoteSidebar } from './sidebar';
 import { NoteManagePanel } from '@src/Home/note-manage-panel';
 import { v4 as uuidv4 } from 'uuid';
-import { current } from "@reduxjs/toolkit";
 import coverDefault from "@src/Home/img-collection/cover-default.png";
 import dayjs from "dayjs";
-import { AddNewNoteModal } from '../RichTextEditor/RichTextEditor';
 import { NoteBookModal } from "@src/Home/addNoteBook_Model";
+
+const { confirm } = Modal;
 
 const defaultNotebook = {
 	title : '我的笔记本' ,
@@ -155,9 +151,8 @@ class NotesApp extends Component {
 			let newNoteContent = rawContentState.blocks;
 			let oldNoteTitle=oldNote.noteTitle;
 			let newNoteTitle=noteTitle;
-			console.log(oldNoteTitle);
-			console.log(newNoteTitle);
-			if ( isEqual(oldNoteContent , newNoteContent)&&isEqual(oldNoteTitle,newNoteTitle) ) {
+			
+			if ( isEqual(oldNoteContent , newNoteContent) && isEqual(oldNoteTitle , newNoteTitle) ) {
 				console.log('没有变化');
 				this.handleCloseModal();
 				return;
@@ -384,8 +379,13 @@ class NotesApp extends Component {
 		this.setState({ activeModal : type });
 	};
 	handleCloseModal = () => {
-		this.setState({ isModalOpen : false });
-		this.setState({ activeModal : null });
+		this.setState({
+			isModalOpen : false,
+			activeModal : null ,
+			currentID : null ,
+			currentNoteTitle:null,
+			currentContent : null ,
+		});
 	};
 	
 	//点击收藏夹:
