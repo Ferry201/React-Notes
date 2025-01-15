@@ -60,37 +60,78 @@
 	--header-icon-background:#ffffff;
 }
 .gradient-theme-blue-purple{
-	--primary-background-color: linear-gradient(to top, #92e8f6 0%, #f0c7ec 100%);
+	--primary-background-color: linear-gradient(to top, #92e8f6 0%, #f5c9d2 100%);
 	--primary-text-color: #2ba49f;
 	--primary-border: 1px solid #ffffff;
 	--header-icon-background:#ffffff;
 }
-.gradient-theme-red-gray{
-	--primary-background-color:linear-gradient(to top, #e592a2 39%, #d8b4b9 51%,  #dddcd7 64%, #dbdcd7 100%);
-	--primary-text-color: #b8235a;
-	--primary-border: 1px solid #ffffff;
-	--header-icon-background:#ffffff;
-}
+/*.gradient-theme-red-gray{*/
+/*	--primary-background-color:linear-gradient(to top, #e592a2 39%, #d8b4b9 51%,  #dddcd7 64%, #dbdcd7 100%);*/
+/*	--primary-text-color: #b8235a;*/
+/*	--primary-border: 1px solid #ffffff;*/
+/*	--header-icon-background:#ffffff;*/
+/*}*/
 .gradient-theme-green-blue{
 	--primary-background-color: linear-gradient(to top, rgb(182, 244, 146), rgb(51, 139, 147));
-	--primary-text-color: rgb(107, 233, 34);
+	--primary-text-color: rgb(255, 255, 255);
 	--primary-border: 1px solid #ffffff;
-	--header-icon-background:#ffffff;
+	--header-icon-background: rgb(182, 244, 146);
 }
-.image-background-one{
-	--primary-background-color: url('./img-collection/cover-8.png') no-repeat center/cover;
-	--primary-text-color: rgb(51 132 131);
+
+.image-background-windmill{
+	--primary-background-color: url('./img-collection/image-background-windmill.png') no-repeat center/cover;
+	--primary-text-color: rgb(255, 255, 255);
 	--primary-border: 1px solid #ffffff;
-	--header-icon-background:#ffffff;
+	--header-icon-background:  #d1d1d1;
 }
-.image-background-two{
-	--primary-background-color: url('./img-collection/cover-3.png') no-repeat center/cover;
+.image-background-mountain{
+	--primary-background-color: url('./img-collection/image-background-mountain.png') no-repeat center/cover;
+	--primary-text-color: rgb(255, 255, 255);
+	--primary-border: 1px solid #ffffff;
+	--header-icon-background:#d1d1d1;
+}
+.image-background-beach{
+	--primary-background-color: url('./img-collection/image-background-beach.png') no-repeat center/cover;
 	--primary-text-color: rgb(0, 0, 0);
 	--primary-border: 1px solid #ffffff;
 	--header-icon-background:#ffffff;
 }
+.image-background-tower{
+	--primary-background-color: url('./img-collection/image-background-tower.png') no-repeat center/cover;
+	--primary-text-color: rgb(0, 0, 0);
+	--primary-border: 1px solid #ffffff;
+	--header-icon-background: #ffffff;
+}
 
+.image-background-pinksky{
+	--primary-background-color: url('./img-collection/image-background-pinksky.png') no-repeat center/cover;
+	--primary-text-color: white;
+	--primary-border: 1px solid #ffffff;
+	--header-icon-background: #d1d1d1;
+}
 
+.image-background-wheat{
+	--primary-background-color: url('./img-collection/image-background-wheat.png') no-repeat center/cover;
+	--primary-text-color: white;
+	--primary-border: 1px solid #ffffff;
+	--header-icon-background: #d1d1d1;
+}
+
+.theme-color-panel{
+	display: grid;
+	gap: 10px;
+	grid-template-columns: repeat(2,1fr);
+}
+.color-little-box{
+	cursor: pointer;
+	box-sizing: border-box;
+	width: 30px;
+	height: 30px;
+	border-radius: 100%;
+	border: 1px solid;
+	border-color: var(--primary-text-color);
+	background: var(--primary-background-color);
+}
 
 .show-noteList-box{
 	/*padding:24px 24px 24px 24px;*/
@@ -486,7 +527,15 @@
 	justify-content: center;
 	flex-flow: column wrap;
 }
-
+.empty-container svg path{
+	fill: var(--primary-text-color);
+}
+.empty-container p{
+	color: var(--primary-text-color);
+}
+.empty-container p{
+	margin-bottom: 80px;
+}
 
 html,
 body {
@@ -584,7 +633,7 @@ body {
 	justify-content: space-between;
 	line-height: 1.5;
 	/*width: calc(50% - 8px);*/
-	height: 100%;
+	height: calc(1.5em * 6 + 62px);
 	background: white;
 	padding: 4px;
 	box-sizing: border-box;
@@ -609,7 +658,8 @@ body {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	line-height: 1.5; /* 设置行高 */
-	height: calc(1.5em * 6); /* 根据行高和显示的行数计算最大高度 */
+	min-height: calc(1.5em * 6);
+	height: calc(1.5em * 7); 
 	white-space: pre-wrap;
 	word-wrap: break-word; /* 强制长文本换行 */
 	word-break: break-word; /* 强制长文本换行，尤其是数字 */
@@ -787,6 +837,7 @@ h2 {
 .main-section-header .notelist-header-icon:hover{
 	background: var(--header-icon-background);
 }
+
 .selected-mode{
 	background: var(--header-icon-background);
 	/*border-color: var(--primary-text-color);*/
@@ -1160,13 +1211,7 @@ h2 {
 	transform: rotate(-180deg);
 }
 
-.custom-picker {
-	box-shadow: none !important;
-}
 
-.custom-picker div:nth-child(2) {
-	display: none !important;
-}
 
 
 
@@ -1213,6 +1258,9 @@ h2 {
 	border-top-right-radius: 6px;
 	border-top-left-radius: 6px;
 	/*border-bottom: 1px solid #141414;*/
+}
+.add-note-input::placeholder{
+	color: #b3b7bf;
 }
 .note-item-title-input::placeholder{
 	color: #b3b7bf;

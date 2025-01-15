@@ -10,7 +10,7 @@ import coverTwo from './img-collection/cover-2.png';
 import coverThree from './img-collection/cover-3.png';
 import coverFour from './img-collection/cover-4.png';
 import coverFive from './img-collection/cover-5.png';
-import coverSix from './img-collection/cover-6.png';
+import coverSix from './img-collection/cover-6.jpg';
 import coverSeven from './img-collection/cover-7.png';
 import coverEight from './img-collection/cover-8.png';
 import coverNine from './img-collection/cover-9.png';

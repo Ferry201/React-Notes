@@ -305,6 +305,7 @@ const RichTextEditor = ({
 			{ showAllOptions && <div>
 				<div className = "modal-top-bar">
 					<div className = "modal-top-left-bar"><Tooltip
+						color='gray'
 						title = "返回并保存"
 					>
 						<GetContentButton
@@ -317,12 +318,14 @@ const RichTextEditor = ({
 					</Tooltip></div>
 					
 					<div className = "modal-top-right-bar">
-						<Tooltip title = "保存"><GetContentButton
+						<Tooltip title = "保存"
+							color='gray'><GetContentButton
 							noteTitle={noteTitle}
 							editorState = { editorState }
 							onSave = { onSave }
 						> <SaveIcon /></GetContentButton></Tooltip>
-						<Tooltip title = "退出且不保存修改">
+						<Tooltip title = "退出且不保存修改"
+							color='gray'>
 							<div
 								className = "cancel-edit-icon"
 								onClick = { onCancel }
@@ -333,43 +336,56 @@ const RichTextEditor = ({
 				</div>
 				
 				<div className = "rich-text-options">
-					<Tooltip title = "撤销">
+					<Tooltip title = "撤销"
+						color='gray'>
 						<button onClick = { onUndo }><FaUndo /></button>
 					</Tooltip>
-					<Tooltip title = "还原">
+					<Tooltip title = "还原"
+						color='gray'>
 						<button onClick = { onRedo }><FaRedo /></button>
 					</Tooltip>
-					<Tooltip title = "加粗">
+					<Tooltip title = "加粗"
+						color='gray'>
 						<button onClick = { onBoldClick }><FaBold /></button>
 					</Tooltip>
-					<Tooltip title = "斜体">
+					<Tooltip title = "斜体"
+						color='gray'>
 						<button onClick = { onItalicClick }><FaItalic /></button>
 					</Tooltip>
-					<Tooltip title = "下划线">
+					<Tooltip title = "下划线"
+						color='gray'>
 						<button onClick = { onUnderlineClick }><FaUnderline /></button>
 					</Tooltip>
-					<Tooltip title = "删除线">
+					<Tooltip title = "删除线"
+						color='gray'>
 						<button onClick = { onStrikethroughClick }><FaStrikethrough /></button>
 					</Tooltip>
-					<Tooltip title = "文本靠左">
+					<Tooltip title = "文本靠左"
+						color='gray'>
 						<button onClick = { onAlignLeft }><FaAlignLeft /></button>
 					</Tooltip>
-					<Tooltip title = "文本居中">
+					<Tooltip title = "文本居中"
+						color='gray'>
 						<button onClick = { onAlignCenter }><FaAlignCenter /></button>
 					</Tooltip>
-					<Tooltip title = "文本靠右">
+					<Tooltip title = "文本靠右"
+						color='gray'>
 						<button onClick = { onAlignRight }><FaAlignRight /></button>
 					</Tooltip>
-					<Tooltip title = "添加图片">
+					<Tooltip title = "添加图片"
+						color='gray'>
 						<button onClick = { onAddImage }><FaImage /></button>
 					</Tooltip>
-					<Tooltip title = "有序列表">
+					<Tooltip title = "有序列表"
+						color='gray'>
 						<button onClick = { onOrderedList }><FaListOl /></button>
 					</Tooltip>
-					<Tooltip title = "无序列表">
+					<Tooltip title = "无序列表"
+						color='gray'>
 						<button onClick = { onUnorderedList }><FaListUl /></button>
 					</Tooltip>
-					<Tooltip title = "字号">
+					<Tooltip title = "字号"
+						color='gray'>
 						<button><FontSizeIcon /></button>
 					</Tooltip>
 					<Tooltip></Tooltip>
@@ -488,6 +504,7 @@ const RichTextEditor = ({
 const RichTextIcon = ({ onClick }) => {
 	return <>
 		<Tooltip
+			color='gray'
 			title = "富文本编辑模式"
 			placement = "bottom"
 			zIndex = "1"
@@ -519,6 +536,7 @@ const UndoIcon = () => {
 	return <>
 		
 		<Tooltip
+			color='gray'
 			title = "撤销"
 			placement = "bottom"
 			zIndex = "1"
@@ -546,6 +564,7 @@ const UndoIcon = () => {
 const RedoIcon = () => {
 	return <>
 		<Tooltip
+			color='gray'
 			title = "复原"
 			placement = "bottom"
 			zIndex = "1"
@@ -586,6 +605,7 @@ class AddNewNotebtn extends Component {
 		} = this.props;
 		return <div>
 			<Tooltip
+				color='gray'
 				title = "添加笔记"
 				placement = "bottom"
 				zIndex = "1"

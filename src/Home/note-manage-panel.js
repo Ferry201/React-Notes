@@ -1,7 +1,7 @@
 import React , { Component } from 'react';
 import { Reaxlass , reaxper } from 'reaxes-react';
 import { reaxel_sider } from '@src/Home/sider.reaxel';
-import { Modal , Dropdown , Space , Tooltip } from 'antd';
+import { Modal , Dropdown , Space , Tooltip ,Popover} from 'antd';
 import { ExclamationCircleFilled } from '@ant-design/icons';
 import RenderContent from '@src/Home/renderContent';
 import './note.css';
@@ -219,11 +219,12 @@ class NoteManagePanel extends Reaxlass {
 						onSwitchNoteMode = { updateNotebookInfo }
 						showMode = { currentNotebook.showMode }
 					/>
-					<ThemeSelector
+					
+					<ThemeColorSelector
 						selectTheme = { updateNotebookInfo }
 						theme = { currentNotebook.currentTheme }
 					/>
-				
+					
 				</div>
 			</div>
 			
@@ -242,19 +243,47 @@ class NoteManagePanel extends Reaxlass {
 				onSave = { onSave }
 				onCancel = { onCancel }
 			/>
-			
-			{/*<input type = "text" className = { `add-new-note-input ${ currentNotebook.currentTheme }` } placeholder = "输入笔记..."/>*/ }
-			{/*<AddNewNotebtn*/ }
-			{/*	onClick = { () => {*/ }
-			{/*		this.props.openModal('addNewNote');*/ }
-			{/*	} }*/ }
-			{/*	className = { ` add-new-button ${ currentNotebook.currentTheme }` }*/ }
-			{/*/> */ }
-		
-		
 		</div>;
 	}
 };
+const ThemeColorSelector = ({selectTheme,theme}) => {
+	return <>
+		<Popover
+			content = { <ThemeColorPanel
+				selectTheme = { selectTheme }
+				theme = { theme }
+			/> }
+		>
+			<div><ColorPalette /></div>
+		</Popover>
+	</>;
+};
+const ThemeColorPanel=({selectTheme,theme})=>{
+	const allThemeColors = [
+		'blue-theme' , 'purple-theme' , 'red-theme' , 'green-theme' , 'gray-theme' , 'orange-theme' , 'pink-theme' , 'gradient-theme-blue-yellow' ,
+		'gradient-theme-blue-purple' , 'gradient-theme-green-blue' , 'image-background-wheat' , 'image-background-windmill' ,
+		'image-background-beach' , 'image-background-tower' , 'image-background-pinksky' , 'image-background-mountain',
+	];
+	return (<div>
+		<div>主题选择</div>
+		<div className = "theme-color-panel">
+			{allThemeColors.map((item)=> {
+				return <div
+					className = {`color-little-box ${item}`}
+					key = { item }
+					onClick={()=>{selectTheme('currentTheme' , item);}}
+				></div>;
+			}) }
+		</div>
+	</div>)
+}
+
+const selectBackgroundColorContent = (
+	<div>
+		<div>主题选择</div>
+		<ThemeColorPanel />
+	</div>
+);
 //显示模式选择器
 const ModeSelector = ({
 	onSwitchNoteMode ,
@@ -303,6 +332,7 @@ const ModeSelector = ({
 		</a>
 	</Dropdown>);
 };
+
 //主题颜色选择器
 const ThemeSelector = ({
 	selectTheme ,
@@ -314,6 +344,7 @@ const ThemeSelector = ({
 			type : 'group' ,
 			label : '主题色系' ,
 			children : [
+				
 				{
 					label : <div>蓝色</div> ,
 					key : 'blue-theme' ,
@@ -355,10 +386,6 @@ const ThemeSelector = ({
 							key : 'gradient-theme-blue-purple' ,
 						} ,
 						{
-							label : <div>渐变3</div> ,
-							key : 'gradient-theme-red-gray' ,
-						} ,
-						{
 							label : <div>渐变4</div> ,
 							key : 'gradient-theme-green-blue' ,
 						} ,
@@ -369,12 +396,28 @@ const ThemeSelector = ({
 					label : <div>图片背景</div> ,
 					children : [
 						{
-							label : <div>图片1</div> ,
-							key : 'image-background-one' ,
+							label : <div>wheat</div> ,
+							key : 'image-background-wheat' ,
 						} ,
 						{
-							label : <div>图片2</div> ,
-							key : 'image-background-two' ,
+							label : <div>图片3</div> ,
+							key : 'image-background-windmill' ,
+						} ,
+						{
+							label : <div>图片4</div> ,
+							key : 'image-background-mountain' ,
+						} ,
+						{
+							label : <div>图片5</div> ,
+							key : 'image-background-beach' ,
+						} ,
+						{
+							label : <div>图片6</div> ,
+							key : 'image-background-tower' ,
+						} ,
+						{
+							label : <div>图片7</div> ,
+							key : 'image-background-pinksky' ,
 						} ,
 					
 					] ,

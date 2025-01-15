@@ -504,7 +504,7 @@ const RenderContent = ({
 			  /> }
 		</div> }
 		
-		{ contents.length === 0 ? (<div className = "empty-container">
+		{ contents.length === 0 ? (<div className = {`empty-container ${currentNotebook.currentTheme}`}>
 			<EmptyIcon />
 			{ isShowFavoritesNotes ? <p>收藏夹空空如也</p> : <p>还没有笔记 , 点击上方输入框创建吧 !</p> }
 		</div>) : (<div className = "show-noteList-box">
@@ -720,6 +720,7 @@ class AddNewNotebtn extends Component {
 const CancelEditIcon = ({ handleCancel }) => {
 	return <>
 		<Tooltip
+			color='gray'
 			title = "取消编辑"
 			placement = "bottom"
 			zIndex = "1"
