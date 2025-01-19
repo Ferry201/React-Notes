@@ -10,9 +10,6 @@ import dayjs from "dayjs";
 import coverDefault from './img-collection/cover-default.png';
 
 
-
-
-
 @reaxper
 export class NoteSidebar extends Component {
 	constructor (props) {
@@ -23,6 +20,7 @@ export class NoteSidebar extends Component {
 	state = {
 		siderbarWidth : 388 ,
 		isCollapse : true ,
+		isSwitchSearchInput : false,
 	};
 	
 	componentDidMount () {
@@ -46,7 +44,7 @@ export class NoteSidebar extends Component {
 			{
 				classNames : {
 					header : this.state.isCollapse ? 'active-collapse' : '' ,
-					body : 'notebook-lists-content',
+					body : 'notebook-lists-content' ,
 				} ,
 				key : 'notebookItems' ,
 				label : (<div className = "all-notebook-header">
@@ -89,7 +87,12 @@ export class NoteSidebar extends Component {
 			} ,
 		];
 	}
-	
+	handleSwitchInput=()=>{
+		this.setState({isSwitchSearchInput:true})
+	}
+	handleClickOutside=()=>{
+		
+	}
 	render () {
 		const {
 			siderCollapsed ,
@@ -170,6 +173,7 @@ export class NoteSidebar extends Component {
 						</div>
 						<Divider style = { { borderColor : '#e4e4e4' } } />
 						
+						
 						<div className = "menu-item">
 							<SearchIcon />
 							<span>搜索</span>
@@ -188,7 +192,10 @@ export class NoteSidebar extends Component {
 						/>
 						
 						<div className = "sidebar-menu-list">
-							<div className = "menu-item" onClick={this.props.clickFavorites}>
+							<div
+								className = "menu-item"
+								onClick = { this.props.clickFavorites }
+							>
 								<MarkNoteIcon />
 								<span>收藏夹</span>
 							</div>

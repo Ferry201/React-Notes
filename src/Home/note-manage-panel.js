@@ -284,6 +284,7 @@ const selectBackgroundColorContent = (
 		<ThemeColorPanel />
 	</div>
 );
+
 //显示模式选择器
 const ModeSelector = ({
 	onSwitchNoteMode ,
@@ -321,7 +322,7 @@ const ModeSelector = ({
 				onSwitchNoteMode('showMode' , key);
 			} ,
 		} }
-		trigger = { ['click'] }
+		trigger = { ['hover'] }
 	>
 		<a onClick = { (e) => e.preventDefault() }>
 			<Space>
@@ -452,11 +453,6 @@ const ThemeSelector = ({
 
 const CardModeIcon = () => {
 	return <div>
-		<Tooltip
-			title = "点击选择显示模式"
-			placement = "bottom"
-			zIndex = "1"
-		>
 			<div
 				className = { `notelist-header-icon card-mode-icon-box` }
 			
@@ -478,16 +474,10 @@ const CardModeIcon = () => {
 					></path>
 				</svg>
 			</div>
-		</Tooltip>
 	</div>;
 };
 const ListModeIcon = () => {
 	return <div>
-		<Tooltip
-			title = "点击选择显示模式"
-			placement = "bottom"
-			zIndex = "1"
-		>
 			<div
 				className = { `notelist-header-icon list-mode-icon-box` }
 			>
@@ -532,16 +522,10 @@ const ListModeIcon = () => {
 					/>
 				</svg>
 			</div>
-		</Tooltip>
 	</div>;
 };
 const GridModeIcon = () => {
 	return <div>
-		<Tooltip
-			placement = "bottom"
-			title = "点击选择显示模式"
-			zIndex = "1"
-		>
 			<div
 				className = "notelist-header-icon"
 			>
@@ -562,7 +546,6 @@ const GridModeIcon = () => {
 					></path>
 				</svg>
 			</div>
-		</Tooltip>
 	</div>;
 };
 
@@ -570,11 +553,6 @@ const GridModeIcon = () => {
 class ColorPalette extends Component {
 	render () {
 		return <div>
-			<Tooltip
-				placement = "bottom"
-				title = "点击选择主题"
-				zIndex = "1"
-			>
 				<div className = "notelist-header-icon">
 					<svg
 						t = "1734813093634"
@@ -602,7 +580,6 @@ class ColorPalette extends Component {
 						></path>
 					</svg>
 				</div>
-			</Tooltip>
 		</div>;
 	}
 }

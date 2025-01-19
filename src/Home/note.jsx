@@ -29,7 +29,7 @@ class NotesApp extends Component {
 		
 		this.state = {
 			currentContent : '' ,
-			currentNoteTitle:"",
+			currentNoteTitle : "" ,
 			currentID : null ,
 			noteListData : [] ,
 			noteBookData : [] ,
@@ -40,6 +40,7 @@ class NotesApp extends Component {
 			isModalOpen : false ,
 			notesAmount : 0 ,
 			showFavoritedNotes : false ,
+			displaySearchInput : false ,
 		};
 	}
 	
@@ -67,7 +68,9 @@ class NotesApp extends Component {
 				});
 			}
 		}
-		if ( this.state.activeModal === 'deleteConfirm' && this.state.noteBookData.length === 1 ) {
+		let allNotebooks=[...this.state.noteBookData];
+		allNotebooks.filter(notebook => notebook.id !== 'favorites-notes-id' && notebook.id !== 'searchResults-notes-id');
+		if ( this.state.activeModal === 'deleteConfirm' && allNotebooks.length === 1 ) {
 			message.error('至少需要一个笔记本存在 , 不能删除最后一个笔记本!');
 		}
 		
@@ -118,7 +121,7 @@ class NotesApp extends Component {
 		
 		let newNoteInfo = {
 			noteContent : rawContentState ,
-			noteTitle:noteTitle,
+			noteTitle : noteTitle ,
 			saveTime : saveTime ,
 			notebook : currentNotebook.title ,
 			notebookID : currentNotebook.id ,
@@ -149,8 +152,8 @@ class NotesApp extends Component {
 			let oldNote = noteInfoArray.find((note) => note.id === currentID);
 			let oldNoteContent = oldNote.noteContent.blocks;
 			let newNoteContent = rawContentState.blocks;
-			let oldNoteTitle=oldNote.noteTitle;
-			let newNoteTitle=noteTitle;
+			let oldNoteTitle = oldNote.noteTitle;
+			let newNoteTitle = noteTitle;
 			
 			if ( isEqual(oldNoteContent , newNoteContent) && isEqual(oldNoteTitle , newNoteTitle) ) {
 				console.log('没有变化');
@@ -172,7 +175,7 @@ class NotesApp extends Component {
 		this.setState({
 			noteListData : noteInfoArray ,
 			currentID : null ,
-			currentNoteTitle:null,
+			currentNoteTitle : null ,
 			currentContent : null ,
 			notesAmount : currentNotes.length ,
 		} , () => {
@@ -210,7 +213,7 @@ class NotesApp extends Component {
 	};
 	
 	//修改old note
-	handleChangeNote = (noteTitle,noteContent , id) => {
+	handleChangeNote = (noteTitle , noteContent , id) => {
 		this.setState({
 			currentNoteTitle : noteTitle ,
 			currentContent : noteContent ,
@@ -380,10 +383,10 @@ class NotesApp extends Component {
 	};
 	handleCloseModal = () => {
 		this.setState({
-			isModalOpen : false,
+			isModalOpen : false ,
 			activeModal : null ,
 			currentID : null ,
-			currentNoteTitle:null,
+			currentNoteTitle : null ,
 			currentContent : null ,
 		});
 	};
@@ -415,6 +418,33 @@ class NotesApp extends Component {
 			notesAmount : favoritedNotes.length ,
 		});
 	};
+	handleSearchKeywords = () => {
+		const {
+			noteBookData ,
+			noteListData ,
+		} = this.state;
+		let searchResults = noteBookData.find(item => item.id === 'searchResults-notes-id');
+		if ( searchResults === undefined ) {
+			const newNoteBook = {
+				title : '搜索结果' ,
+				cover : 'null' ,
+				id : 'searchResults-notes-id' ,
+				createdTime : dayjs().valueOf() ,
+				showMode : 'list-mode' ,
+				currentTheme : 'blue-theme' ,
+			};
+			this.addNoteBook(newNoteBook);
+			searchResults = newNoteBook;
+		}
+		// const favoritedNotes = noteListData.filter(note => note.isFavorited === true);
+		this.setState({
+			showFavoritedNotes : false ,
+			currentNotebook : searchResults ,
+			selectedNotebookId : searchResults.id ,
+			// notesAmount : favoritedNotes.length ,
+		});
+	};
+	
 	
 	render () {
 		

@@ -1323,3 +1323,8 @@ h2 {
 	background-color: #e6e5e5;
 	border-radius: 100%;
 }
+.search-input{
+	height: 32px;
+	margin: 4px 10px;
+	
+}

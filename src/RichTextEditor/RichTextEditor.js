@@ -186,10 +186,6 @@ const RichTextEditor = ({
 		}
 	} , [initialTitle,initialContent]);
 	const [textAlignment , setTextAlignment] = useState('left');//对齐
-	const saveContent = () => {
-		const rawContentState = convertToRaw(editorState.getCurrentContent());
-		onSave(rawContentState);
-	};
 	
 	const handleKeyCommand = (command) => {
 		const newState = RichUtils.handleKeyCommand(editorState , command);
