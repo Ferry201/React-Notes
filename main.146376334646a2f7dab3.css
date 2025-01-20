@@ -390,6 +390,9 @@
 .sidebar-content-panel .menu-item:hover {
 	background-color: #eeeeee;
 }
+.sidebar-content-panel .menu-item:nth-child(5):hover {
+	background-color: unset;
+}
 
 .sidebar-content-panel .menu-item span {
 	color: #555555;
@@ -1323,6 +1326,11 @@ h2 {
 .modal-top-bar .modal-top-right-bar div:hover{
 	background-color: #e6e5e5;
 	border-radius: 100%;
+}
+.search-input{
+	height: 32px;
+	margin: 4px 10px;
+	
 }
 
 body, html {
