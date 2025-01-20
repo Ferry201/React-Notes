@@ -1,6 +1,6 @@
 import { ResizableBox } from 'react-resizable';
 import 'react-resizable/css/styles.css';
-import React , { Component , useState } from 'react';
+import React , { Component , useState , createRef } from 'react';
 import { UserOutlined } from '@ant-design/icons';
 import { Avatar , Space , Divider , message , Collapse } from 'antd';
 import './note.css';
@@ -14,17 +14,22 @@ import coverDefault from './img-collection/cover-default.png';
 export class NoteSidebar extends Component {
 	constructor (props) {
 		super(props);
-		
+		this.searchInputRef = React.createRef();
+		this.searchMenuRef = React.createRef();
 	}
 	
 	state = {
 		siderbarWidth : 388 ,
 		isCollapse : true ,
-		isSwitchSearchInput : false,
+		isSwitchSearchInput : false ,
 	};
 	
 	componentDidMount () {
-		
+		document.addEventListener('mousedown' , this.handleClickOutside);
+	}
+	
+	componentWillUnmount () {
+		document.removeEventListener('mousedown' , this.handleClickOutside);
 	}
 	
 	handleSetWidth = (width) => {
@@ -87,12 +92,18 @@ export class NoteSidebar extends Component {
 			} ,
 		];
 	}
-	handleSwitchInput=()=>{
-		this.setState({isSwitchSearchInput:true})
-	}
-	handleClickOutside=()=>{
-		
-	}
+	
+	handleSwitchInput = () => {
+		this.setState({ isSwitchSearchInput : true },()=>{
+			this.searchInputRef.current?.focus()
+		});
+	};
+	handleClickOutside = (event) => {
+		if ( this.searchInputRef.current && !this.searchMenuRef.current.contains(event.target) ) {
+			this.setState({ isSwitchSearchInput : false });
+		}
+	};
+	
 	render () {
 		const {
 			siderCollapsed ,
@@ -174,9 +185,13 @@ export class NoteSidebar extends Component {
 						<Divider style = { { borderColor : '#e4e4e4' } } />
 						
 						
-						<div className = "menu-item">
+						<div
+							className = "menu-item"
+							onClick = { this.handleSwitchInput }
+							ref={this.searchMenuRef}
+						>
 							<SearchIcon />
-							<span>搜索</span>
+							{ this.state.isSwitchSearchInput ? <input ref={this.searchInputRef}/> : <span>搜索</span> }
 						</div>
 						
 						{/*笔记本列表*/ }

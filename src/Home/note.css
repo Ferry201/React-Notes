@@ -389,6 +389,9 @@
 .sidebar-content-panel .menu-item:hover {
 	background-color: #eeeeee;
 }
+.sidebar-content-panel .menu-item:nth-child(5):hover {
+	background-color: unset;
+}
 
 .sidebar-content-panel .menu-item span {
 	color: #555555;

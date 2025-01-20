@@ -69,9 +69,13 @@ class NotesApp extends Component {
 			}
 		}
 		let allNotebooks=[...this.state.noteBookData];
-		allNotebooks.filter(notebook => notebook.id !== 'favorites-notes-id' && notebook.id !== 'searchResults-notes-id');
+		allNotebooks=allNotebooks.filter(notebook => notebook.id !== 'favorites-notes-id' && notebook.id !== 'searchResults-notes-id');
+		console.log(this.state.activeModal);
 		if ( this.state.activeModal === 'deleteConfirm' && allNotebooks.length === 1 ) {
 			message.error('至少需要一个笔记本存在 , 不能删除最后一个笔记本!');
+			this.setState({
+				activeModal : null ,
+			});
 		}
 		
 	}
@@ -447,6 +451,8 @@ class NotesApp extends Component {
 	
 	
 	render () {
+		let allNotebooks=[...this.state.noteBookData];
+		allNotebooks=allNotebooks.filter(notebook => notebook.id !== 'favorites-notes-id' && notebook.id !== 'searchResults-notes-id');
 		
 		return <div className = "container">
 			
@@ -526,7 +532,7 @@ class NotesApp extends Component {
 				/>) }
 				
 				{/*  删除笔记本确认框*/ }
-				{ this.state.activeModal === 'deleteConfirm' && this.state.noteBookData.length !== 1 ? (
+				{ this.state.activeModal === 'deleteConfirm' && allNotebooks.length !== 1 ? (
 					showDeleteConfirm(
 						this.state.currentNotebook.title ,
 						this.state.isModalOpen ,
