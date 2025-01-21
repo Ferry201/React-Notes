@@ -70,7 +70,6 @@ class NotesApp extends Component {
 		}
 		let allNotebooks=[...this.state.noteBookData];
 		allNotebooks=allNotebooks.filter(notebook => notebook.id !== 'favorites-notes-id' && notebook.id !== 'searchResults-notes-id');
-		console.log(this.state.activeModal);
 		if ( this.state.activeModal === 'deleteConfirm' && allNotebooks.length === 1 ) {
 			message.error('至少需要一个笔记本存在 , 不能删除最后一个笔记本!');
 			this.setState({
@@ -478,6 +477,7 @@ class NotesApp extends Component {
 					selectedNotebookId = { this.state.selectedNotebookId }
 					openModal = { this.handleOpenModal }
 					clickFavorites = { this.handleClickFavorites }
+					currentNotebook = { this.state.currentNotebook }
 				/>
 				
 				

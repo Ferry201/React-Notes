@@ -85,7 +85,7 @@ export class NoteSidebar extends Component {
 									this.props.handleToggleNoteBook(book);
 								} }
 							/>
-							<span className = "notebook-title">{ book.title }</span>
+							<span className ={ `notebook-title ${ isSelected ? 'selected-notebook-title' : '' } ${this.props.currentNotebook.currentTheme}` } >{ book.title }</span>
 						</div>);
 					}) }
 				</div>) ,
@@ -99,9 +99,9 @@ export class NoteSidebar extends Component {
 		});
 	};
 	handleClickOutside = (event) => {
-		if ( this.searchInputRef.current && !this.searchMenuRef.current.contains(event.target) ) {
-			this.setState({ isSwitchSearchInput : false });
-		}
+		// if ( this.searchInputRef.current && !this.searchMenuRef.current.contains(event.target) ) {
+		// 	this.setState({ isSwitchSearchInput : false });
+		// }
 	};
 	
 	render () {
@@ -186,14 +186,29 @@ export class NoteSidebar extends Component {
 						
 						
 						<div
-							className = "menu-item"
+							className = "menu-item seach-note-menu"
 							onClick = { this.handleSwitchInput }
-							ref={this.searchMenuRef}
+							ref = { this.searchMenuRef }
 						>
-							<SearchIcon />
-							{ this.state.isSwitchSearchInput ? <input ref={this.searchInputRef}/> : <span>搜索</span> }
-						</div>
+							<SearchIcon/>
+							{ this.state.isSwitchSearchInput ?
+							  <input
+								  ref = { this.searchInputRef }
+								  className = "search-input"
+								  placeholder = "搜索笔记 ..."
+							  /> :
+							  <span>搜索</span> }
 						
+						</div>
+						<div className = "sidebar-menu-list">
+							<div
+								className = { `menu-item` }
+								onClick = { this.props.clickFavorites }
+							>
+								<MarkNoteIcon />
+								<span>收藏夹</span>
+							</div>
+						</div>
 						{/*笔记本列表*/ }
 						<Collapse
 							items = { notebookItems }
@@ -207,25 +222,27 @@ export class NoteSidebar extends Component {
 						/>
 						
 						<div className = "sidebar-menu-list">
-							<div
-								className = "menu-item"
-								onClick = { this.props.clickFavorites }
-							>
-								<MarkNoteIcon />
-								<span>收藏夹</span>
-							</div>
+							
 							<div className = "menu-item">
 								<RecycleBinIcon />
 								<span>回收站</span>
 							</div>
+							<div className = "menu-item">
+								<SettingIcon />
+								<span>设置</span>
+							</div>
+							<div className = "menu-item">
+								<FeedbackIcon />
+								<span>反馈</span>
+							</div>
 							
 							
-							<Collapse
-								items = { feedback_setting_Items }
-								ghost
-								expandIconPosition = { 'end' }
-								accordion = { true }
-							/>
+							{/*<Collapse*/ }
+							{/*	items = { feedback_setting_Items }*/ }
+							{/*	ghost*/ }
+							{/*	expandIconPosition = { 'end' }*/ }
+							{/*	accordion = { true }*/ }
+							{/*/>*/ }
 						</div>
 					</div>
 				
