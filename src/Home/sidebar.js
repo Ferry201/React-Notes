@@ -21,7 +21,7 @@ export class NoteSidebar extends Component {
 	state = {
 		siderbarWidth : 388 ,
 		isCollapse : true ,
-		isSwitchSearchInput : false ,
+		searchKeyword : '' ,
 	};
 	
 	componentDidMount () {
@@ -92,17 +92,12 @@ export class NoteSidebar extends Component {
 			} ,
 		];
 	}
+	searchKeyword = (keyword) => {
+		this.setState({ searchKeyword : keyword });
+		console.log(keyword);
+	};
 	
-	handleSwitchInput = () => {
-		this.setState({ isSwitchSearchInput : true },()=>{
-			this.searchInputRef.current?.focus()
-		});
-	};
-	handleClickOutside = (event) => {
-		// if ( this.searchInputRef.current && !this.searchMenuRef.current.contains(event.target) ) {
-		// 	this.setState({ isSwitchSearchInput : false });
-		// }
-	};
+	
 	
 	render () {
 		const {
@@ -184,20 +179,22 @@ export class NoteSidebar extends Component {
 						</div>
 						<Divider style = { { borderColor : '#e4e4e4' } } />
 						
-						
+						{/*搜索*/}
 						<div
 							className = "menu-item seach-note-menu"
 							onClick = { this.handleSwitchInput }
 							ref = { this.searchMenuRef }
 						>
 							<SearchIcon/>
-							{ this.state.isSwitchSearchInput ?
-							  <input
-								  ref = { this.searchInputRef }
-								  className = "search-input"
-								  placeholder = "搜索笔记 ..."
-							  /> :
-							  <span>搜索</span> }
+							<input
+								ref = { this.searchInputRef }
+								className = "search-input"
+								placeholder = "搜索"
+								value={this.state.searchKeyword}
+								onChange = { (e) => {
+									this.searchKeyword(e.target.value);
+								} }
+							/>
 						
 						</div>
 						<div className = "sidebar-menu-list">
