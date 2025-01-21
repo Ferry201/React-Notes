@@ -157,7 +157,8 @@
 	transition: width .3s ease;
 	box-sizing: border-box;
 	background: var(--primary-background-color);
-}
+	/*transition: background 0.5s;*/
+}.
 /**/
 .container {
 	padding: 0;
@@ -276,6 +277,16 @@
 }
 .active-collapse{
 	background: #eeeeee;
+	/*background: #dbecff;*/
+}
+.selected-favorites{
+	background: #fff8bf;
+}
+.selected-notebook-title{
+	font-weight: bolder;
+	/*background: #fff8bf;*/
+	/*text-decoration: underline;*/
+	/*color: var(--primary-text-color);*/
 }
 .add-notebook-icon-box {
 	width: 20px;
@@ -387,12 +398,10 @@
 	transition: background-color 0.4s ease, width 0.5s ease;
 }
 
-.sidebar-content-panel .menu-item:hover {
+.sidebar-content-panel .sidebar-menu-list .menu-item:hover {
 	background-color: #eeeeee;
 }
-.sidebar-content-panel .menu-item:nth-child(5):hover {
-	background-color: unset;
-}
+
 
 .sidebar-content-panel .menu-item span {
 	color: #555555;
@@ -401,6 +410,8 @@
 }
 
 .sidebar-content-panel .menu-item svg {
+	width: 20px;
+	height: 20px;
 	margin-left: 16px;
 }
 .sidebar-content-panel .menu-item svg path{
@@ -1327,11 +1338,24 @@ h2 {
 	background-color: #e6e5e5;
 	border-radius: 100%;
 }
-.search-input{
-	height: 32px;
-	margin: 4px 10px;
+.seach-note-menu{
 	
 }
+.search-input{
+	box-sizing: border-box;
+	padding-left: 2px;
+	font-size: 16px;
+	width: calc(100% - 56px);
+	height: 32px;
+	margin: 4px 0px 0 30px;
+	outline: none;
+	border: none;
+	/*border: 1px solid #c4c4c4;*/
+	/*border-radius: 8px;*/
+	border-bottom: 1px solid black;
+	
+}
+
 
 body, html {
 	height: 100%;
