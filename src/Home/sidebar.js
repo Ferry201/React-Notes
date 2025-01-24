@@ -1,10 +1,23 @@
 import { ResizableBox } from 'react-resizable';
 import 'react-resizable/css/styles.css';
-import React , { Component , useState , createRef } from 'react';
+import React , {
+	Component ,
+	useState ,
+	createRef,
+} from 'react';
 import { UserOutlined } from '@ant-design/icons';
-import { Avatar , Space , Divider , message , Collapse } from 'antd';
+import {
+	Avatar ,
+	Space ,
+	Divider ,
+	message ,
+	Collapse,
+} from 'antd';
 import './note.css';
-import { DownOutlined , UpOutlined } from '@ant-design/icons';
+import {
+	DownOutlined ,
+	UpOutlined,
+} from '@ant-design/icons';
 import { v4 as uuidv4 } from 'uuid';
 import dayjs from "dayjs";
 import coverDefault from './img-collection/cover-default.png';
@@ -24,13 +37,14 @@ export class NoteSidebar extends Component {
 		searchKeyword : '' ,
 	};
 	
-	componentDidMount () {
-		document.addEventListener('mousedown' , this.handleClickOutside);
+	componentDidUpdate (prevProps) {
+		if ( prevProps.currentNotebook.id === 'searchResults-notes-id' && prevProps.currentNotebook.id !== this.props.currentNotebook.id ) {
+			this.setState({
+				searchKeyword : '',
+			});
+		}
 	}
 	
-	componentWillUnmount () {
-		document.removeEventListener('mousedown' , this.handleClickOutside);
-	}
 	
 	handleSetWidth = (width) => {
 		this.setState({ siderbarWidth : width });
@@ -44,7 +58,7 @@ export class NoteSidebar extends Component {
 	};
 	
 	getNotebookItems () {
-		const notebooks = this.props.noteBookArray.filter(notebook => notebook.id !== 'favorites-notes-id');
+		const notebooks = this.props.noteBookArray.filter(notebook => notebook.id !== 'favorites-notes-id' && notebook.id !== 'searchResults-notes-id');
 		return [
 			{
 				classNames : {
@@ -85,18 +99,20 @@ export class NoteSidebar extends Component {
 									this.props.handleToggleNoteBook(book);
 								} }
 							/>
-							<span className ={ `notebook-title ${ isSelected ? 'selected-notebook-title' : '' } ${this.props.currentNotebook.currentTheme}` } >{ book.title }</span>
+							<span className = { `notebook-title ${ isSelected ? 'selected-notebook-title' : '' } ` }>{ book.title }</span>
 						</div>);
 					}) }
 				</div>) ,
 			} ,
 		];
 	}
-	searchKeyword = (keyword) => {
-		this.setState({ searchKeyword : keyword });
-		console.log(keyword);
-	};
 	
+	searchKeyword = (keyword) => {
+		this.setState({ searchKeyword : keyword } , () => {
+			this.props.setSearchKeyword(keyword);
+		});
+		
+	};
 	
 	
 	render () {
@@ -115,7 +131,8 @@ export class NoteSidebar extends Component {
 					<span>设置</span>
 				</div> ,
 				children : <p>快捷键</p> ,
-			} , {
+			} ,
+			{
 				showArrow : false ,
 				key : 'feedbackItem' ,
 				label : <div className = "collapse-header">
@@ -143,8 +160,14 @@ export class NoteSidebar extends Component {
 			<ResizableBox
 				width = { siderCollapsed ? 0 : this.state.siderbarWidth }
 				axis = "x" // 只允许水平拖动
-				minConstraints = { [296 , 0] } // 设置最小宽度
-				maxConstraints = { [480 , 0] } // 设置最大宽度
+				minConstraints = { [
+					296 ,
+					0,
+				] } // 设置最小宽度
+				maxConstraints = { [
+					480 ,
+					0,
+				] } // 设置最大宽度
 				resizeHandles = { ['e'] } // 右边缘 east
 				onResizeStart = { (e , data) => {
 					toggleResizing(true);
@@ -179,18 +202,17 @@ export class NoteSidebar extends Component {
 						</div>
 						<Divider style = { { borderColor : '#e4e4e4' } } />
 						
-						{/*搜索*/}
+						{/*搜索*/ }
 						<div
 							className = "menu-item seach-note-menu"
-							onClick = { this.handleSwitchInput }
 							ref = { this.searchMenuRef }
 						>
-							<SearchIcon/>
+							<SearchIcon />
 							<input
 								ref = { this.searchInputRef }
 								className = "search-input"
 								placeholder = "搜索"
-								value={this.state.searchKeyword}
+								value = { this.state.searchKeyword }
 								onChange = { (e) => {
 									this.searchKeyword(e.target.value);
 								} }

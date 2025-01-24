@@ -1,7 +1,10 @@
 import './note.css';
 import React , { Component } from 'react';
 import 'rc-tabs/assets/index.css';
-import { message , Modal } from 'antd';
+import {
+	message ,
+	Modal,
+} from 'antd';
 import { ExclamationCircleFilled } from '@ant-design/icons';
 import { AddNewNoteModal } from '../RichTextEditor/RichTextEditor';
 import isEqual from 'lodash/isEqual';
@@ -11,6 +14,7 @@ import { v4 as uuidv4 } from 'uuid';
 import coverDefault from "@src/Home/img-collection/cover-default.png";
 import dayjs from "dayjs";
 import { NoteBookModal } from "@src/Home/addNoteBook_Model";
+import { convertFromRaw } from "draft-js";
 
 const { confirm } = Modal;
 
@@ -40,43 +44,62 @@ class NotesApp extends Component {
 			isModalOpen : false ,
 			notesAmount : 0 ,
 			showFavoritedNotes : false ,
-			displaySearchInput : false ,
+			searchKeyword : '' ,
+			showSearchResults : false ,
 		};
 	}
 	
 	componentDidUpdate (prevProps , prevState) {
-		// 确保 currentNotebook 存在并且 id 不同
-		if ( this.state.currentNotebook && prevState.currentNotebook && this.state.currentNotebook.id !== prevState.currentNotebook.id ) {
-			localStorage.setItem('current-notebook' , JSON.stringify(this.state.currentNotebook));
-			
-			if ( this.state.currentNotebook.id === 'favorites-notes-id' ) {
-				const favoritedNotes = this.state.noteListData.filter(note => note.isFavorited === true);
-				this.setState({ notesAmount : favoritedNotes.length });
-			} else {
-				const currentNotes = this.state.noteListData.filter(note => note.notebookID === this.state.currentNotebook.id);
-				this.setState({ notesAmount : currentNotes.length });
-			}
-		}
-		if ( this.state.noteListData && prevState.noteListData && this.state.noteListData !== prevState.noteListData ) {
-			if ( this.state.currentNotebook.id === 'favorites-notes-id' ) {
-				const favoritedNotes = this.state.noteListData.filter(note => note.isFavorited === true);
-				this.setState({ notesAmount : favoritedNotes.length });
-			} else {
-				const currentNotes = this.state.noteListData.filter(note => note.notebookID === this.state.currentNotebook.id);
-				this.setState({
-					notesAmount : currentNotes.length ,
+		const {
+			noteListData ,
+			noteBookData,
+			currentNotebook ,
+			activeModal,
+		} = this.state;
+		const getFilteredNotes=()=>{
+			if ( currentNotebook.id === 'favorites-notes-id' ) {
+				return noteListData.filter(note => note.isFavorited === true);
+			} else if ( currentNotebook.id === 'searchResults-notes-id' ) {
+				return noteListData.filter((note) => {
+					const plainText = convertFromRaw(note.noteContent).getPlainText();
+					return plainText.toLowerCase().includes(this.state.searchKeyword.toLowerCase());
 				});
+			} else {
+				return noteListData.filter(note => note.notebookID === this.state.currentNotebook.id);
 			}
 		}
-		let allNotebooks=[...this.state.noteBookData];
-		allNotebooks=allNotebooks.filter(notebook => notebook.id !== 'favorites-notes-id' && notebook.id !== 'searchResults-notes-id');
-		if ( this.state.activeModal === 'deleteConfirm' && allNotebooks.length === 1 ) {
+		
+		// 确保 currentNotebook 存在并且 id 不同
+		if ( currentNotebook && prevState.currentNotebook && currentNotebook.id !== prevState.currentNotebook.id ) {
+			if(currentNotebook.id !== 'searchResults-notes-id' ) {
+				localStorage.setItem('current-notebook' , JSON.stringify(this.state.currentNotebook));
+			}
+			const fileredNotes=getFilteredNotes();
+			this.setState({notesAmount : fileredNotes.length})
+		}
+		
+		if ( noteListData && prevState.noteListData && noteListData !== prevState.noteListData ) {
+			const fileredNotes=getFilteredNotes();
+			this.setState({notesAmount : fileredNotes.length})
+		}
+		
+		let allNotebooks = [...noteBookData];
+		allNotebooks = allNotebooks.filter(notebook => notebook.id !== 'favorites-notes-id' && notebook.id !== 'searchResults-notes-id');
+		if ( activeModal === 'deleteConfirm' && allNotebooks.length === 1 ) {
 			message.error('至少需要一个笔记本存在 , 不能删除最后一个笔记本!');
 			this.setState({
 				activeModal : null ,
 			});
 		}
-		
+		// 当 searchKeyword 从非空变为空时，恢复到上一个选中的笔记本
+		if ( prevState.searchKeyword !== '' && this.state.searchKeyword === '' ) {
+			const prevNotebook = noteBookData.find(book => book.id === prevState.selectedNotebookId);
+			this.setState({
+				showSearchResults : false ,
+				selectedNotebookId : prevState.selectedNotebookId ,
+				currentNotebook : prevNotebook ,
+			});
+		}
 	}
 	
 	
@@ -92,6 +115,14 @@ class NotesApp extends Component {
 			const favoritedNotes = storedNoteData.filter(note => note.isFavorited === true);
 			this.setState({ notesAmount : favoritedNotes.length });
 		}
+		if ( this.state.currentNotebook.id === 'searchResults-notes-id' ) {
+			let allMatchedNotes = this.state.noteListData.filter((note) => {
+				const plainText = convertFromRaw(note.noteContent).getPlainText();
+				return plainText.toLowerCase().includes(this.state.searchKeyword.toLowerCase());
+			});
+			this.setState({ notesAmount : allMatchedNotes.length });
+		}
+		
 		
 		const storedNoteBooks = localStorage.getItem('notebook-array');
 		if ( storedNoteBooks === null ) {
@@ -104,10 +135,12 @@ class NotesApp extends Component {
 			// 如果有数据，从 localStorage 中加载
 			this.setState({ noteBookData : JSON.parse(storedNoteBooks) });
 		}
+		if ( this.state.currentNotebook.id !== 'searchResults-notes-id' ) {
+			this.setState({
+				selectedNotebookId : this.state.currentNotebook.id ,
+			});
+		}
 		
-		this.setState({
-			selectedNotebookId : this.state.currentNotebook.id ,
-		});
 		
 	}
 	
@@ -134,9 +167,9 @@ class NotesApp extends Component {
 			isFavorited : false ,
 			favoritedTime : null ,
 		};
-		
-		//在收藏夹修改已存在笔记时:
-		if ( currentNotebook.id === 'favorites-notes-id' && currentID !== null ) {
+		let editInFavoritesOrSearchPage = currentNotebook.id === 'favorites-notes-id' || currentNotebook.id === 'searchResults-notes-id';
+		//在收藏夹or搜索结果里修改已存在笔记时:
+		if ( editInFavoritesOrSearchPage && currentID !== null ) {
 			const oldNote = noteInfoArray.find(note => note.id === currentID);
 			if ( oldNote ) {
 				newNoteInfo.notebookID = oldNote.notebookID; // 保留原来的 notebookID
@@ -146,7 +179,10 @@ class NotesApp extends Component {
 		
 		//添加新note
 		if ( currentID === null ) {
-			noteInfoArray = [newNoteInfo , ...noteInfoArray];
+			noteInfoArray = [
+				newNoteInfo ,
+				...noteInfoArray,
+			];
 		} else {
 			//修改已存在的note, 分两种情况:1,修改原内容; 2,未修改
 			//rawContentState.blocks 中每个 block 代表的是编辑器中一个段落，而不是一个完整的文档.
@@ -194,12 +230,18 @@ class NotesApp extends Component {
 			noteListData ,
 			notesAmount ,
 			currentNotebook ,
+			searchKeyword ,
 		} = this.state;
 		let updatedList = [...noteListData];
 		updatedList = updatedList.filter((note) => note.id !== id);
 		let currentNotes;
 		if ( currentNotebook.id === 'favorites-notes-id' ) {
 			currentNotes = updatedList.filter(note => note.isFavorited === true);
+		} else if ( currentNotebook.id === 'searchResults-notes-id' ) {
+			currentNotes = updatedList.filter((note) => {
+				const plainText = convertFromRaw(note.noteContent).getPlainText();
+				return plainText.toLowerCase().includes(searchKeyword.toLowerCase());
+			});
 		} else {
 			currentNotes = updatedList.filter(note => note.notebookID === currentNotebook.id);
 		}
@@ -289,6 +331,9 @@ class NotesApp extends Component {
 			};
 		} , () => {
 			localStorage.setItem('notebook-array' , JSON.stringify(this.state.noteBookData));
+			if ( newNoteBook.id !== 'searchResults-notes-id' ) {
+				this.handleToggleNoteBook(newNoteBook);
+			}
 		});
 	};
 	//传给sidebar
@@ -297,6 +342,7 @@ class NotesApp extends Component {
 			currentNotebook : notebook ,
 			selectedNotebookId : notebook.id ,//添加后立刻显示新添加笔记本页面
 			showFavoritedNotes : false ,
+			showSearchResults : false ,
 		});
 	};
 	
@@ -359,6 +405,7 @@ class NotesApp extends Component {
 		let updatedNotebooks = [...noteBookData];
 		let updatedNoteList = [...noteListData];
 		updatedNotebooks = updatedNotebooks.filter((notebook) => notebook.id !== currentNotebook.id);
+		updatedNotebooks = updatedNotebooks.filter(notebook => notebook.id !== 'favorites-notes-id' && notebook.id !== 'searchResults-notes-id');
 		let newCurrentNotebook = null;
 		if ( updatedNotebooks.length > 0 ) {
 			const currentIndex = noteBookData.findIndex((notebook) => notebook.id === currentNotebook.id);
@@ -404,7 +451,7 @@ class NotesApp extends Component {
 		if ( favorites === undefined ) {
 			const newNoteBook = {
 				title : '收藏夹' ,
-				cover : 'null' ,
+				cover : null ,
 				id : 'favorites-notes-id' ,
 				createdTime : dayjs().valueOf() ,
 				showMode : 'list-mode' ,
@@ -416,12 +463,14 @@ class NotesApp extends Component {
 		const favoritedNotes = noteListData.filter(note => note.isFavorited === true);
 		this.setState({
 			showFavoritedNotes : true ,
+			showSearchResults : false ,
 			currentNotebook : favorites ,
 			selectedNotebookId : favorites.id ,
 			notesAmount : favoritedNotes.length ,
 		});
 	};
-	handleSearchKeywords = () => {
+	//点击搜索
+	showSearchResults = (keyword) => {
 		const {
 			noteBookData ,
 			noteListData ,
@@ -430,7 +479,7 @@ class NotesApp extends Component {
 		if ( searchResults === undefined ) {
 			const newNoteBook = {
 				title : '搜索结果' ,
-				cover : 'null' ,
+				cover : null ,
 				id : 'searchResults-notes-id' ,
 				createdTime : dayjs().valueOf() ,
 				showMode : 'list-mode' ,
@@ -439,19 +488,32 @@ class NotesApp extends Component {
 			this.addNoteBook(newNoteBook);
 			searchResults = newNoteBook;
 		}
-		// const favoritedNotes = noteListData.filter(note => note.isFavorited === true);
+		let allMatchedNotes = noteListData.filter((note) => {
+			const plainText = convertFromRaw(note.noteContent).getPlainText();
+			return plainText.toLowerCase().includes(keyword.toLowerCase());
+		});
+		
 		this.setState({
+			showSearchResults : true ,
 			showFavoritedNotes : false ,
 			currentNotebook : searchResults ,
-			selectedNotebookId : searchResults.id ,
-			// notesAmount : favoritedNotes.length ,
+			notesAmount : allMatchedNotes.length ,
 		});
 	};
-	
+	setSearchKeyword = (keyword) => {
+		if ( keyword.trim() === '' ) {
+			this.setState({ searchKeyword : '' });
+		}
+		if ( keyword.trim() !== '' ) {
+			this.setState({ searchKeyword : keyword.trim() } , () => {
+				this.showSearchResults(keyword);
+			});
+		}
+	};
 	
 	render () {
-		let allNotebooks=[...this.state.noteBookData];
-		allNotebooks=allNotebooks.filter(notebook => notebook.id !== 'favorites-notes-id' && notebook.id !== 'searchResults-notes-id');
+		let allNotebooks = [...this.state.noteBookData];
+		allNotebooks = allNotebooks.filter(notebook => notebook.id !== 'favorites-notes-id' && notebook.id !== 'searchResults-notes-id');
 		
 		return <div className = "container">
 			
@@ -478,6 +540,7 @@ class NotesApp extends Component {
 					openModal = { this.handleOpenModal }
 					clickFavorites = { this.handleClickFavorites }
 					currentNotebook = { this.state.currentNotebook }
+					setSearchKeyword = { this.setSearchKeyword }
 				/>
 				
 				
@@ -496,6 +559,8 @@ class NotesApp extends Component {
 					isShowFavorites = { this.state.showFavoritedNotes }
 					onSave = { this.handleSaveNote }
 					onCancel = { this.handleCloseModal }
+					searchKeyword = { this.state.searchKeyword }
+					isShowSearchResults = { this.state.showSearchResults }
 				/>
 				
 				{/*添加笔记本 Modal*/ }
@@ -514,9 +579,7 @@ class NotesApp extends Component {
 							currentTheme : 'blue-theme' ,
 						};
 						this.addNoteBook(newNoteBook);
-						this.handleToggleNoteBook(newNoteBook);
-					}
-					}
+					} }
 					closeModal = { () => this.handleCloseModal() }
 					open = { this.state.isModalOpen }
 				/>) }
@@ -532,17 +595,10 @@ class NotesApp extends Component {
 				/>) }
 				
 				{/*  删除笔记本确认框*/ }
-				{ this.state.activeModal === 'deleteConfirm' && allNotebooks.length !== 1 ? (
-					showDeleteConfirm(
-						this.state.currentNotebook.title ,
-						this.state.isModalOpen ,
-						() => {
-							this.deleteNotebook();
-							this.handleCloseModal();
-						} ,
-						this.handleCloseModal ,
-					)
-				) : null }
+				{ this.state.activeModal === 'deleteConfirm' && allNotebooks.length !== 1 ? (showDeleteConfirm(this.state.currentNotebook.title , this.state.isModalOpen , () => {
+						this.deleteNotebook();
+						this.handleCloseModal();
+					} , this.handleCloseModal )) : null }
 			
 			</div> }
 		

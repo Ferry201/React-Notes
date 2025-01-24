@@ -21,6 +21,8 @@ const RenderContent = ({
 	openModal ,
 	onSave ,
 	onCancel ,
+	keyword,
+	isShowSearchResults,
 }) => {
 	const inputAddNoteRef = React.useRef();
 	const wrapperRef = React.useRef();
@@ -33,6 +35,15 @@ const RenderContent = ({
 	if ( currentNotebook.id === 'favorites-notes-id' ) {
 		isShowFavoritesNotes = true;
 	}
+	let showSearchResults=isShowSearchResults;
+	if ( currentNotebook.id === 'favorites-notes-id' ) {
+		showSearchResults = true;
+	}
+	
+	
+	
+	
+	
 	const placeholders = [
 		'输入笔记...' ,
 		'记录你的闪光灵感✨' ,
@@ -53,14 +64,21 @@ const RenderContent = ({
 	} , [placeholders]);
 	
 	useEffect(() => {
-		if ( isShowFavoritesNotes ) {
-			const FavoritesNotes = notes.filter(note => note.isFavorited === true);
-			setContents(FavoritesNotes);
-		} else {
-			const currentNotes = notes.filter(note => note.notebookID === currentNotebook.id);
-			setContents(currentNotes);
-		}
-	} , [currentNotebook , notes]);
+		const filters = {
+			isShowFavoritesNotes : () => notes.filter(note => note.isFavorited === true) ,
+			showSearchResults : () => notes.filter((note) => {
+				const plainText = convertFromRaw(note.noteContent).getPlainText();
+				return plainText.toLowerCase().includes(keyword.toLowerCase());
+			}) ,
+			default : () => notes.filter(note => note.notebookID === currentNotebook.id),
+		};
+		//每个键都封装为箭头函数，调用时才运行，基于最新的 notes 数据执行
+		const filteredNotes=isShowFavoritesNotes? filters.isShowFavoritesNotes():
+		                    showSearchResults? filters.showSearchResults():
+		                    filters.default();
+		
+		setContents(filteredNotes);
+	} , [currentNotebook , notes,keyword]);
 	
 	
 	useEffect(() => {
@@ -98,9 +116,7 @@ const RenderContent = ({
 		textarea.style.height = `${ textarea.scrollHeight }px`;//输入笔记内容时根据内容自动调整高度
 		
 	};
-	const onAddNote = () => {
-		
-	};
+	
 	const onDeleteNote = (id) => {
 		deleteNote(id);
 		setContents(contents.filter(content => content.id !== id));
@@ -134,12 +150,49 @@ const RenderContent = ({
 	let otherNotes;
 	if ( isShowFavoritesNotes ) {
 		pinnedNotes = contents.sort((a , b) => b.favoritedTime - a.favoritedTime); // 按收藏时间降序排列，新收藏的排前面
-	} else {
+	} else if(showSearchResults){
+		pinnedNotes=contents;
+	}else {
 		pinnedNotes = contents.filter((note) => note.isPinned) // 已置顶的笔记
 		.sort((a , b) => b.pinnedTime - a.pinnedTime); // 按置顶时间降序排列，新置顶的排前面
 		otherNotes = contents.filter(note => !note.isPinned);
 	}
 	
+	let showFavoritesOrSearchResults = isShowFavoritesNotes === true || showSearchResults === true;
+	
+	const refs = useRef([]);
+	const [currentIndex,setCurrentIndex]=useState(null);
+	
+	useEffect(() => {
+		if (currentIndex!==null&&refs.current[currentIndex]) {
+			refs.current[currentIndex].scrollIntoView({
+				behavior: "smooth",
+				block: "center",
+			});
+		}
+	}, [currentIndex,keyword]);
+	const HighlightedKeyword=({text,keyword})=>{
+		const parts=text.split(new RegExp(`(${keyword})`,'gi'))
+		return <>
+			{ parts.map((part , index) =>
+				(part.toLowerCase() === keyword.toLowerCase() ?
+				 <span
+						key = { `${part}-${index}` }
+						style = { { background : 'yellow' } }
+					   ref={(el) => {
+						   refs.current[index] = el;
+							if(index===0){
+								setCurrentIndex(0)
+							}
+					   }}
+				 >{ part }
+				 </span > :
+				 <span key = { `${ part }-${ index }` }>{ part }</span>
+			))}
+		</>
+	}
+	// console.log(isShowFavoritesNotes);
+	// console.log(showSearchResults);
 	//通用部分
 	class NoteList extends Component {
 		render () {
@@ -153,18 +206,24 @@ const RenderContent = ({
 				titleClassName ,
 				notebook ,
 			} = this.props;
-			
 			return <div
 				key = { id }
 				className = { `${ itemClassName } ${ currentNotebook.currentTheme }` }
 				onClick = { () => changeNote(noteTitle , noteContent , id) }
 			>
 				{ noteTitle && <span className = "note-item-title">{ noteTitle }</span> }
-				<span className = { `${ titleClassName }` }>{ convertFromRaw(noteContent).getPlainText() }</span>
+				<span className = { `${ titleClassName }` }>
+					{ currentNotebook.id === 'searchResults-notes-id' ?
+					 <HighlightedKeyword
+						 text = { convertFromRaw(noteContent).getPlainText() }
+						 keyword = { keyword }
+					 /> :
+					 convertFromRaw(noteContent).getPlainText()}
+				</span>
 				{/*note details : 时间 ,置顶 ,收藏 ,删除 , 显示收藏夹时显示所属书籍*/ }
 				<div className = "note-details">
 					<FormatTime id = { id } />
-					{ isShowFavoritesNotes && <div
+					{ showFavoritesOrSearchResults && <div
 						className = { `show-note-book-text ${ currentNotebook.currentTheme }` }
 					>|{ notebook }</div> }
 					<div
@@ -173,7 +232,7 @@ const RenderContent = ({
 							e.stopPropagation();
 						} }
 					>
-						{ !isShowFavoritesNotes && <PinNoteIcon
+						{ !showFavoritesOrSearchResults && <PinNoteIcon
 							isPinned = { isPinned }
 							handlePinNote = { () => {
 								onPinNote(id);
@@ -204,7 +263,7 @@ const RenderContent = ({
 		render () {
 			return <div>
 				{ pinnedNotes.length > 0 && <div>
-					{ !isShowFavoritesNotes && <p className = "note-list-sub-title">已置顶</p> }
+					{ !showFavoritesOrSearchResults && <p className = "note-list-sub-title">已置顶</p> }
 					<div className = "note-card-mode">
 						{ pinnedNotes.map(({
 							id ,
@@ -229,7 +288,7 @@ const RenderContent = ({
 					</div>
 				</div> }
 				
-				{ !isShowFavoritesNotes && <div>{ otherNotes.length > 0 && <div>
+				{  !showFavoritesOrSearchResults && <div>{ otherNotes.length > 0 && <div>
 					{ pinnedNotes.length > 0 && <p className = "note-list-sub-title">其他</p> }
 					<div className = "note-card-mode">
 						{ otherNotes.map(({
@@ -263,7 +322,7 @@ const RenderContent = ({
 		render () {
 			return <div>
 				{ pinnedNotes.length > 0 && <div>
-					{ !isShowFavoritesNotes && <p className = "note-list-sub-title">已置顶</p> }
+					{ !showFavoritesOrSearchResults && <p className = "note-list-sub-title">已置顶</p> }
 					<div className = "note-ul-mode">
 						{ pinnedNotes.map(({
 							id ,
@@ -288,7 +347,7 @@ const RenderContent = ({
 					</div>
 				</div> }
 				
-				{ !isShowFavoritesNotes && <div>{ otherNotes.length > 0 && <div>
+				{ !showFavoritesOrSearchResults && <div>{ otherNotes.length > 0 && <div>
 					{ pinnedNotes.length > 0 && <p className = "note-list-sub-title">其他</p> }
 					<div className = "note-ul-mode">
 						{ otherNotes.map(({
@@ -369,7 +428,7 @@ const RenderContent = ({
 		render () {
 			return (<div>
 				{ pinnedNotes.length > 0 && (<div>
-					{ !isShowFavoritesNotes && <p className = "note-list-sub-title">已置顶</p> }
+					{ !showFavoritesOrSearchResults && <p className = "note-list-sub-title">已置顶</p> }
 					<div
 						className = "note-grid-mode"
 						ref = { this.gridRefPinned }
@@ -396,7 +455,7 @@ const RenderContent = ({
 						}) }
 					</div>
 				</div>) }
-				{ !isShowFavoritesNotes && <div>{ otherNotes.length > 0 && (<div>
+				{  !showFavoritesOrSearchResults && <div>{ otherNotes.length > 0 && (<div>
 					{ pinnedNotes.length > 0 && <p className = "note-list-sub-title">其他</p> }
 					
 					<div
@@ -476,7 +535,7 @@ const RenderContent = ({
 	
 	return (<div className = "show-mode-box">
 		{/*输入笔记区*/ }
-		{ currentNotebook.id !== 'favorites-notes-id' && <div className = "add-new-note-section">
+		{ !showFavoritesOrSearchResults && <div className = "add-new-note-section">
 			{ isExpandNoteEditSection ? <div
 				ref = { wrapperRef }
 				className = { `note-info-input-section ${ currentNotebook.currentTheme }` }
@@ -506,7 +565,9 @@ const RenderContent = ({
 		
 		{ contents.length === 0 ? (<div className = {`empty-container ${currentNotebook.currentTheme}`}>
 			<EmptyIcon />
-			{ isShowFavoritesNotes ? <p>收藏夹空空如也</p> : <p>还没有笔记 , 点击上方输入框创建吧 !</p> }
+			{ isShowFavoritesNotes ? <p>收藏夹空空如也</p>:
+			  showSearchResults?<p>一个匹配的搜索结果都没有</p> :
+			  <p>还没有笔记 , 点击上方输入框创建吧 !</p> }
 		</div>) : (<div className = "show-noteList-box">
 			{ ShowMode === 'list-mode' && <UlMode /> }
 			{ ShowMode === 'grid-mode' && <GridMode /> }
