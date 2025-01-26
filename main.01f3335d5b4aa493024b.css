@@ -13,70 +13,91 @@
 	--primary-background-color: #e7e7e7;
 	--primary-text-color: #424242;
 	--primary-border: 1px solid #ffffff;
-	--header-icon-background: #ffffff
+	--header-icon-background: #ffffff;
+	--show-note-book-text-bg-color:#e7e7e7;
 }
 .blue-theme {
 	--primary-background-color: #e7eeff;
 	--primary-text-color: #4180c7;
 	--primary-border: 1px solid #ffffff;
-	--header-icon-background:#ffffff
+	--header-icon-background:#ffffff;
+	--show-note-book-text-bg-color:#e7eeff;
 }
 .purple-theme{
-	--primary-background-color: #ececf8;
+	--primary-background-color: #e9e4f0;
 	--primary-text-color: #774bd7;
 	--primary-border: 1px solid #ffffff;
-	--header-icon-background:#ffffff
+	--header-icon-background:#ffffff;
+	--show-note-book-text-bg-color:#ececf8;
 }
 .red-theme{
 	--primary-background-color:#ffeaea;
 	--primary-text-color: #c91515;
 	--primary-border: 1px solid #ffffff;
-	--header-icon-background:#ffffff
+	--header-icon-background:#ffffff;
+	--show-note-book-text-bg-color:#ffeaea;
 }
 .green-theme{
 	--primary-background-color: #e5f7e5;
 	--primary-text-color: #1e8d1e;
 	--primary-border: 1px solid #ffffff;
-	--header-icon-background:#ffffff
+	--header-icon-background:#ffffff;
+	--show-note-book-text-bg-color:#e5f7e5;
 }
 .orange-theme{
 	--primary-background-color: #f4e9e6;
-	--primary-text-color: #f2804b;
+	--primary-text-color: #f37701;
 	--primary-border: 1px solid #ffffff;
-	--header-icon-background:#ffffff
+	--header-icon-background:#ffffff;
+	--show-note-book-text-bg-color:#f4e9e6;
 }
 .pink-theme{
 	--primary-background-color: #ffeeee;
 	--primary-text-color: #ff697e;
 	--primary-border: 1px solid #ffffff;
-	--header-icon-background:#ffffff
+	--header-icon-background:#ffffff;
+	--show-note-book-text-bg-color:#ffeeee;
+}
+.yellow-theme{
+	--primary-background-color: #fff1c4;
+	--primary-text-color: #1a1707;
+	--primary-border: 1px solid #ffffff;
+	--header-icon-background:#ffffff;
+	--show-note-book-text-bg-color:#fff1c4;
 }
 
 
 .gradient-theme-blue-yellow{
 	/*background-image: linear-gradient( 179.1deg,  rgba(255,250,172,1) 10.3%, rgba(13,167,168,1) 148% );*/
-	--primary-background-color:  linear-gradient( 179.1deg, rgb(254 250 191) 10.3%, rgba(13,167,168,1) 148% );
-	--primary-text-color: rgba(13,167,168,1);
+	--primary-background-color: linear-gradient( to bottom,  rgba(249,244,233,1) 3.4%, rgba(243,220,193,1) 23.5%, rgba(224,171,165,1) 45%, rgba(161,127,161,1) 65.3%, rgba(115,106,152,1) 87.2% );
+	--primary-text-color: rgb(84, 87, 150);
 	--primary-border: 1px solid #ffffff;
 	--header-icon-background:#ffffff;
+	--show-note-book-text-bg-color: #f3ead5;
 }
-.gradient-theme-blue-purple{
-	--primary-background-color: linear-gradient(to top, #92e8f6 0%, #f5c9d2 100%);
-	--primary-text-color: #2ba49f;
+.gradient-theme-blue-pink{
+	/*--primary-background-color: linear-gradient(to top, #92e8f6 0%, #f5c9d2 100%);*/
+	--primary-background-color: linear-gradient( to bottom,  rgba(252,225,208,1) 30%, rgba(255,173,214,1) 55.7%, rgba(162,186,245,1) 81.8% );
+	--primary-text-color: rgb(108, 138, 209);
 	--primary-border: 1px solid #ffffff;
-	--header-icon-background:#ffffff;
+	--header-icon-background: #ffffff;
+	--show-note-book-text-bg-color: rgb(214, 222, 238);
 }
-/*.gradient-theme-red-gray{*/
-/*	--primary-background-color:linear-gradient(to top, #e592a2 39%, #d8b4b9 51%,  #dddcd7 64%, #dbdcd7 100%);*/
-/*	--primary-text-color: #b8235a;*/
-/*	--primary-border: 1px solid #ffffff;*/
-/*	--header-icon-background:#ffffff;*/
-/*}*/
+.gradient-theme-blue-cyan{
+	--primary-background-color: linear-gradient( to bottom,  rgba(172,230,246,1) -0.5%, rgba(68,100,145,1) 99.8% );
+	--primary-text-color: rgb(28, 24, 24);
+	--primary-border: 1px solid #ffffff;
+	--header-icon-background: rgb(255, 255, 255);
+	--show-note-book-text-bg-color: rgb(194, 235, 241);
+}
+
+
 .gradient-theme-green-blue{
 	--primary-background-color: linear-gradient(to top, rgb(182, 244, 146), rgb(51, 139, 147));
 	--primary-text-color: rgb(255, 255, 255);
 	--primary-border: 1px solid #ffffff;
 	--header-icon-background: rgb(182, 244, 146);
+	--show-note-book-text-bg-color: rgb(56, 152, 161);
 }
 
 .image-background-windmill{
@@ -84,31 +105,36 @@
 	--primary-text-color: rgb(255, 255, 255);
 	--primary-border: 1px solid #ffffff;
 	--header-icon-background:  #d1d1d1;
+	--show-note-book-text-bg-color: #a9b6dd;
 }
 .image-background-mountain{
 	--primary-background-color: url(assets/71f52d75a613d795704b.png) no-repeat center/cover;
 	--primary-text-color: rgb(255, 255, 255);
 	--primary-border: 1px solid #ffffff;
 	--header-icon-background:#d1d1d1;
+	--show-note-book-text-bg-color:#e1c6c0;
 }
 .image-background-beach{
 	--primary-background-color: url(assets/48ce9d6c3e59dce318b1.png) no-repeat center/cover;
 	--primary-text-color: rgb(0, 0, 0);
 	--primary-border: 1px solid #ffffff;
 	--header-icon-background:#ffffff;
+	--show-note-book-text-bg-color: #feebc7;
 }
 .image-background-tower{
 	--primary-background-color: url(assets/5c171e356128fd2e18e0.png) no-repeat center/cover;
 	--primary-text-color: rgb(0, 0, 0);
 	--primary-border: 1px solid #ffffff;
 	--header-icon-background: #ffffff;
+	--show-note-book-text-bg-color:#cde2e7;
 }
 
 .image-background-pinksky{
 	--primary-background-color: url(assets/aaece07bb910a4ca7c63.png) no-repeat center/cover;
 	--primary-text-color: white;
 	--primary-border: 1px solid #ffffff;
-	--header-icon-background: #d1d1d1;
+	--header-icon-background: #251515;
+	--show-note-book-text-bg-color:#f69da6;
 }
 
 .image-background-wheat{
@@ -116,12 +142,19 @@
 	--primary-text-color: white;
 	--primary-border: 1px solid #ffffff;
 	--header-icon-background: #d1d1d1;
+	--show-note-book-text-bg-color:#c4c96c;
 }
-
+.themecolor-popover-title{
+	text-align: center;
+	margin-bottom: 4px;
+	padding: 0;
+	margin-top: 0;
+	color: #a9a6a6;
+}
 .theme-color-panel{
 	display: grid;
-	gap: 10px;
-	grid-template-columns: repeat(2,1fr);
+	gap: 6px;
+	grid-template-columns: repeat(3,1fr);
 }
 .color-little-box{
 	cursor: pointer;
@@ -625,7 +658,7 @@ body {
 	margin: 4px 0 8px 0;
 	color: var(--primary-text-color);
 }
-/*宫格模式 ,卡片模式和列表模式分别设置不同的ul和noteItem,noteTitle*/
+/*宫格模式 ,卡片模式和列表模式分别设置不同的ul和noteItem*/
 .note-item-title{
 	font-size: 16px;
 	display: -webkit-box;
@@ -657,9 +690,6 @@ body {
 	border: var(--primary-border);
 }
 
-
-
-
 .note-card-mode-item:hover {
 	cursor: pointer;
 	box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
@@ -670,17 +700,24 @@ body {
 	font-size: 14px;
 	display: -webkit-box;
 	-webkit-box-orient: vertical;
-	-webkit-line-clamp: 6;
+	/*-webkit-line-clamp: 6;*/
 	overflow: hidden;
 	text-overflow: ellipsis;
 	line-height: 1.5; /* 设置行高 */
 	min-height: calc(1.5em * 6);
-	height: calc(1.5em * 7); 
+	/*height: calc(1.5em * 7); */
 	white-space: pre-wrap;
 	word-wrap: break-word; /* 强制长文本换行 */
 	word-break: break-word; /* 强制长文本换行，尤其是数字 */
 }
-
+.note-card-mode-item:has(.note-item-title) .note-card-mode-content{
+	-webkit-line-clamp: 6;
+	height: calc(1.5em * 6);
+}
+.note-card-mode-item:not(:has(.note-item-title)) .note-card-mode-content{
+	-webkit-line-clamp: 7;
+	height: calc(1.5em * 7);
+}
 .note-grid-mode-content {
 	color: #474747;
 	font-size: 14px;
@@ -773,8 +810,11 @@ body {
 }
 .show-note-book-text{
 	color: var(--primary-text-color);
+	background-color: var(--show-note-book-text-bg-color);
 	margin-right: 4px;
 	font-size: 12px;
+	border-radius: 4px;
+	padding: 0px 4px;
 }
 .note-operation-buttons {
 	width: 50%;
@@ -1261,7 +1301,19 @@ h2 {
 	background-color: rgba(0, 0, 0, 0.65);
 	pointer-events: none;
 }
-.note-item-title-input{
+.highlight-title-part{
+	background: yellow;
+	font-size: 20px;
+}
+.note-title-section{
+	position: relative;
+	height: 44px;
+}
+.highlight-note-title{
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 1;
 	width: 100%;
 	padding:10px;
 	box-sizing: border-box;
@@ -1269,10 +1321,33 @@ h2 {
 	align-items: center;
 	border: none;
 	outline: none;
-	background: white;
-	font-size: 16px;
-	border-top-right-radius: 6px;
-	border-top-left-radius: 6px;
+	color: transparent;
+	background: transparent;
+	font-size: 20px;
+	height: 100%;
+	white-space: nowrap;
+	font-family: inherit;
+	overflow: hidden;
+	line-height: 1.5;
+}
+.note-item-title-input{
+	height: 100%;
+	position: relative;
+	width: 100%;
+	padding:10px;
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	border: none;
+	outline: none;
+	background: transparent;
+	z-index: 2;
+	/*z-index 实现遮罩*/
+	font-size: 20px;
+	white-space: nowrap;
+	font-family: inherit;
+	overflow: hidden;
+	line-height: 1.5;
 	/*border-bottom: 1px solid #141414;*/
 }
 .add-note-input::placeholder{
