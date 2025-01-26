@@ -1,5 +1,16 @@
 import React , { useState , useRef , useEffect , Component } from 'react';
-import { Editor , EditorState , ContentState , convertFromRaw , convertToRaw , RichUtils , AtomicBlockUtils , Modifier , SelectionState } from 'draft-js';
+import {
+	CompositeDecorator ,
+	Editor ,
+	EditorState ,
+	ContentState ,
+	convertFromRaw ,
+	convertToRaw ,
+	RichUtils ,
+	AtomicBlockUtils ,
+	Modifier ,
+	SelectionState,
+} from 'draft-js';
 import 'draft-js/dist/Draft.css';
 import GetContentButton from '@src/Home/GetContentButton';
 import { FaPaintBrush , FaBold , FaItalic , FaUnderline , FaStrikethrough , FaAlignLeft , FaAlignCenter , FaAlignRight , FaAlignJustify , FaListOl , FaListUl , FaImage,FaUndo,FaRedo } from 'react-icons/fa';
@@ -8,9 +19,15 @@ import { Popover , Tooltip , Modal , Dropdown } from 'antd';
 import dayjs from "dayjs";
 import { GithubPicker } from 'react-color';
 import { CirclePicker } from 'react-color';
+import HighlightedKeyword from '../Home/renderContent'
 
 
 //todo:选中分区,及时保存
+
+
+
+
+
 
 const textAlignStyleMap = {
 	'TEXT_ALIGN_LEFT' : { textAlign : 'left' } ,
@@ -115,13 +132,35 @@ const BackgroundColorPicker = ({ onSelectColor }) => {
 	</div>);
 };
 
+
+const keywordDecorator = (keyword) => {
+	return new CompositeDecorator([
+		{
+			strategy: (contentBlock, callback) => {
+				const text = contentBlock.getText();
+				const regex = new RegExp(keyword, "gi");
+				let matchArr, start;
+				while ((matchArr = regex.exec(text)) !== null) {
+					start = matchArr.index;
+					callback(start, start + keyword.length);
+				}
+			},
+			component: (props) => (
+				<span style={{ backgroundColor: "yellow" }}>{props.children}</span>
+			),
+		},
+	]);
+};
+
 const AddNewNoteModal = ({
 	open ,
 	onCloseModal ,
 	onCancel ,
 	onSave ,
-	initialTitle,
+	initialTitle ,
 	initialContent ,
+	currentNotebook ,
+	keyword,
 }) => {
 	
 	
@@ -154,10 +193,13 @@ const AddNewNoteModal = ({
 				initialContent = { initialContent }
 				onCancel = { onCancel }
 				showAllOptions = { true }
+				currentNotebook={currentNotebook}
+				keyword={keyword}
 			/>
 		</Modal>
 	</div>;
 };
+
 
 
 const RichTextEditor = ({
@@ -169,6 +211,8 @@ const RichTextEditor = ({
 	openModal ,
 	cancelExpandNoteEditSection,
 	changeNoteEdit,
+	keyword,
+	currentNotebook,
 }) => {
 	const editorRef = useRef(null);
 	const [noteTitle , setNoteTitle] = useState('');
@@ -186,6 +230,48 @@ const RichTextEditor = ({
 		}
 	} , [initialTitle,initialContent]);
 	const [textAlignment , setTextAlignment] = useState('left');//对齐
+	
+	
+	
+	
+	const HighlightedTitle = ({
+		title ,
+		keyword,
+	}) => {
+		if (!keyword) return title;
+		
+		const parts = title.split(new RegExp(`(${keyword})`, "gi")); // 拆分标题
+		return parts.map((part, index) =>
+			part.toLowerCase() === keyword.toLowerCase() ? (
+				<span key={index} className='highlight-title-part'>
+					{part}
+				</span>
+			) : (
+				part
+			)
+		);
+	};
+	// 动态监听高亮逻辑
+	useEffect(() => {
+		if (currentNotebook?.id === "searchResults-notes-id" && keyword) {
+			const textIndex = noteTitle?.toLowerCase().indexOf(keyword.toLowerCase());
+			
+			if (textIndex !== -1) {
+				const parts = noteTitle.split(new RegExp(`(${keyword})`, 'gi'));
+			}
+			const decorator = keywordDecorator(keyword);
+			setEditorState((prevState) =>
+				EditorState.set(prevState, { decorator })
+			);
+		} else {
+			// 清空装饰器（退出搜索或关闭 Modal）
+			const noDecorator = new CompositeDecorator([]);
+			setEditorState((prevState) =>
+				EditorState.set(prevState, { decorator: noDecorator })
+			);
+		}
+	}, [keyword, currentNotebook]);
+	
 	
 	const handleKeyCommand = (command) => {
 		const newState = RichUtils.handleKeyCommand(editorState , command);
@@ -260,17 +346,17 @@ const RichTextEditor = ({
 		setEditorState(RichUtils.toggleInlineStyle(editorState , `FONT_SIZE_${ fontSize }`));
 	};
 	const onBackgroundColorChange = (color) => {
-		if(color===null){
-			setEditorState(RichUtils.toggleInlineStyle(editorState, 'REMOVE_BG_COLOR'));
-		}else{
+		if ( color === null ) {
+			setEditorState(RichUtils.toggleInlineStyle(editorState , 'REMOVE_BG_COLOR'));
+		} else {
 			const newEditorState = RichUtils.toggleInlineStyle(editorState , color);
 			setEditorState(newEditorState);
 		}
 	};
 	const onFontColorChange = (color) => {
-		if(color===null){
-			setEditorState(RichUtils.toggleInlineStyle(editorState, 'REMOVE_FONT_COLOR'));
-		}else{
+		if ( color === null ) {
+			setEditorState(RichUtils.toggleInlineStyle(editorState , 'REMOVE_FONT_COLOR'));
+		} else {
 			const newEditorState = RichUtils.toggleInlineStyle(editorState , color);
 			setEditorState(newEditorState);
 		}
@@ -421,16 +507,24 @@ const RichTextEditor = ({
 				</div>
 			</div> }
 			{/*笔记标题输入区*/ }
-			<div>
-				<input
-					type = "text"
-					className = "note-item-title-input"
-					placeholder = "标题"
-					value={noteTitle}
-					onChange = { (e) => {
-						setNoteTitle(e.target.value);
-					} }
-				/>
+			<div className='note-title-section'>
+				{ (currentNotebook?.id === "searchResults-notes-id" && keyword && noteTitle) &&
+				 <div className='highlight-note-title'>
+					 <HighlightedTitle
+						 title = { noteTitle }
+						 keyword = { keyword }
+					 />
+				 </div>}
+				 <input
+					 type = "text"
+					 className = "note-item-title-input"
+					 placeholder = "标题"
+					 maxLength={30}
+					 value={noteTitle}
+					 onChange = { (e) => {
+						 setNoteTitle(e.target.value);
+					 } }
+				 />
 			</div>
 			
 			<div
@@ -453,7 +547,7 @@ const RichTextEditor = ({
 					customStyleMap = { {
 						...fontSizeStyleMap , ...backgroundColorStyleMap , ...fontColorStyleMap ,
 						'REMOVE_BG_COLOR' : {
-							backgroundColor : 'transparent', // 或者你可以设置为 '#ffffff' 或者任何你认为的默认颜色
+							backgroundColor : 'transparent',
 						},
 						'REMOVE_FONT_COLOR':{
 							color:'#1f1f1f',
@@ -461,7 +555,7 @@ const RichTextEditor = ({
 					} }
 					handleKeyCommand = { handleKeyCommand }
 					onChange = { setEditorState }
-					placeholder = "输入笔记..."
+					placeholder = "输入笔记 . . ."
 					className = "rich-text-input"
 					textAlignment = { textAlignment }
 				/>

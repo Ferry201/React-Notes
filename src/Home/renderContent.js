@@ -9,6 +9,39 @@ import { message , Tooltip } from 'antd';
 import RichTextEditor from '../RichTextEditor/RichTextEditor';
 
 
+const HighlightedKeyword = ({text, keyword, maxLength = 50 }) => {
+	const textIndex = text.toLowerCase().indexOf(keyword.toLowerCase());
+	
+	if (textIndex === -1) {
+		// 如果没有找到关键词，直接返回原始文本
+		return <span>{text}</span>;
+	}
+	
+	const start = Math.max(0, textIndex - Math.floor((maxLength - keyword.length) / 6));
+	
+	const before = start > 0 ? '…' : ''; // 如果截取文本前有内容，显示省略号
+	
+	const visibleText = text.slice(start);
+	const parts = visibleText.split(new RegExp(`(${keyword})`, 'gi'));
+	return (
+		<>
+			{before}
+			{parts.map((part, index) =>
+				part.toLowerCase() === keyword.toLowerCase() ? (
+					<span
+						key={`${part}-${index}`}
+						style={{ background: 'yellow' }}
+					>
+						{part}
+					</span>
+				) : (
+					<span key={`${part}-${index}`}>{part}</span>
+				)
+			)}
+		</>
+	);
+};
+
 const RenderContent = ({
 	noteList ,
 	changeNote ,
@@ -45,7 +78,7 @@ const RenderContent = ({
 	
 	
 	const placeholders = [
-		'输入笔记...' ,
+		'输入笔记 . . .' ,
 		'记录你的闪光灵感✨' ,
 		'有什么心得吗？在这里记录下来吧',
 	];
@@ -68,7 +101,9 @@ const RenderContent = ({
 			isShowFavoritesNotes : () => notes.filter(note => note.isFavorited === true) ,
 			showSearchResults : () => notes.filter((note) => {
 				const plainText = convertFromRaw(note.noteContent).getPlainText();
-				return plainText.toLowerCase().includes(keyword.toLowerCase());
+				const matchedContent = plainText.toLowerCase().includes(keyword.toLowerCase());
+				const matchedTitle = note.noteTitle?.toLowerCase().includes(keyword.toLowerCase());
+				return matchedContent || matchedTitle;
 			}) ,
 			default : () => notes.filter(note => note.notebookID === currentNotebook.id),
 		};
@@ -160,39 +195,12 @@ const RenderContent = ({
 	
 	let showFavoritesOrSearchResults = isShowFavoritesNotes === true || showSearchResults === true;
 	
-	const refs = useRef([]);
-	const [currentIndex,setCurrentIndex]=useState(null);
 	
-	useEffect(() => {
-		if (currentIndex!==null&&refs.current[currentIndex]) {
-			refs.current[currentIndex].scrollIntoView({
-				behavior: "smooth",
-				block: "center",
-			});
-		}
-	}, [currentIndex,keyword]);
-	const HighlightedKeyword=({text,keyword})=>{
-		const parts=text.split(new RegExp(`(${keyword})`,'gi'))
-		return <>
-			{ parts.map((part , index) =>
-				(part.toLowerCase() === keyword.toLowerCase() ?
-				 <span
-						key = { `${part}-${index}` }
-						style = { { background : 'yellow' } }
-					   ref={(el) => {
-						   refs.current[index] = el;
-							if(index===0){
-								setCurrentIndex(0)
-							}
-					   }}
-				 >{ part }
-				 </span > :
-				 <span key = { `${ part }-${ index }` }>{ part }</span>
-			))}
-		</>
-	}
-	// console.log(isShowFavoritesNotes);
-	// console.log(showSearchResults);
+	
+	
+
+	
+	
 	//通用部分
 	class NoteList extends Component {
 		render () {
@@ -211,12 +219,21 @@ const RenderContent = ({
 				className = { `${ itemClassName } ${ currentNotebook.currentTheme }` }
 				onClick = { () => changeNote(noteTitle , noteContent , id) }
 			>
-				{ noteTitle && <span className = "note-item-title">{ noteTitle }</span> }
+				{ noteTitle && <span className = "note-item-title">
+					{ currentNotebook.id === 'searchResults-notes-id' ?
+					  <HighlightedKeyword
+						  text={noteTitle}
+						  keyword={keyword}
+						  maxLength={30}
+					  /> :
+					  noteTitle }
+				</span> }
 				<span className = { `${ titleClassName }` }>
 					{ currentNotebook.id === 'searchResults-notes-id' ?
 					 <HighlightedKeyword
 						 text = { convertFromRaw(noteContent).getPlainText() }
 						 keyword = { keyword }
+						 maxLength={50}
 					 /> :
 					 convertFromRaw(noteContent).getPlainText()}
 				</span>
@@ -225,7 +242,7 @@ const RenderContent = ({
 					<FormatTime id = { id } />
 					{ showFavoritesOrSearchResults && <div
 						className = { `show-note-book-text ${ currentNotebook.currentTheme }` }
-					>|{ notebook }</div> }
+					>{ notebook }</div> }
 					<div
 						className = "note-operation-buttons"
 						onClick = { (e) => {
@@ -559,7 +576,7 @@ const RenderContent = ({
 				  onClick = { handleExpandNoteEditSection }
 				  type = "text"
 				  className = { `add-note-input ${ currentNotebook.currentTheme }` }
-				  placeholder = "输入笔记内容..."
+				  placeholder = "输入笔记 . . ."
 			  /> }
 		</div> }
 		
@@ -807,3 +824,4 @@ const CancelEditIcon = ({ handleCancel }) => {
 	</>;
 };
 export default RenderContent;
+HighlightedKeyword;

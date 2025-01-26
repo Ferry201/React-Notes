@@ -55,6 +55,7 @@ class NotesApp extends Component {
 			noteBookData,
 			currentNotebook ,
 			activeModal,
+			searchKeyword
 		} = this.state;
 		const getFilteredNotes=()=>{
 			if ( currentNotebook.id === 'favorites-notes-id' ) {
@@ -62,7 +63,10 @@ class NotesApp extends Component {
 			} else if ( currentNotebook.id === 'searchResults-notes-id' ) {
 				return noteListData.filter((note) => {
 					const plainText = convertFromRaw(note.noteContent).getPlainText();
-					return plainText.toLowerCase().includes(this.state.searchKeyword.toLowerCase());
+					const matchedContent = plainText.toLowerCase().includes(searchKeyword.toLowerCase());
+					const matchedTitle = note.noteTitle?.toLowerCase().includes(searchKeyword.toLowerCase());
+					
+					return matchedContent || matchedTitle;
 				});
 			} else {
 				return noteListData.filter(note => note.notebookID === this.state.currentNotebook.id);
@@ -118,7 +122,10 @@ class NotesApp extends Component {
 		if ( this.state.currentNotebook.id === 'searchResults-notes-id' ) {
 			let allMatchedNotes = this.state.noteListData.filter((note) => {
 				const plainText = convertFromRaw(note.noteContent).getPlainText();
-				return plainText.toLowerCase().includes(this.state.searchKeyword.toLowerCase());
+				const matchedContent = plainText.toLowerCase().includes(this.state.searchKeyword.toLowerCase());
+				const matchedTitle = note.noteTitle?.toLowerCase().includes(this.state.searchKeyword.toLowerCase());
+				
+				return matchedContent || matchedTitle;
 			});
 			this.setState({ notesAmount : allMatchedNotes.length });
 		}
@@ -455,7 +462,7 @@ class NotesApp extends Component {
 				id : 'favorites-notes-id' ,
 				createdTime : dayjs().valueOf() ,
 				showMode : 'list-mode' ,
-				currentTheme : 'blue-theme' ,
+				currentTheme : 'yellow-theme' ,
 			};
 			this.addNoteBook(newNoteBook);
 			favorites = newNoteBook;
@@ -490,7 +497,10 @@ class NotesApp extends Component {
 		}
 		let allMatchedNotes = noteListData.filter((note) => {
 			const plainText = convertFromRaw(note.noteContent).getPlainText();
-			return plainText.toLowerCase().includes(keyword.toLowerCase());
+			const matchedContent = plainText.toLowerCase().includes(keyword.toLowerCase());
+			const matchedTitle = note.noteTitle?.toLowerCase().includes(keyword.toLowerCase());
+			
+			return matchedContent || matchedTitle;
 		});
 		
 		this.setState({
@@ -524,7 +534,8 @@ class NotesApp extends Component {
 				onSave = { this.handleSaveNote }
 				initialTitle = { this.state.currentNoteTitle }
 				initialContent = { this.state.currentContent }
-				openModal = { this.handleOpenModal }
+				currentNotebook={this.state.currentNotebook}
+				keyword={this.state.searchKeyword}
 			/> }
 			
 			{ <div

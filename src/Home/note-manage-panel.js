@@ -253,6 +253,7 @@ class NoteManagePanel extends Reaxlass {
 const ThemeColorSelector = ({selectTheme,theme}) => {
 	return <>
 		<Popover
+			arrow = { false }
 			content = { <ThemeColorPanel
 				selectTheme = { selectTheme }
 				theme = { theme }
@@ -264,12 +265,12 @@ const ThemeColorSelector = ({selectTheme,theme}) => {
 };
 const ThemeColorPanel=({selectTheme,theme})=>{
 	const allThemeColors = [
-		'blue-theme' , 'purple-theme' , 'red-theme' , 'green-theme' , 'gray-theme' , 'orange-theme' , 'pink-theme' , 'gradient-theme-blue-yellow' ,
-		'gradient-theme-blue-purple' , 'gradient-theme-green-blue' , 'image-background-wheat' , 'image-background-windmill' ,
-		'image-background-beach' , 'image-background-tower' , 'image-background-pinksky' , 'image-background-mountain',
+		'blue-theme' , 'purple-theme' , 'red-theme' , 'green-theme' , 'gray-theme' , 'orange-theme' , 'pink-theme' ,'yellow-theme',
+		'gradient-theme-blue-cyan', 'gradient-theme-green-blue', 'gradient-theme-blue-yellow' ,'gradient-theme-blue-pink' , 'image-background-wheat' ,
+		'image-background-windmill' ,'image-background-beach' , 'image-background-tower' , 'image-background-pinksky' , 'image-background-mountain',
 	];
 	return (<div>
-		<div>主题选择</div>
+		<div className='themecolor-popover-title'>笔记本主题选择</div>
 		<div className = "theme-color-panel">
 			{allThemeColors.map((item)=> {
 				return <div
