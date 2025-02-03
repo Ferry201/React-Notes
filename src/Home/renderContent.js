@@ -5,7 +5,12 @@ import './note.css';
 import Masonry from 'masonry-layout';
 import GetContentButton from '@src/Home/GetContentButton';
 import dayjs from 'dayjs';
-import { message , Tooltip } from 'antd';
+import {
+	message ,
+	Popover ,
+	Tooltip,
+	Popconfirm
+} from 'antd';
 import RichTextEditor from '../RichTextEditor/RichTextEditor';
 
 
@@ -44,6 +49,7 @@ const HighlightedKeyword = ({text, keyword, maxLength = 50 }) => {
 
 const RenderContent = ({
 	noteList ,
+	notebooks,
 	changeNote ,
 	deleteNote ,
 	ShowMode ,
@@ -56,6 +62,7 @@ const RenderContent = ({
 	onCancel ,
 	keyword,
 	isShowSearchResults,
+	handleMoveNote,
 }) => {
 	const inputAddNoteRef = React.useRef();
 	const wrapperRef = React.useRef();
@@ -63,6 +70,7 @@ const RenderContent = ({
 	const [contents , setContents] = useState([]);
 	const [isExpandNoteEditSection , setIsExpandNoteEditSection] = useState(false);
 	
+	let notebooksArray=notebooks;
 	let notes = noteList;
 	let isShowFavoritesNotes = isShowFavorites;
 	if ( currentNotebook.id === 'favorites-notes-id' ) {
@@ -196,8 +204,6 @@ const RenderContent = ({
 	let showFavoritesOrSearchResults = isShowFavoritesNotes === true || showSearchResults === true;
 	
 	
-	
-	
 
 	
 	
@@ -237,7 +243,7 @@ const RenderContent = ({
 					 /> :
 					 convertFromRaw(noteContent).getPlainText()}
 				</span>
-				{/*note details : 时间 ,置顶 ,收藏 ,删除 , 显示收藏夹时显示所属书籍*/ }
+				{/*note details : 时间 ,置顶 ,收藏 ,删除 , 所属书籍*/ }
 				<div className = "note-details">
 					<FormatTime id = { id } />
 					{ showFavoritesOrSearchResults && <div
@@ -262,14 +268,27 @@ const RenderContent = ({
 								onFavoriteNote(id);
 							} }
 						/>
-						<div
-							onClick = { () => {
-								onDeleteNote(id);
+						{!showFavoritesOrSearchResults&& <NotebooksPopover id={id}/>}
+						
+						
+						<Popconfirm
+							destroyTooltipOnHide={true}
+							placement='top'
+							overlayClassName='note-delete-popConfirm'
+							title="确定删除笔记吗?"
+							description="删除后的笔记将放入回收站"
+							okText="删除"
+							cancelText="取消"
+							onConfirm= { () => {
+								onDeleteNote(id)
 							} }
+							getPopupContainer={(triggerNode)=>triggerNode.parentElement}
 						>
-							<DeleteIcon />
-						</div>
-					
+							<div>
+								<DeleteIcon />
+							</div>
+						</Popconfirm>
+						
 					</div>
 				</div>
 			</div>;
@@ -278,8 +297,8 @@ const RenderContent = ({
 	
 	class CardMode extends Component {
 		render () {
-			return <div>
-				{ pinnedNotes.length > 0 && <div>
+			return <>
+				{ pinnedNotes.length > 0 && <>
 					{ !showFavoritesOrSearchResults && <p className = "note-list-sub-title">已置顶</p> }
 					<div className = "note-card-mode">
 						{ pinnedNotes.map(({
@@ -303,9 +322,9 @@ const RenderContent = ({
 							/>;
 						}) }
 					</div>
-				</div> }
+				</> }
 				
-				{  !showFavoritesOrSearchResults && <div>{ otherNotes.length > 0 && <div>
+				{  !showFavoritesOrSearchResults && <>{ otherNotes.length > 0 && <>
 					{ pinnedNotes.length > 0 && <p className = "note-list-sub-title">其他</p> }
 					<div className = "note-card-mode">
 						{ otherNotes.map(({
@@ -329,16 +348,16 @@ const RenderContent = ({
 							/>;
 						}) }
 					</div>
-				</div> }</div> }
+				</> }</> }
 			
-			</div>;
+			</>;
 		}
 	}
 	
 	class UlMode extends Component {
 		render () {
-			return <div>
-				{ pinnedNotes.length > 0 && <div>
+			return <>
+				{ pinnedNotes.length > 0 && <>
 					{ !showFavoritesOrSearchResults && <p className = "note-list-sub-title">已置顶</p> }
 					<div className = "note-ul-mode">
 						{ pinnedNotes.map(({
@@ -362,9 +381,9 @@ const RenderContent = ({
 							/>;
 						}) }
 					</div>
-				</div> }
+				</> }
 				
-				{ !showFavoritesOrSearchResults && <div>{ otherNotes.length > 0 && <div>
+				{ !showFavoritesOrSearchResults && <>{ otherNotes.length > 0 && <>
 					{ pinnedNotes.length > 0 && <p className = "note-list-sub-title">其他</p> }
 					<div className = "note-ul-mode">
 						{ otherNotes.map(({
@@ -388,9 +407,9 @@ const RenderContent = ({
 							/>;
 						}) }
 					</div>
-				</div> }</div> }
+				</> }</> }
 			
-			</div>;
+			</>;
 		}
 	}
 	
@@ -443,8 +462,8 @@ const RenderContent = ({
 		}
 		
 		render () {
-			return (<div>
-				{ pinnedNotes.length > 0 && (<div>
+			return (<>
+				{ pinnedNotes.length > 0 && (<>
 					{ !showFavoritesOrSearchResults && <p className = "note-list-sub-title">已置顶</p> }
 					<div
 						className = "note-grid-mode"
@@ -471,8 +490,8 @@ const RenderContent = ({
 							/>;
 						}) }
 					</div>
-				</div>) }
-				{  !showFavoritesOrSearchResults && <div>{ otherNotes.length > 0 && (<div>
+				</>) }
+				{  !showFavoritesOrSearchResults && <>{ otherNotes.length > 0 && (<>
 					{ pinnedNotes.length > 0 && <p className = "note-list-sub-title">其他</p> }
 					
 					<div
@@ -500,12 +519,48 @@ const RenderContent = ({
 							/>;
 						}) }
 					</div>
-				</div>) }</div> }
-			</div>);
+				</>) }</> }
+			</>);
 		}
 	}
 	
-	
+	const NotebooksPopover=({ id })=>{
+		
+		let filteredNotebooksID = [
+			currentNotebook.id ,
+			'favorites-notes-id' ,
+			'searchResults-notes-id',
+		];
+		let otherNotebooks=notebooksArray.filter(({id})=>!filteredNotebooksID.includes(id))
+		
+		return <>
+			<Popover
+				destroyTooltipOnHide={true}
+				content = { <MoveNoteContent id={id} otherNotebooks={otherNotebooks}/>}
+				placement='rightBottom'
+				trigger= 'click'
+				overlayClassName='notebooks-popover'
+				getPopupContainer={(triggerNode)=>triggerNode.parentElement}
+			>
+				<div><MoveNoteToOtherBook otherNotebooks={otherNotebooks} /></div>
+			</Popover>
+		</>
+	}
+	const MoveNoteContent=({id,otherNotebooks})=>{
+		return <div>
+			{otherNotebooks.map((notebook,index)=>{
+				return <div
+					key = { `${ notebook.title }-${ notebook.id }-${ index }` }
+					className = "notebooks-popover-item"
+					onClick = { () => {
+							handleMoveNote(id , notebook);
+					} }
+				>
+					{ notebook.title }
+				</div>
+			})}
+		</div>
+	}
 	const FormatTime = ({ id }) => {
 		const [timeIDArray , setTimeIDArray] = useState([]);
 		
@@ -657,24 +712,28 @@ const EmptyIcon = () => {
 
 class DeleteIcon extends Component {
 	render () {
-		return <div className = "note-buttons-common">
-			<svg
-				t = "1734625609334"
-				className = "delete-note-icon"
-				viewBox = "0 0 1024 1024"
-				version = "1.1"
-				xmlns = "http://www.w3.org/2000/svg"
-				p-id = "84258"
-				width = "16"
-				height = "16"
-			>
-				<path
-					d = "M725.333333 170.666667h213.333334v85.333333h-85.333334v640a42.666667 42.666667 0 0 1-42.666666 42.666667H213.333333a42.666667 42.666667 0 0 1-42.666666-42.666667V256H85.333333V170.666667h213.333334V85.333333h426.666666v85.333334zM384 384v341.333333h85.333333V384H384z m170.666667 0v341.333333h85.333333V384h-85.333333z"
-					p-id = "84259"
-					fill = "#bfbfbf"
-				></path>
-			</svg>
-		</div>;
+		return <div>
+			<Tooltip title='删除' arrow={false} placement='bottom'>
+				<div className = "note-buttons-common">
+					<svg
+						t = "1734625609334"
+						className = "delete-note-icon"
+						viewBox = "0 0 1024 1024"
+						version = "1.1"
+						xmlns = "http://www.w3.org/2000/svg"
+						p-id = "84258"
+						width = "16"
+						height = "16"
+					>
+						<path
+							d = "M725.333333 170.666667h213.333334v85.333333h-85.333334v640a42.666667 42.666667 0 0 1-42.666666 42.666667H213.333333a42.666667 42.666667 0 0 1-42.666666-42.666667V256H85.333333V170.666667h213.333334V85.333333h426.666666v85.333334zM384 384v341.333333h85.333333V384H384z m170.666667 0v341.333333h85.333333V384h-85.333333z"
+							p-id = "84259"
+							fill = "#bfbfbf"
+						></path>
+					</svg>
+				</div>
+			</Tooltip>
+		</div>
 	}
 }
 
@@ -694,31 +753,34 @@ class FavoriteIcon extends Component {
 			isFavorited ,
 			handleFavoriteNote ,
 		} = this.props;
-		return <div
-			className = "note-buttons-common star-container"
-			onClick = { () => {
-				handleFavoriteNote();
-				this.handleFavorite();
-				// this.setState({isFavorite:!this.state.isFavorite})
-			} }
-		>
-			<svg
-				t = "1734625347615"
-				className = { this.state.isFavorite ? 'star-button-active' : 'star-button' }
-				viewBox = "0 0 1024 1024"
-				version = "1.1"
-				xmlns = "http://www.w3.org/2000/svg"
-				p-id = "74981"
-				width = "16"
-				height = "16"
-			>
-				<path
-					d = "M1003.52 390.826667c-6.826667-20.48-23.893333-34.133333-44.373333-37.546667l-273.066667-42.666667L563.2 49.493333C554.666667 29.013333 534.186667 17.066667 512 17.066667s-40.96 11.946667-51.2 32.426666l-122.88 261.12-273.066667 40.96c-20.48 3.413333-37.546667 17.066667-44.373333 37.546667-6.826667 20.48-1.706667 42.666667 13.653333 56.32l199.68 204.8L186.026667 938.666667c-3.413333 20.48 5.12 42.666667 23.893333 54.613333 17.066667 11.946667 40.96 13.653333 59.733333 3.413333L512 865.28l244.053333 136.533333c8.533333 3.413333 17.066667 6.826667 25.6 6.826667 30.72 0 56.32-25.6 56.32-56.32 0-6.826667-1.706667-11.946667-3.413333-17.066667l-44.373333-279.893333 199.68-204.8c15.36-17.066667 20.48-39.253333 13.653333-59.733333z"
-					fill = "#bfbfbf"
-					p-id = "74982"
-				></path>
-			</svg>
-		</div>;
+		return <div>
+			<Tooltip title='收藏' arrow={false} placement='bottom'>
+				<div
+					className = "note-buttons-common star-container"
+					onClick = { () => {
+						handleFavoriteNote();
+						this.handleFavorite();
+					} }
+				>
+					<svg
+						t = "1734625347615"
+						className = { this.state.isFavorite ? 'star-button-active' : 'star-button' }
+						viewBox = "0 0 1024 1024"
+						version = "1.1"
+						xmlns = "http://www.w3.org/2000/svg"
+						p-id = "74981"
+						width = "16"
+						height = "16"
+					>
+						<path
+							d = "M1003.52 390.826667c-6.826667-20.48-23.893333-34.133333-44.373333-37.546667l-273.066667-42.666667L563.2 49.493333C554.666667 29.013333 534.186667 17.066667 512 17.066667s-40.96 11.946667-51.2 32.426666l-122.88 261.12-273.066667 40.96c-20.48 3.413333-37.546667 17.066667-44.373333 37.546667-6.826667 20.48-1.706667 42.666667 13.653333 56.32l199.68 204.8L186.026667 938.666667c-3.413333 20.48 5.12 42.666667 23.893333 54.613333 17.066667 11.946667 40.96 13.653333 59.733333 3.413333L512 865.28l244.053333 136.533333c8.533333 3.413333 17.066667 6.826667 25.6 6.826667 30.72 0 56.32-25.6 56.32-56.32 0-6.826667-1.706667-11.946667-3.413333-17.066667l-44.373333-279.893333 199.68-204.8c15.36-17.066667 20.48-39.253333 13.653333-59.733333z"
+							fill = "#bfbfbf"
+							p-id = "74982"
+						></path>
+					</svg>
+				</div>
+			</Tooltip>
+		</div>
 	}
 }
 
@@ -727,73 +789,67 @@ const PinNoteIcon = ({
 	handlePinNote ,
 }) => {
 	const [pin , setPin] = useState(isPinned); // 本地状态，初始化为 isPinned
-	return <div
-		className = "note-buttons-common"
-		onClick = { () => {
-			setPin(!pin);
-			handlePinNote();
-		} }
-	>
-		<svg
-			t = "1734625720322"
-			className = { `pin-note-button ${ pin ? 'pin-note' : '' }` }
-			viewBox = "0 0 1024 1024"
-			version = "1.1"
-			xmlns = "http://www.w3.org/2000/svg"
-			p-id = "85415"
-			width = "16"
-			height = "16"
-		>
-			<path
-				d = "M951.296 424.96L1024 352.256 671.744 0 599.04 72.704l70.144 70.656-168.96 168.96a296.96 296.96 0 0 0-286.72 75.264L143.36 458.24 72.704 387.584 0 460.8l245.248 245.248-139.776 139.776 72.704 72.704 140.288-140.288L563.2 1024l72.704-72.704-70.144-70.656 70.144-70.144a296.96 296.96 0 0 0 75.776-287.232l168.96-168.96z"
-				fill = "#bfbfbf"
-				p-id = "85416"
-			></path>
-		</svg>
-	</div>;
-};
-
-class AddNewNotebtn extends Component {
-	constructor () {
-		super();
-	}
-	
-	render () {
-		const {
-			onClick ,
-		} = this.props;
-		return <div>
-			<Tooltip
-				title = "添加笔记"
-				placement = "bottom"
-				zIndex = "1"
+	return <div>
+		<Tooltip title='置顶' arrow={false} placement='bottom'>
+			<div
+				className = "note-buttons-common"
+				onClick = { () => {
+					setPin(!pin);
+					handlePinNote();
+				} }
 			>
-				<div
-					className = "add-new-button"
-					onClick = { onClick }
+				<svg
+					t = "1734625720322"
+					className = { `pin-note-button ${ pin ? 'pin-note' : '' }` }
+					viewBox = "0 0 1024 1024"
+					version = "1.1"
+					xmlns = "http://www.w3.org/2000/svg"
+					p-id = "85415"
+					width = "16"
+					height = "16"
 				>
-					<svg
-						t = "1736084509838"
-						className = "icon"
-						viewBox = "0 0 1024 1024"
-						version = "1.1"
-						xmlns = "http://www.w3.org/2000/svg"
-						p-id = "128954"
-						width = "16"
-						height = "16"
-					>
-						<path
-							d = "M482 481.3V130.1c0-17.6 14.3-31.9 31.9-31.9 17.6 0 31.9 14.3 31.9 31.9v351.2H897c17.6 0 31.9 14.3 31.9 31.9 0 17.6-14.3 31.9-31.9 31.9H545.8v351.2c0 17.6-14.3 31.9-31.9 31.9-17.6 0-31.9-14.3-31.9-31.9V545.1H130.8c-17.6 0-31.9-14.3-31.9-31.9 0-17.6 14.3-31.9 31.9-31.9H482z"
-							p-id = "128955"
-							fill = "#515151"
-						></path>
-					</svg>
-				</div>
-			</Tooltip>
-		</div>;
-		
-	}
+					<path
+						d = "M951.296 424.96L1024 352.256 671.744 0 599.04 72.704l70.144 70.656-168.96 168.96a296.96 296.96 0 0 0-286.72 75.264L143.36 458.24 72.704 387.584 0 460.8l245.248 245.248-139.776 139.776 72.704 72.704 140.288-140.288L563.2 1024l72.704-72.704-70.144-70.656 70.144-70.144a296.96 296.96 0 0 0 75.776-287.232l168.96-168.96z"
+						fill = "#bfbfbf"
+						p-id = "85416"
+					></path>
+				</svg>
+			</div>
+		</Tooltip>
+	</div>
+};
+const MoveNoteToOtherBook=({otherNotebooks})=>{
+	return <div>
+		<Tooltip title='移动到其他笔记本' arrow={false} placement='bottom'>
+			<div
+				className = "note-buttons-common"
+				onClick={()=>{
+					if ( otherNotebooks.length === 0 ) {
+						message.warning('再创建一个笔记本才可以移动~')
+					}
+				}}
+			>
+				<svg
+					t = "1738247133739"
+					className = { `move-note-button` }
+					viewBox = "0 0 1024 1024"
+					version = "1.1"
+					xmlns = "http://www.w3.org/2000/svg"
+					p-id = "19613"
+					width = "16"
+					height = "16"
+				>
+					<path
+						d = "M958.272 213.248a59.712 59.712 0 0 1 59.712 59.712V870.4a59.776 59.776 0 0 1-59.776 59.712H121.92a59.712 59.712 0 0 1-59.712-59.712V187.712A59.712 59.712 0 0 1 121.856 128h244.544a64 64 0 0 1 32.704 8.96l98.24 58.304a128 128 0 0 0 65.344 17.92h395.52z m-328.96 160a41.856 41.856 0 1 0-59.136 59.2l103.552 103.488H283.2a41.792 41.792 0 1 0 0 83.648h378.624l-91.712 91.52a41.792 41.792 0 1 0 59.2 59.264l168.896-168.96a41.728 41.728 0 0 0 0-59.136h0.064l-168.96-168.96z"
+						p-id = "19614"
+						fill = "#bfbfbf"
+					></path>
+				</svg>
+			</div>
+		</Tooltip>
+	</div>
 }
+
 
 const CancelEditIcon = ({ handleCancel }) => {
 	return <>
@@ -823,5 +879,5 @@ const CancelEditIcon = ({ handleCancel }) => {
 		</Tooltip>
 	</>;
 };
+
 export default RenderContent;
-HighlightedKeyword;

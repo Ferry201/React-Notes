@@ -6,14 +6,15 @@ import {
 	Modal,
 } from 'antd';
 import { ExclamationCircleFilled } from '@ant-design/icons';
-import { AddNewNoteModal } from '../RichTextEditor/RichTextEditor';
 import isEqual from 'lodash/isEqual';
 import { NoteSidebar } from './sidebar';
 import { NoteManagePanel } from '@src/Home/note-manage-panel';
 import { v4 as uuidv4 } from 'uuid';
 import coverDefault from "@src/Home/img-collection/cover-default.png";
 import dayjs from "dayjs";
+import { AddNewNoteModal } from '../RichTextEditor/RichTextEditor';
 import { NoteBookModal } from "@src/Home/addNoteBook_Model";
+import {SettingModal} from './setting_Modal'
 import { convertFromRaw } from "draft-js";
 
 const { confirm } = Modal;
@@ -130,7 +131,6 @@ class NotesApp extends Component {
 			this.setState({ notesAmount : allMatchedNotes.length });
 		}
 		
-		
 		const storedNoteBooks = localStorage.getItem('notebook-array');
 		if ( storedNoteBooks === null ) {
 			// 更新组件状态
@@ -142,13 +142,12 @@ class NotesApp extends Component {
 			// 如果有数据，从 localStorage 中加载
 			this.setState({ noteBookData : JSON.parse(storedNoteBooks) });
 		}
+		
 		if ( this.state.currentNotebook.id !== 'searchResults-notes-id' ) {
 			this.setState({
 				selectedNotebookId : this.state.currentNotebook.id ,
 			});
 		}
-		
-		
 	}
 	
 	
@@ -300,7 +299,6 @@ class NotesApp extends Component {
 	handleFavoriteNote = (id) => {
 		const {
 			noteListData ,
-			currentNotebook ,
 		} = this.state;
 		let updatedNoteList = [...noteListData];
 		updatedNoteList = updatedNoteList.map(note => {
@@ -320,6 +318,30 @@ class NotesApp extends Component {
 			localStorage.setItem('note-info-array' , JSON.stringify(updatedNoteList));
 		});
 	};
+	
+	//移动note到别的笔记本
+	handleMoveNote=(id,notebook)=>{
+		const {
+			noteListData ,
+		} = this.state;
+		let updatedNoteList = [...noteListData];
+		updatedNoteList = updatedNoteList.map(note => {
+			if ( note.id === id ) {
+				return {
+					...note ,
+					notebookID:notebook.id,
+					notebook:notebook.title
+				};
+			}
+			return note;
+		});
+		
+		this.setState({
+			noteListData : updatedNoteList ,
+		} , () => {
+			localStorage.setItem('note-info-array' , JSON.stringify(updatedNoteList));
+		});
+	}
 	//控制sidebar显示/隐藏
 	toggleSidebar = () => {
 		this.setState(prevState => ({ isSidebarVisible : !prevState.isSidebarVisible }) , () => {
@@ -411,8 +433,12 @@ class NotesApp extends Component {
 		
 		let updatedNotebooks = [...noteBookData];
 		let updatedNoteList = [...noteListData];
-		updatedNotebooks = updatedNotebooks.filter((notebook) => notebook.id !== currentNotebook.id);
-		updatedNotebooks = updatedNotebooks.filter(notebook => notebook.id !== 'favorites-notes-id' && notebook.id !== 'searchResults-notes-id');
+		let filteredNotebooksID = [
+			currentNotebook.id ,
+			'favorites-notes-id' ,
+			'searchResults-notes-id',
+		];
+		updatedNotebooks=updatedNotebooks.filter((notebook)=>!filteredNotebooksID.includes(notebook.id))
 		let newCurrentNotebook = null;
 		if ( updatedNotebooks.length > 0 ) {
 			const currentIndex = noteBookData.findIndex((notebook) => notebook.id === currentNotebook.id);
@@ -526,10 +552,10 @@ class NotesApp extends Component {
 		allNotebooks = allNotebooks.filter(notebook => notebook.id !== 'favorites-notes-id' && notebook.id !== 'searchResults-notes-id');
 		
 		return <div className = "container">
-			
+			{/*添加新笔记note*/}
 			{ this.state.activeModal === 'addNewNote' && <AddNewNoteModal
 				open = { this.state.isModalOpen }
-				onCloseModal = { () => this.handleCloseModal() }
+				onCloseModal = {this.handleCloseModal }
 				onCancel = { this.handleCloseModal }
 				onSave = { this.handleSaveNote }
 				initialTitle = { this.state.currentNoteTitle }
@@ -557,6 +583,7 @@ class NotesApp extends Component {
 				
 				<NoteManagePanel
 					noteList = { this.state.noteListData }
+					notebooks={this.state.noteBookData}
 					onChangeNote = { this.handleChangeNote }
 					onDeleteNote = { this.handleDeleteNote }
 					onToggleSidebar = { this.toggleSidebar }
@@ -572,6 +599,7 @@ class NotesApp extends Component {
 					onCancel = { this.handleCloseModal }
 					searchKeyword = { this.state.searchKeyword }
 					isShowSearchResults = { this.state.showSearchResults }
+					handleMoveNote={this.handleMoveNote}
 				/>
 				
 				{/*添加笔记本 Modal*/ }
@@ -591,7 +619,7 @@ class NotesApp extends Component {
 						};
 						this.addNoteBook(newNoteBook);
 					} }
-					closeModal = { () => this.handleCloseModal() }
+					closeModal = {  this.handleCloseModal }
 					open = { this.state.isModalOpen }
 				/>) }
 				
@@ -601,7 +629,7 @@ class NotesApp extends Component {
 					onOk = { ({ cover }) => {
 						this.updateNotebookInfo('cover' , cover);
 					} }
-					closeModal = { () => this.handleCloseModal() }
+					closeModal = { this.handleCloseModal}
 					open = { this.state.isModalOpen }
 				/>) }
 				
@@ -610,6 +638,12 @@ class NotesApp extends Component {
 						this.deleteNotebook();
 						this.handleCloseModal();
 					} , this.handleCloseModal )) : null }
+				
+				{/*设置条目Modal*/}
+				{ this.state.activeModal === 'settingModal' && (<SettingModal
+					closeModal = { this.handleCloseModal }
+					open = { this.state.isModalOpen }
+				/>) }
 			
 			</div> }
 		

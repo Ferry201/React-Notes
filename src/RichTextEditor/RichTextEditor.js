@@ -580,7 +580,6 @@ const RichTextEditor = ({
 				>
 					<AddNewNotebtn
 						onClick = { cancelExpandNoteEditSection }
-						className = { `add-new-button` }
 					/>
 				</GetContentButton>
 			

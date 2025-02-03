@@ -172,6 +172,7 @@ const NoteBookModal = ({
 								onChange = { handleInputTitle }
 								placeholder = "输入标题..."
 								allowClear
+								maxLength='12'
 							/>
 						</div>) }
 						

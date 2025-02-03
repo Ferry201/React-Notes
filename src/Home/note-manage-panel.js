@@ -117,7 +117,6 @@ class NoteManagePanel extends Reaxlass {
 		const {
 			onChangeNote ,
 			onDeleteNote ,
-			OnSwitchMode ,
 			onToggleSidebar ,
 			currentNotebook ,
 			notesAmount ,
@@ -126,11 +125,13 @@ class NoteManagePanel extends Reaxlass {
 			favoriteNote ,
 			isShowFavorites ,
 			noteList ,
+			notebooks,
 			openModal,
 			onSave,
 			onCancel,
 			searchKeyword,
 			isShowSearchResults,
+			handleMoveNote
 		} = this.props;
 		const {
 			isHover ,
@@ -185,6 +186,7 @@ class NoteManagePanel extends Reaxlass {
 						  onKeyDown = { this.handleKeyDown }
 						  ref = { this.inputRenameRef }
 						  className = "rename-input"
+						  maxLength='12'
 					  />) :
 					  (<h2>{ this.state.title }({ notesAmount })</h2>) }
 					
@@ -234,6 +236,7 @@ class NoteManagePanel extends Reaxlass {
 			{/*Note List*/ }
 			<RenderContent
 				noteList = { noteList }
+				notebooks={notebooks}
 				changeNote = { onChangeNote }
 				deleteNote = { onDeleteNote }
 				ShowMode = { currentNotebook.showMode }
@@ -246,6 +249,7 @@ class NoteManagePanel extends Reaxlass {
 				onCancel = { onCancel }
 				keyword={searchKeyword}
 				isShowSearchResults={isShowSearchResults}
+				handleMoveNote={handleMoveNote}
 			/>
 		</div>;
 	}
