@@ -59,7 +59,7 @@ export class NoteSidebar extends Component {
 	};
 	
 	getNotebookItems () {
-		const notebooks = this.props.noteBookArray.filter(notebook => notebook.id !== 'favorites-notes-id' && notebook.id !== 'searchResults-notes-id');
+		const notebooks = this.props.noteBookArray.filter(notebook => notebook.id !== 'favorites-notes-id' && notebook.id !== 'searchResults-notes-id' && notebook.id !== 'recycle-notes-id');
 		return [
 			{
 				classNames : {
@@ -243,7 +243,7 @@ export class NoteSidebar extends Component {
 						
 						<div className = "sidebar-menu-list">
 							
-							<div className = "menu-item">
+							<div className = "menu-item" onClick={this.props.clickRecycleBin}>
 								<RecycleBinIcon />
 								<span>回收站</span>
 							</div>

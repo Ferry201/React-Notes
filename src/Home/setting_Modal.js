@@ -35,6 +35,8 @@ const SettingModal = ({closeModal,open}) => {
 				keyboard = { true }
 			>
 			<div className="setting-container">
+				
+				<div>账号管理</div>
 				<div>深色模式</div>
 				<div>语言选项</div>
 				<div>字号</div>

@@ -131,7 +131,8 @@ class NoteManagePanel extends Reaxlass {
 			onCancel,
 			searchKeyword,
 			isShowSearchResults,
-			handleMoveNote
+			handleMoveNote,
+			isShowRecycleNotes,
 		} = this.props;
 		const {
 			isHover ,
@@ -142,7 +143,7 @@ class NoteManagePanel extends Reaxlass {
 			siderCollapsed ,
 			resizing ,
 		} = reaxel_sider();
-		let editInFavoritesOrSearchPage = currentNotebook.id === 'favorites-notes-id' || currentNotebook.id === 'searchResults-notes-id'
+		let editInFavoritesOrSearchPageOrRecycle = currentNotebook.id === 'favorites-notes-id' || currentNotebook.id === 'searchResults-notes-id'||currentNotebook.id ==='recycle-notes-id';
 		
 		return <div className = { `note-container${ resizing ? ' resizing' : '' } ${ currentNotebook.currentTheme }` }>
 			{/*顶部工具栏*/ }
@@ -191,7 +192,7 @@ class NoteManagePanel extends Reaxlass {
 					  (<h2>{ this.state.title }({ notesAmount })</h2>) }
 					
 					{/*笔记本下拉操作菜单*/ }
-					{ !isRenaming && !editInFavoritesOrSearchPage && <Dropdown
+					{ !isRenaming && !editInFavoritesOrSearchPageOrRecycle && <Dropdown
 						placement = "bottomLeft"
 						menu = { {
 							items : this.state.noteFeaturesMenu ,
@@ -250,6 +251,7 @@ class NoteManagePanel extends Reaxlass {
 				keyword={searchKeyword}
 				isShowSearchResults={isShowSearchResults}
 				handleMoveNote={handleMoveNote}
+				isShowRecycleNotes={isShowRecycleNotes}
 			/>
 		</div>;
 	}

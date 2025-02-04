@@ -47,6 +47,7 @@ class NotesApp extends Component {
 			showFavoritedNotes : false ,
 			searchKeyword : '' ,
 			showSearchResults : false ,
+			showRecycleNotes:false,
 		};
 	}
 	
@@ -58,19 +59,23 @@ class NotesApp extends Component {
 			activeModal,
 			searchKeyword
 		} = this.state;
+		
 		const getFilteredNotes=()=>{
+			let notDeletedNotes = noteListData.filter(note => note.isDeleted === false);
 			if ( currentNotebook.id === 'favorites-notes-id' ) {
-				return noteListData.filter(note => note.isFavorited === true);
+				return notDeletedNotes.filter(note => note.isFavorited === true);
 			} else if ( currentNotebook.id === 'searchResults-notes-id' ) {
-				return noteListData.filter((note) => {
+				return notDeletedNotes.filter((note) => {
 					const plainText = convertFromRaw(note.noteContent).getPlainText();
 					const matchedContent = plainText.toLowerCase().includes(searchKeyword.toLowerCase());
 					const matchedTitle = note.noteTitle?.toLowerCase().includes(searchKeyword.toLowerCase());
 					
 					return matchedContent || matchedTitle;
 				});
+			} else if ( currentNotebook.id === 'recycle-notes-id' ) {
+				return noteListData.filter(note => note.isDeleted === true);
 			} else {
-				return noteListData.filter(note => note.notebookID === this.state.currentNotebook.id);
+				return notDeletedNotes.filter(note => note.notebookID === this.state.currentNotebook.id);
 			}
 		}
 		
@@ -89,7 +94,8 @@ class NotesApp extends Component {
 		}
 		
 		let allNotebooks = [...noteBookData];
-		allNotebooks = allNotebooks.filter(notebook => notebook.id !== 'favorites-notes-id' && notebook.id !== 'searchResults-notes-id');
+		allNotebooks = allNotebooks.filter(notebook => notebook.id !== 'favorites-notes-id' && notebook.id !== 'searchResults-notes-id' && notebook.id !== 'recycle-notes-id'
+		);
 		if ( activeModal === 'deleteConfirm' && allNotebooks.length === 1 ) {
 			message.error('至少需要一个笔记本存在 , 不能删除最后一个笔记本!');
 			this.setState({
@@ -172,7 +178,10 @@ class NotesApp extends Component {
 			pinnedTime : null ,
 			isFavorited : false ,
 			favoritedTime : null ,
+			isDeleted : false ,
+			deletedTime : null ,
 		};
+		
 		let editInFavoritesOrSearchPage = currentNotebook.id === 'favorites-notes-id' || currentNotebook.id === 'searchResults-notes-id';
 		//在收藏夹or搜索结果里修改已存在笔记时:
 		if ( editInFavoritesOrSearchPage && currentID !== null ) {
@@ -212,6 +221,8 @@ class NotesApp extends Component {
 				pinnedTime : oldNote.pinnedTime ,
 				isFavorited : oldNote.isFavorited ,
 				favoritedTime : oldNote.favoritedTime ,
+				// isDeleted : oldNote.isDeleted ,
+				// deletedTime : oldNote.deletedTime,
 			});
 		}
 		
@@ -230,39 +241,6 @@ class NotesApp extends Component {
 	};
 	
 	
-	//删除note
-	handleDeleteNote = (id) => {
-		const {
-			noteListData ,
-			notesAmount ,
-			currentNotebook ,
-			searchKeyword ,
-		} = this.state;
-		let updatedList = [...noteListData];
-		updatedList = updatedList.filter((note) => note.id !== id);
-		let currentNotes;
-		if ( currentNotebook.id === 'favorites-notes-id' ) {
-			currentNotes = updatedList.filter(note => note.isFavorited === true);
-		} else if ( currentNotebook.id === 'searchResults-notes-id' ) {
-			currentNotes = updatedList.filter((note) => {
-				const plainText = convertFromRaw(note.noteContent).getPlainText();
-				return plainText.toLowerCase().includes(searchKeyword.toLowerCase());
-			});
-		} else {
-			currentNotes = updatedList.filter(note => note.notebookID === currentNotebook.id);
-		}
-		
-		this.setState({
-			noteListData : updatedList ,
-			currentID : null ,
-			currentContent : null ,
-			currentNoteTitle : null ,
-			notesAmount : currentNotes.length ,
-		} , () => {
-			localStorage.setItem('note-info-array' , JSON.stringify(updatedList));
-		});
-	};
-	
 	//修改old note
 	handleChangeNote = (noteTitle , noteContent , id) => {
 		this.setState({
@@ -270,13 +248,60 @@ class NotesApp extends Component {
 			currentContent : noteContent ,
 			currentID : id ,
 		});
-		this.handleOpenModal('addNewNote');
+		if(this.state.currentNotebook.id !== 'recycle-notes-id'){
+			this.handleOpenModal('addNewNote');
+		}else{
+			this.handleOpenModal('recoverConfirm')
+		}
 	};
+	
+	//删除note
+	handleDeleteNote = (id) => {
+		const {
+			noteListData ,
+			currentNotebook ,
+			searchKeyword ,
+		} = this.state;
+		let updatedList = [...noteListData];
+		// updatedList = updatedList.filter((note) => note.id !== id);
+		updatedList=updatedList.map(note=>{
+			if(note.id===id){
+				return {
+					...note,
+					isDeleted : true ,
+					deletedTime : dayjs().valueOf(),
+				}
+			}
+			return note
+		})
+		
+		// let currentNotes;
+		// if ( currentNotebook.id === 'favorites-notes-id' ) {
+		// 	currentNotes = updatedList.filter(note => note.isFavorited === true);
+		// } else if ( currentNotebook.id === 'searchResults-notes-id' ) {
+		// 	currentNotes = updatedList.filter((note) => {
+		// 		const plainText = convertFromRaw(note.noteContent).getPlainText();
+		// 		return plainText.toLowerCase().includes(searchKeyword.toLowerCase());
+		// 	});
+		// } else {
+		// 	currentNotes = updatedList.filter(note => note.notebookID === currentNotebook.id);
+		// }
+		
+		this.setState({
+			noteListData : updatedList ,
+			currentID : null ,
+			currentContent : null ,
+			currentNoteTitle : null ,
+			// notesAmount : currentNotes.length ,
+		} , () => {
+			localStorage.setItem('note-info-array' , JSON.stringify(updatedList));
+		});
+	};
+	
 	//置顶note
 	handlePinNote = (id) => {
 		const {
 			noteListData ,
-			currentNotebook ,
 		} = this.state;
 		let updatedNoteList = [...noteListData];
 		updatedNoteList = updatedNoteList.map(note => {
@@ -284,7 +309,7 @@ class NotesApp extends Component {
 				return {
 					...note ,
 					isPinned : !note.isPinned ,
-					pinnedTime : !note.isPinned ? Date.now() : null ,
+					pinnedTime : !note.isPinned ? dayjs().valueOf() : null ,
 				};
 			}
 			return note;
@@ -306,7 +331,7 @@ class NotesApp extends Component {
 				return {
 					...note ,
 					isFavorited : !note.isFavorited ,
-					favoritedTime : !note.isFavorited ? Date.now() : null ,
+					favoritedTime : !note.isFavorited ? dayjs().valueOf() : null ,
 				};
 			}
 			return note;
@@ -372,6 +397,7 @@ class NotesApp extends Component {
 			selectedNotebookId : notebook.id ,//添加后立刻显示新添加笔记本页面
 			showFavoritedNotes : false ,
 			showSearchResults : false ,
+			showRecycleNotes : false ,
 		});
 	};
 	
@@ -497,6 +523,7 @@ class NotesApp extends Component {
 		this.setState({
 			showFavoritedNotes : true ,
 			showSearchResults : false ,
+			showRecycleNotes : false ,
 			currentNotebook : favorites ,
 			selectedNotebookId : favorites.id ,
 			notesAmount : favoritedNotes.length ,
@@ -531,6 +558,7 @@ class NotesApp extends Component {
 		
 		this.setState({
 			showSearchResults : true ,
+			showRecycleNotes : false ,
 			showFavoritedNotes : false ,
 			currentNotebook : searchResults ,
 			notesAmount : allMatchedNotes.length ,
@@ -546,10 +574,70 @@ class NotesApp extends Component {
 			});
 		}
 	};
+	// 回收站
+	handleClickRecycleBin=()=>{
+		const {
+			noteBookData ,
+			noteListData ,
+		} = this.state;
+		let recycleBin = noteBookData.find(item => item.id === 'recycle-notes-id');
+		if ( recycleBin === undefined ) {
+			const newNoteBook = {
+				title : '回收站' ,
+				cover : null ,
+				id : 'recycle-notes-id' ,
+				createdTime : dayjs().valueOf() ,
+				showMode : 'list-mode' ,
+				currentTheme : 'gray-theme' ,
+			};
+			this.addNoteBook(newNoteBook);
+			recycleBin = newNoteBook;
+		}
+		const deletedNotes = noteListData.filter(note => note.isDeleted === true);
+		this.setState({
+			showRecycleNotes : true ,
+			showFavoritedNotes : false ,
+			showSearchResults : false ,
+			currentNotebook : recycleBin ,
+			selectedNotebookId : recycleBin.id ,
+			notesAmount : deletedNotes.length ,
+		});
+	}
+	// 恢复删除的笔记
+	handleRecoverDeletedNote = () => {
+		const { noteListData ,currentID} = this.state;
+		let newNoteList = [...noteListData];
+		newNoteList = newNoteList.map(note => {
+			if ( note.id === currentID ) {
+				return {
+					...note ,
+					isDeleted : false ,
+					deletedTime : null ,
+				};
+			}
+			return note
+		})
+		this.setState({
+			noteListData : newNoteList,
+		} , () => {
+			localStorage.setItem('note-info-array' , JSON.stringify(newNoteList));
+		});
+	}
+	// 清空回收站
+	handleClearRecycleBin = () => {
+		const { noteListData } = this.state;
+		let newNoteList = [...noteListData];
+		newNoteList = newNoteList.filter(note => note.isDeleted === false);
+		this.setState({
+			noteListData : newNoteList,
+		} , () => {
+			localStorage.setItem('note-info-array' , JSON.stringify(newNoteList));
+		});
+	}
 	
 	render () {
 		let allNotebooks = [...this.state.noteBookData];
-		allNotebooks = allNotebooks.filter(notebook => notebook.id !== 'favorites-notes-id' && notebook.id !== 'searchResults-notes-id');
+		allNotebooks = allNotebooks.filter(notebook => notebook.id !== 'favorites-notes-id' && notebook.id !== 'searchResults-notes-id'&& notebook.id !== 'recycle-notes-id');
 		
 		return <div className = "container">
 			{/*添加新笔记note*/}
@@ -578,6 +666,7 @@ class NotesApp extends Component {
 					clickFavorites = { this.handleClickFavorites }
 					currentNotebook = { this.state.currentNotebook }
 					setSearchKeyword = { this.setSearchKeyword }
+					clickRecycleBin={this.handleClickRecycleBin}
 				/>
 				
 				
@@ -600,6 +689,7 @@ class NotesApp extends Component {
 					searchKeyword = { this.state.searchKeyword }
 					isShowSearchResults = { this.state.showSearchResults }
 					handleMoveNote={this.handleMoveNote}
+					isShowRecycleNotes={this.state.showRecycleNotes}
 				/>
 				
 				{/*添加笔记本 Modal*/ }
@@ -633,36 +723,63 @@ class NotesApp extends Component {
 					open = { this.state.isModalOpen }
 				/>) }
 				
-				{/*  删除笔记本确认框*/ }
-				{ this.state.activeModal === 'deleteConfirm' && allNotebooks.length !== 1 ? (showDeleteConfirm(this.state.currentNotebook.title , this.state.isModalOpen , () => {
-						this.deleteNotebook();
-						this.handleCloseModal();
-					} , this.handleCloseModal )) : null }
-				
-				{/*设置条目Modal*/}
+				{/*设置Modal*/}
 				{ this.state.activeModal === 'settingModal' && (<SettingModal
 					closeModal = { this.handleCloseModal }
 					open = { this.state.isModalOpen }
 				/>) }
+				
+				
+				{/*  删除笔记本确认框*/ }
+				{ this.state.activeModal === 'deleteConfirm' && allNotebooks.length !== 1 ? (useConfirmDialog(
+						(<div>确定删除笔记本: <span className = "delete-confirm-title">{ this.state.currentNotebook.title }</span>吗? </div>) ,
+						(<div>此操作将永久删除该笔记本及该笔记本中所有笔记</div>) ,
+						this.state.isModalOpen ,
+						() => {
+							this.deleteNotebook();
+							this.handleCloseModal();
+						} ,
+						this.handleCloseModal ,
+						"danger" ,)
+				) : null }
+				
+				{/*  恢复删除笔记确认框*/ }
+				{ this.state.activeModal === 'recoverConfirm' && useConfirmDialog(
+					'回收站的笔记不可编辑',
+					'恢复后可进行编辑 , 确定恢复已删除的笔记吗?',
+					this.state.isModalOpen , 
+					() => {
+					this.handleRecoverDeletedNote();
+					this.handleCloseModal();
+					} , 
+					this.handleCloseModal
+				) }
+				
+				{/*  清空回收站确认框*/ }
+				{ this.state.activeModal === 'clearRecycleConfirm' && useConfirmDialog(
+					'确定清空回收站吗?',
+					'此操作会永久删除回收站内的笔记' ,
+					this.state.isModalOpen ,
+					() => {
+						this.handleClearRecycleBin();
+						this.handleCloseModal();
+					} ,
+					this.handleCloseModal ,
+					'danger',
+				) }
+				
 			
 			</div> }
-		
-		
 		</div>;
 	}
-	
 }
-
-const showDeleteConfirm = (title , open , clickOk , clickCancel) => {
+const useConfirmDialog = (title , content , open , clickOk , clickCancel , okType) => {
 	confirm({
 		icon : <ExclamationCircleFilled /> ,
-		content : (<div>
-			确定删除
-			<span className = "delete-confirm-title">{ title }</span>
-			及该笔记本中所有笔记吗?
-		</div>) ,
+		title : title ,
+		content : content ,
 		okText : '确定' ,
-		okType : 'danger' ,
+		okType : okType || "primary" ,
 		cancelText : '我再想想' ,
 		open : open ,
 		onOk () {
@@ -671,8 +788,7 @@ const showDeleteConfirm = (title , open , clickOk , clickCancel) => {
 		onCancel () {
 			clickCancel();
 		} ,
-	});
-};
-
+	})
+}
 
 export default NotesApp;

@@ -63,6 +63,7 @@ const RenderContent = ({
 	keyword,
 	isShowSearchResults,
 	handleMoveNote,
+	isShowRecycleNotes,
 }) => {
 	const inputAddNoteRef = React.useRef();
 	const wrapperRef = React.useRef();
@@ -77,12 +78,13 @@ const RenderContent = ({
 		isShowFavoritesNotes = true;
 	}
 	let showSearchResults=isShowSearchResults;
-	if ( currentNotebook.id === 'favorites-notes-id' ) {
+	if ( currentNotebook.id === 'searchResults-notes-id' ) {
 		showSearchResults = true;
 	}
-	
-	
-	
+	let showRecycleNotes=isShowRecycleNotes;
+	if ( currentNotebook.id ==='recycle-notes-id' ) {
+		showRecycleNotes = true;
+	}
 	
 	
 	const placeholders = [
@@ -105,19 +107,22 @@ const RenderContent = ({
 	} , [placeholders]);
 	
 	useEffect(() => {
+		let notDeletedNotes = notes.filter(note => note.isDeleted === false);
 		const filters = {
-			isShowFavoritesNotes : () => notes.filter(note => note.isFavorited === true) ,
-			showSearchResults : () => notes.filter((note) => {
+			isShowFavoritesNotes : () => notDeletedNotes.filter(note => note.isFavorited === true) ,
+			showSearchResults : () => notDeletedNotes.filter((note) => {
 				const plainText = convertFromRaw(note.noteContent).getPlainText();
 				const matchedContent = plainText.toLowerCase().includes(keyword.toLowerCase());
 				const matchedTitle = note.noteTitle?.toLowerCase().includes(keyword.toLowerCase());
 				return matchedContent || matchedTitle;
 			}) ,
-			default : () => notes.filter(note => note.notebookID === currentNotebook.id),
+			isShowRecycleNotes : () => notes.filter(note => note.isDeleted === true) ,
+			default : () => notDeletedNotes.filter(note => note.notebookID === currentNotebook.id),
 		};
 		//每个键都封装为箭头函数，调用时才运行，基于最新的 notes 数据执行
 		const filteredNotes=isShowFavoritesNotes? filters.isShowFavoritesNotes():
 		                    showSearchResults? filters.showSearchResults():
+		                    showRecycleNotes?filters.isShowRecycleNotes():
 		                    filters.default();
 		
 		setContents(filteredNotes);
@@ -162,32 +167,16 @@ const RenderContent = ({
 	
 	const onDeleteNote = (id) => {
 		deleteNote(id);
-		setContents(contents.filter(content => content.id !== id));
 	};
 	
 	const onPinNote = (id) => {
 		pinNote(id);
-		setContents((prevNotes) => prevNotes.map((note) => note.id === id ? {
-			...note ,
-			isPinned : !note.isPinned ,
-			pinnedTime : !note.isPinned ? Date.now() : null , // 置顶记录时间，取消置顶重置时间
-		} : note));
 	};
 	
 	const onFavoriteNote = (id) => {
-		const targetNote = contents.find(note => note.id === id);
-		//取消收藏时从收藏夹列表删除
-		if ( currentNotebook.id === 'favorites-notes-id' && targetNote.isFavorited === true ) {
-			setContents(contents.filter(content => content.id !== id));
-		}
-		
 		favoriteNote(id);
-		setContents((prevNotes) => prevNotes.map((note) => note.id === id ? {
-			...note ,
-			isFavorited : !note.isFavorited ,
-			favoritedTime : !note.isFavorited ? Date.now() : null ,//记录收藏时间
-		} : note));
 	};
+	
 	
 	let pinnedNotes;
 	let otherNotes;
@@ -195,13 +184,15 @@ const RenderContent = ({
 		pinnedNotes = contents.sort((a , b) => b.favoritedTime - a.favoritedTime); // 按收藏时间降序排列，新收藏的排前面
 	} else if(showSearchResults){
 		pinnedNotes=contents;
+	}else if(showRecycleNotes){
+		pinnedNotes=contents.sort((a , b) => b.deletedTime - a.deletedTime); ;
 	}else {
 		pinnedNotes = contents.filter((note) => note.isPinned) // 已置顶的笔记
 		.sort((a , b) => b.pinnedTime - a.pinnedTime); // 按置顶时间降序排列，新置顶的排前面
 		otherNotes = contents.filter(note => !note.isPinned);
 	}
 	
-	let showFavoritesOrSearchResults = isShowFavoritesNotes === true || showSearchResults === true;
+	let showFavoritesOrSearchResults = isShowFavoritesNotes === true || showSearchResults === true || showRecycleNotes === true;
 	
 	
 
@@ -223,7 +214,9 @@ const RenderContent = ({
 			return <div
 				key = { id }
 				className = { `${ itemClassName } ${ currentNotebook.currentTheme }` }
-				onClick = { () => changeNote(noteTitle , noteContent , id) }
+				onClick = { () =>{
+						changeNote(noteTitle , noteContent , id)
+				} }
 			>
 				{ noteTitle && <span className = "note-item-title">
 					{ currentNotebook.id === 'searchResults-notes-id' ?
@@ -243,12 +236,15 @@ const RenderContent = ({
 					 /> :
 					 convertFromRaw(noteContent).getPlainText()}
 				</span>
-				{/*note details : 时间 ,置顶 ,收藏 ,删除 , 所属书籍*/ }
+				{/*note details : 时间 ,所属书籍,置顶 ,收藏 ,移动 , 删除 */ }
 				<div className = "note-details">
 					<FormatTime id = { id } />
+					
 					{ showFavoritesOrSearchResults && <div
 						className = { `show-note-book-text ${ currentNotebook.currentTheme }` }
 					>{ notebook }</div> }
+					
+					{ currentNotebook.id !== 'recycle-notes-id'&&
 					<div
 						className = "note-operation-buttons"
 						onClick = { (e) => {
@@ -268,28 +264,29 @@ const RenderContent = ({
 								onFavoriteNote(id);
 							} }
 						/>
-						{!showFavoritesOrSearchResults&& <NotebooksPopover id={id}/>}
 						
+						{ !showFavoritesOrSearchResults && <NotebooksPopover id = { id } /> }
 						
 						<Popconfirm
-							destroyTooltipOnHide={true}
-							placement='top'
-							overlayClassName='note-delete-popConfirm'
-							title="确定删除笔记吗?"
-							description="删除后的笔记将放入回收站"
-							okText="删除"
-							cancelText="取消"
-							onConfirm= { () => {
-								onDeleteNote(id)
+							destroyTooltipOnHide = { true }
+							placement = "top"
+							overlayClassName = "note-delete-popConfirm"
+							title = "确定删除笔记吗?"
+							description = "删除后的笔记将放入回收站"
+							okText = "删除"
+							okType='danger'
+							cancelText = "取消"
+							onConfirm = { () => {
+								onDeleteNote(id);
 							} }
-							getPopupContainer={(triggerNode)=>triggerNode.parentElement}
+							getPopupContainer = { (triggerNode) => triggerNode.parentElement }
 						>
 							<div>
 								<DeleteIcon />
 							</div>
 						</Popconfirm>
-						
 					</div>
+				}
 				</div>
 			</div>;
 		}
@@ -530,6 +527,7 @@ const RenderContent = ({
 			currentNotebook.id ,
 			'favorites-notes-id' ,
 			'searchResults-notes-id',
+			'recycle-notes-id',
 		];
 		let otherNotebooks=notebooksArray.filter(({id})=>!filteredNotebooksID.includes(id))
 		
@@ -607,6 +605,11 @@ const RenderContent = ({
 	
 	return (<div className = "show-mode-box">
 		{/*输入笔记区*/ }
+		{ currentNotebook.id === 'recycle-notes-id' && contents.length !== 0 &&
+			<div className = "recycleBin-mention">
+				<span>回收站的笔记会在15天后删除</span>
+				<span onClick={()=>{openModal('clearRecycleConfirm')}}>清空回收站</span>
+			</div>}
 		{ !showFavoritesOrSearchResults && <div className = "add-new-note-section">
 			{ isExpandNoteEditSection ? <div
 				ref = { wrapperRef }
@@ -638,7 +641,8 @@ const RenderContent = ({
 		{ contents.length === 0 ? (<div className = {`empty-container ${currentNotebook.currentTheme}`}>
 			<EmptyIcon />
 			{ isShowFavoritesNotes ? <p>收藏夹空空如也</p>:
-			  showSearchResults?<p>一个匹配的搜索结果都没有</p> :
+			  showSearchResults?<p>没有找到匹配的笔记</p> :
+			  showRecycleNotes?<p>回收站空无一物</p>:
 			  <p>还没有笔记 , 点击上方输入框创建吧 !</p> }
 		</div>) : (<div className = "show-noteList-box">
 			{ ShowMode === 'list-mode' && <UlMode /> }
