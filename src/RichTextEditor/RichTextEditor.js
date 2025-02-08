@@ -21,7 +21,6 @@ import { GithubPicker } from 'react-color';
 import { CirclePicker } from 'react-color';
 import HighlightedKeyword from '../Home/renderContent'
 
-
 //todo:选中分区,及时保存
 
 
@@ -172,31 +171,34 @@ const AddNewNoteModal = ({
 		
 	};
 	return <div>
-		<Modal
-			open = { open }
-			onOk = { handleOk }
-			style = { { top : 80 } }
-			onCancel = { onCloseModal }
-			cancelText = "取消"
-			okText = "创建"
-			width = { 800 }
-			height = { 300 }
-			destroyOnClose = { true }
-			keyboard = { true }
-			wrapClassName = "edit-note-modal"
-			closable = { false }
-			// footer={null}
-		>
-			<RichTextEditor
-				onSave = { onSave }
-				initialTitle={initialTitle}
-				initialContent = { initialContent }
-				onCancel = { onCancel }
-				showAllOptions = { true }
-				currentNotebook={currentNotebook}
-				keyword={keyword}
-			/>
-		</Modal>
+		
+			<Modal
+				open = { open }
+				onOk = { handleOk }
+				style = { { top : 80 } }
+				onCancel = { onCloseModal }
+				cancelText = "取消"
+				okText = "创建"
+				width = { 800 }
+				height = { 300 }
+				destroyOnClose = { true }
+				keyboard = { true }
+				wrapClassName = "edit-note-modal"
+				closable = { false }
+				// maskClosable={false}
+				footer={null}
+			>
+				<RichTextEditor
+					onSave = { onSave }
+					initialTitle={initialTitle}
+					initialContent = { initialContent }
+					onCancel = { onCancel }
+					showAllOptions = { true }
+					currentNotebook={currentNotebook}
+					keyword={keyword}
+				/>
+			</Modal>
+		
 	</div>;
 };
 
@@ -387,8 +389,9 @@ const RichTextEditor = ({
 			{ showAllOptions && <div>
 				<div className = "modal-top-bar">
 					<div className = "modal-top-left-bar"><Tooltip
-						color='gray'
+						color='#202124'
 						title = "返回并保存"
+						arrow={false}
 					>
 						<GetContentButton
 							noteTitle={noteTitle}
@@ -401,13 +404,15 @@ const RichTextEditor = ({
 					
 					<div className = "modal-top-right-bar">
 						<Tooltip title = "保存"
-							color='gray'><GetContentButton
+							color='#202124'
+							arrow={false}><GetContentButton
 							noteTitle={noteTitle}
 							editorState = { editorState }
 							onSave = { onSave }
 						> <SaveIcon /></GetContentButton></Tooltip>
 						<Tooltip title = "退出且不保存修改"
-							color='gray'>
+							color='#202124'
+							arrow={false}>
 							<div
 								className = "cancel-edit-icon"
 								onClick = { onCancel }
@@ -419,58 +424,70 @@ const RichTextEditor = ({
 				
 				<div className = "rich-text-options">
 					<Tooltip title = "撤销"
-						color='gray'>
+						color='#202124'
+						arrow={false}>
 						<button onClick = { onUndo }><FaUndo /></button>
 					</Tooltip>
 					<Tooltip title = "还原"
-						color='gray'>
+						color='#202124'
+						arrow={false}>
 						<button onClick = { onRedo }><FaRedo /></button>
 					</Tooltip>
 					<Tooltip title = "加粗"
-						color='gray'>
+						color='#202124'
+						arrow={false}>
 						<button onClick = { onBoldClick }><FaBold /></button>
 					</Tooltip>
 					<Tooltip title = "斜体"
-						color='gray'>
+						color='#202124'
+						arrow={false}>
 						<button onClick = { onItalicClick }><FaItalic /></button>
 					</Tooltip>
 					<Tooltip title = "下划线"
-						color='gray'>
+						color='#202124'
+						arrow={false}>
 						<button onClick = { onUnderlineClick }><FaUnderline /></button>
 					</Tooltip>
 					<Tooltip title = "删除线"
-						color='gray'>
+						color='#202124'
+						arrow={false}>
 						<button onClick = { onStrikethroughClick }><FaStrikethrough /></button>
 					</Tooltip>
 					<Tooltip title = "文本靠左"
-						color='gray'>
+						color='#202124'
+						arrow={false}>
 						<button onClick = { onAlignLeft }><FaAlignLeft /></button>
 					</Tooltip>
 					<Tooltip title = "文本居中"
-						color='gray'>
+						color='#202124'
+						arrow={false}>
 						<button onClick = { onAlignCenter }><FaAlignCenter /></button>
 					</Tooltip>
 					<Tooltip title = "文本靠右"
-						color='gray'>
+						color='#202124'
+						arrow={false}>
 						<button onClick = { onAlignRight }><FaAlignRight /></button>
 					</Tooltip>
 					<Tooltip title = "添加图片"
-						color='gray'>
+						color='#202124'
+						arrow={false}>
 						<button onClick = { onAddImage }><FaImage /></button>
 					</Tooltip>
 					<Tooltip title = "有序列表"
-						color='gray'>
+						color='#202124'
+						arrow={false}>
 						<button onClick = { onOrderedList }><FaListOl /></button>
 					</Tooltip>
 					<Tooltip title = "无序列表"
-						color='gray'>
+						color='#202124'
+						arrow={false}>
 						<button onClick = { onUnorderedList }><FaListUl /></button>
 					</Tooltip>
 					<Tooltip title = "字号"
-						color='gray'>
+						color='#202124'
+						arrow={false}>
 						<button><FontSizeIcon /></button>
 					</Tooltip>
-					<Tooltip></Tooltip>
 					
 					
 					<select
@@ -519,7 +536,7 @@ const RichTextEditor = ({
 					 type = "text"
 					 className = "note-item-title-input"
 					 placeholder = "标题"
-					 maxLength={30}
+					 maxLength={15}
 					 value={noteTitle}
 					 onChange = { (e) => {
 						 setNoteTitle(e.target.value);
@@ -529,6 +546,9 @@ const RichTextEditor = ({
 			
 			<div
 				style = { {
+					whiteSpace: 'pre-wrap',
+					wordWrap: 'break-word',
+					wordBreak: 'break-word',
 					fontSize : "16px" ,
 					borderBottomLeftRadius : '6px' ,
 					borderBottomRightRadius : '6px' ,
@@ -593,10 +613,11 @@ const RichTextEditor = ({
 const RichTextIcon = ({ onClick }) => {
 	return <>
 		<Tooltip
-			color='gray'
+			color='#202124'
 			title = "富文本编辑模式"
 			placement = "bottom"
 			zIndex = "1"
+			arrow={false}
 		>
 			<div
 				className = "edit-note-option-item rich-text-option"
@@ -625,10 +646,11 @@ const UndoIcon = () => {
 	return <>
 		
 		<Tooltip
-			color='gray'
+			color='#202124'
 			title = "撤销"
 			placement = "bottom"
 			zIndex = "1"
+			arrow={false}
 		>
 			<div className = "edit-note-option-item undo-option">
 				<svg
@@ -653,10 +675,11 @@ const UndoIcon = () => {
 const RedoIcon = () => {
 	return <>
 		<Tooltip
-			color='gray'
+			color='#202124'
 			title = "复原"
 			placement = "bottom"
 			zIndex = "1"
+			arrow={false}
 		>
 			<div className = "edit-note-option-item redo-option">
 				<svg
@@ -694,10 +717,11 @@ class AddNewNotebtn extends Component {
 		} = this.props;
 		return <div>
 			<Tooltip
-				color='gray'
+				color='#202124'
 				title = "添加笔记"
 				placement = "bottom"
 				zIndex = "1"
+				arrow={false}
 			>
 				<div
 					className = "add-new-button"

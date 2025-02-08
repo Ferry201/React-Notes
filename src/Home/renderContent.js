@@ -126,7 +126,7 @@ const RenderContent = ({
 		                    filters.default();
 		
 		setContents(filteredNotes);
-	} , [currentNotebook , notes,keyword]);
+	} , [currentNotebook , notes , keyword]);
 	
 	
 	useEffect(() => {
@@ -424,7 +424,7 @@ const RenderContent = ({
 					itemSelector : '.note-grid-mode-item' , // grid-item 选择器
 					columnWidth : '.note-grid-mode-item' , // 每个 item 的宽度
 					percentPosition : true , // 设置百分比定位
-					gutter : 16 , // 设置间距
+					gutter : 12 , // 设置间距
 				});
 			}
 			if ( this.gridRefOther.current ) {
@@ -432,7 +432,7 @@ const RenderContent = ({
 					itemSelector : '.note-grid-mode-item' ,
 					columnWidth : '.note-grid-mode-item' ,
 					percentPosition : true ,
-					gutter : 16 ,
+					gutter : 12 ,
 				});
 			}
 		}
@@ -532,19 +532,25 @@ const RenderContent = ({
 		let otherNotebooks=notebooksArray.filter(({id})=>!filteredNotebooksID.includes(id))
 		
 		return <>
-			<Popover
-				destroyTooltipOnHide={true}
-				content = { <MoveNoteContent id={id} otherNotebooks={otherNotebooks}/>}
-				placement='rightBottom'
-				trigger= 'click'
-				overlayClassName='notebooks-popover'
-				getPopupContainer={(triggerNode)=>triggerNode.parentElement}
+			{ otherNotebooks.length !== 0 ? <Popover
+				destroyTooltipOnHide = { true }
+				content = { <MoveNoteContent
+					id = { id }
+					otherNotebooks = { otherNotebooks }
+				/> }
+				placement = "rightBottom"
+				trigger = "click"
+				overlayClassName = "notebooks-popover"
+				getPopupContainer = { (triggerNode) => triggerNode.parentElement }
 			>
-				<div><MoveNoteToOtherBook otherNotebooks={otherNotebooks} /></div>
-			</Popover>
+				<div><MoveNoteToOtherBook otherNotebooks = { otherNotebooks } /></div>
+			</Popover> : <div><MoveNoteToOtherBook otherNotebooks = { otherNotebooks } /></div> }
 		</>
 	}
-	const MoveNoteContent=({id,otherNotebooks})=>{
+	const MoveNoteContent = ({
+		id ,
+		otherNotebooks,
+	}) => {
 		return <div>
 			{otherNotebooks.map((notebook,index)=>{
 				return <div

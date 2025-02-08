@@ -26,9 +26,8 @@ class NoteManagePanel extends Reaxlass {
 	}
 	
 	
-	
 	componentDidUpdate (prevProps) {
-		if ( prevProps.currentNotebook.id !== this.props.currentNotebook.id ) {
+		if ( prevProps.currentNotebook.id !== this.props.currentNotebook.id || prevProps.sorts !== this.props.sorts||prevProps.notebooks!==this.props.notebooks ) {
 			this.setState({
 				noteFeaturesMenu : this.generateNoteFeaturesMenu() ,
 				title : this.props.currentNotebook.title ,
@@ -38,6 +37,7 @@ class NoteManagePanel extends Reaxlass {
 	
 	
 	generateNoteFeaturesMenu = () => {
+		const otherSorts = this.props.sorts.filter(sort => sort.id !== this.props.currentNotebook.belongSortID);
 		return [
 			{
 				label : <div>重命名</div> ,
@@ -50,6 +50,19 @@ class NoteManagePanel extends Reaxlass {
 			{
 				label : <div>置顶笔记本</div> ,
 				key : 'pinned-notebook' ,
+			} ,
+			{
+				label : <div>移动到其他分类</div> ,
+				key : 'move-other-sort' ,
+				children : otherSorts.map(sort =>
+					({
+						label : <div onClick={()=>{
+							this.props.updateNotebookInfo('belongSortID',sort.id)
+						}}>{ sort.title }</div> ,
+						key : sort.id ,
+					}) ,
+				) ,
+				disabled : otherSorts.length === 0 ? true : false ,
 			} ,
 			{
 				label : <div>导出PDF</div> ,
@@ -68,7 +81,8 @@ class NoteManagePanel extends Reaxlass {
 			{
 				label : <div>分享</div> ,
 				key : 'share-notebook' ,
-			} , {
+			} ,
+			{
 				label : <div className = "dropdown-delete-notebook-button">删除笔记本</div> ,
 				key : 'delete-notebook' ,
 			} ,
@@ -219,7 +233,7 @@ class NoteManagePanel extends Reaxlass {
 				</div>
 				
 				{/* 切换显示模式 选择主题颜色*/ }
-				<div className = "top-tool-bar">
+				{ !editInFavoritesOrSearchPageOrRecycle && <div className = "top-tool-bar">
 					<ModeSelector
 						onSwitchNoteMode = { updateNotebookInfo }
 						showMode = { currentNotebook.showMode }
@@ -229,8 +243,7 @@ class NoteManagePanel extends Reaxlass {
 						selectTheme = { updateNotebookInfo }
 						theme = { currentNotebook.currentTheme }
 					/>
-					
-				</div>
+				</div> }
 			</div>
 			
 			
