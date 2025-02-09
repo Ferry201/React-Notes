@@ -52,7 +52,8 @@ class NotesApp extends Component {
 			searchKeyword : '' ,
 			showSearchResults : false ,
 			showRecycleNotes : false ,
-			currentSortId:null,
+			currentSortId : null ,
+			themeMode : 'note-light-mode',
 		};
 	}
 	
@@ -798,8 +799,15 @@ class NotesApp extends Component {
 		const themes = [
 			'blue-theme' , 'purple-theme' , 'red-theme' , 'green-theme' , 'gray-theme' , 'orange-theme' , 'pink-theme' ,'yellow-theme',
 		];
-		const randomIndex = Math.floor(Math.random() * themes.length); // 生成一个随机索引
-		return themes[randomIndex]; // 返回对应索引的主题
+		const randomIndex = Math.floor(Math.random() * themes.length); 
+		return themes[randomIndex]; 
+	};
+	handleSwitchThemeMode = (mode) => {
+		this.setState({
+			themeMode : mode,
+		},()=>{
+			this.state.themeMode
+		});
 	};
 	
 	
@@ -825,8 +833,10 @@ class NotesApp extends Component {
 				renameSort={this.handlerenameSort}
 				currentSortId={this.state.currentSortId}
 				handleClickCollapse={this.handleClickCollapse}
+				themeMode={this.state.themeMode}
 			/>
 			<NoteManagePanel
+				themeMode={this.state.themeMode}
 				noteList = { this.state.noteListData }
 				notebooks = { this.state.noteBookData }
 				onChangeNote = { this.handleChangeNote }
@@ -860,7 +870,9 @@ class NotesApp extends Component {
 				initialTitle = { this.state.currentNoteTitle }
 				initialContent = { this.state.currentContent }
 				currentNotebook = { this.state.currentNotebook }
+				themeMode={this.state.themeMode}
 				keyword = { this.state.searchKeyword }
+				
 			/> }
 			
 			
@@ -900,6 +912,8 @@ class NotesApp extends Component {
 				{ this.state.activeModal === 'settingModal' && (<SettingModal
 					closeModal = { this.handleCloseModal }
 					open = { this.state.isModalOpen }
+					themeMode={this.state.themeMode}
+					handleSwitchThemeMode={this.handleSwitchThemeMode}
 				/>) }
 				
 				

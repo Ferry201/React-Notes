@@ -147,6 +147,7 @@ class NoteManagePanel extends Reaxlass {
 			isShowSearchResults,
 			handleMoveNote,
 			isShowRecycleNotes,
+			themeMode,
 		} = this.props;
 		const {
 			isHover ,
@@ -159,9 +160,9 @@ class NoteManagePanel extends Reaxlass {
 		} = reaxel_sider();
 		let editInFavoritesOrSearchPageOrRecycle = currentNotebook.id === 'favorites-notes-id' || currentNotebook.id === 'searchResults-notes-id'||currentNotebook.id ==='recycle-notes-id';
 		
-		return <div className = { `note-container${ resizing ? ' resizing' : '' } ${ currentNotebook.currentTheme }` }>
+		return <div className = { `note-container${ resizing ? ' resizing' : '' } ${ themeMode==='note-dark-mode'?'night-theme':currentNotebook.currentTheme }` }>
 			{/*顶部工具栏*/ }
-			<div className = { `main-section-header ${ currentNotebook.currentTheme }` }>
+			<div className = { `main-section-header` }>
 				{/*笔记本名称 & dropdown*/ }
 				<div className = "note-title-bar">
 					<div
@@ -265,6 +266,7 @@ class NoteManagePanel extends Reaxlass {
 				isShowSearchResults={isShowSearchResults}
 				handleMoveNote={handleMoveNote}
 				isShowRecycleNotes={isShowRecycleNotes}
+				themeMode={themeMode}
 			/>
 		</div>;
 	}

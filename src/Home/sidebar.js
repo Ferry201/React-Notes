@@ -188,7 +188,7 @@ export class NoteSidebar extends Component {
 					position : 'relative' ,
 					height : '100%' ,
 				} }
-				className = { `resizable-box ${ siderCollapsed ? 'collpased' : '' } ${ resizing ? 'resizing' : '' }` }
+				className = { `resizable-box ${ siderCollapsed ? 'collpased' : '' } ${ resizing ? 'resizing' : '' } ${this.props.themeMode}` }
 				handle = { <div className = "resize-handle-container">
 					<div className = "custom-resize-handle" />
 				</div> }
@@ -201,7 +201,7 @@ export class NoteSidebar extends Component {
 						<SidebarMenu
 							clickFavorites = { this.props.clickFavorites }
 							clickRecycle = { this.props.clickRecycleBin }
-							openModal={this.props.openModal}
+							openModal = { this.props.openModal }
 						/>
 						
 						<span className = "notebooks-list-text">笔记本列表</span>
@@ -220,6 +220,25 @@ export class NoteSidebar extends Component {
 					</div>
 					<Divider style = { { borderColor : '#e4e4e4' } } />
 					
+					<div
+						onClick = { () => {
+							// this.setState({ activeItem : '搜索' });
+							this.handleFocusSearchInput();
+						} }
+						className = "menu-item seach-note-menu"
+					>
+						<SearchIcon />
+						<input
+							ref = { this.searchInputRef }
+							className = "search-input"
+							// className = {`search-input ${ this.state.activeItem==='搜索'?'active-search-input':''}`}
+							placeholder = { '搜索笔记' }
+							value = { this.state.searchKeyword }
+							onChange = { (e) => {
+								this.handleSearchKeyword(e.target.value);
+							} }
+						/>
+					</div>
 					
 					<div className = "sidebar-content-panel">
 						{/*<div className = "avatar-username-email">*/ }
@@ -231,41 +250,21 @@ export class NoteSidebar extends Component {
 						{/*</div>*/ }
 						
 						{/*搜索*/ }
-						<div
-							onClick = { () => {
-								// this.setState({ activeItem : '搜索' });
-								this.handleFocusSearchInput();
-							} }
-							className = "menu-item seach-note-menu"
-						>
-							<SearchIcon />
-							<input
-								ref = { this.searchInputRef }
-								className = "search-input"
-								// className = {`search-input ${ this.state.activeItem==='搜索'?'active-search-input':''}`}
-								placeholder = { '搜索笔记' }
-								value = { this.state.searchKeyword }
-								onChange = { (e) => {
-									this.handleSearchKeyword(e.target.value);
-								} }
-							/>
-						</div>
-						
 						
 						
 						{/*笔记本列表*/ }
 						<div className = "all-sorts-notebook">
 							{ this.props.sorts.map((sort) => {
 								const notebooksInSort = notebooks.filter(
-									notebook => notebook.belongSortID === sort.id,
+									notebook => notebook.belongSortID === sort.id ,
 								);
 								return <div key = { sort.id }>
-									{/*分类标题*/}
+									{/*分类标题*/ }
 									<NotebookSortAndOperates
 										title = { sort.title }
 										id = { sort.id }
-										isCollapse={sort.isCollapse}
-										notebooksInSort={notebooksInSort}
+										isCollapse = { sort.isCollapse }
+										notebooksInSort = { notebooksInSort }
 									/>
 									{/*笔记本列表*/ }
 									{ !sort.isCollapse && <NotebookList
@@ -277,9 +276,8 @@ export class NoteSidebar extends Component {
 								</div>;
 							}) }
 						</div>
-						
-						
-						
+					
+					
 					</div>
 				</div>
 			</ResizableBox>
@@ -290,7 +288,7 @@ export class NoteSidebar extends Component {
 const NotebookList = ({
 	notebooks ,
 	selectedNotebookId ,
-	handleToggleNoteBook,
+	handleToggleNoteBook ,
 }) => {
 	return <div className = "notebook-lists-content">
 		<div className = "sub-menu-content">
@@ -535,42 +533,6 @@ const AddNewBookIcon = () => {
 			d = "M972.8 460.8H563.2V51.2c0-33.792-17.408-51.2-51.2-51.2s-51.2 17.408-51.2 51.2v409.6H51.2c-33.792 0-51.2 17.408-51.2 51.2s17.408 51.2 51.2 51.2h409.6v409.6c0 33.792 17.408 51.2 51.2 51.2s51.2-17.408 51.2-51.2V563.2h409.6c33.792 0 51.2-17.408 51.2-51.2s-17.408-51.2-51.2-51.2z"
 			fill = "#9c9a9a"
 			p-id = "7325"
-		></path>
-	</svg>;
-};
-const CopyEmailIcon = () => {
-	return <svg
-		t = "1738544435152"
-		className = "icon"
-		viewBox = "0 0 1024 1024"
-		version = "1.1"
-		xmlns = "http://www.w3.org/2000/svg"
-		p-id = "48072"
-		width = "16"
-		height = "16"
-	>
-		<path
-			d = "M337.28 138.688a27.968 27.968 0 0 0-27.968 27.968v78.72h377.344c50.816 0 92.032 41.152 92.032 91.968v377.344h78.656a28.032 28.032 0 0 0 27.968-28.032V166.656a28.032 28.032 0 0 0-27.968-27.968H337.28z m441.408 640v78.656c0 50.816-41.216 91.968-92.032 91.968H166.656a92.032 92.032 0 0 1-91.968-91.968V337.28c0-50.816 41.152-92.032 91.968-92.032h78.72V166.656c0-50.816 41.152-91.968 91.968-91.968h520c50.816 0 91.968 41.152 91.968 91.968v520c0 50.816-41.152 92.032-91.968 92.032h-78.72zM166.656 309.312a27.968 27.968 0 0 0-27.968 28.032v520c0 15.424 12.544 27.968 27.968 27.968h520a28.032 28.032 0 0 0 28.032-27.968V337.28a28.032 28.032 0 0 0-28.032-28.032H166.656z"
-			p-id = "48073"
-		></path>
-	</svg>;
-};
-
-const CopySuccessIcon = () => {
-	return <svg
-		t = "1738545518759"
-		className = "icon"
-		viewBox = "0 0 1024 1024"
-		version = "1.1"
-		xmlns = "http://www.w3.org/2000/svg"
-		p-id = "49135"
-		width = "14"
-		height = "14"
-	>
-		<path
-			d = "M398.46 911.06a62.53 62.53 0 0 1-43.27-17.38L22.12 574.7a62.55 62.55 0 0 1 86.53-90.35L393 756.69l515.8-626.81a62.55 62.55 0 1 1 96.6 79.5L446.76 888.26a62.56 62.56 0 0 1-44.6 22.74c-1.24 0.08-2.47 0.11-3.71 0.11z m0 0"
-			fill = "#797979"
-			p-id = "49136"
 		></path>
 	</svg>;
 };

@@ -7,7 +7,8 @@ import {
 	Modal ,
 	Input ,
 	message,
-	Radio
+	Radio,
+	Switch
 } from 'antd';
 import './note.css';
 
@@ -18,10 +19,11 @@ const style = {
 	gap: 12,
 	fontSize:20
 };
-const ThemeRadios = () => {
-	const [value, setValue] = useState(1);
+const ThemeRadios = ({themeMode,handleSwitchThemeMode}) => {
+	const [value, setValue] = useState(themeMode);
 	const onChange = (e) => {
 		setValue(e.target.value);
+		handleSwitchThemeMode(e.target.value)
 	};
 	return (
 		<Radio.Group
@@ -32,22 +34,26 @@ const ThemeRadios = () => {
 			value={value}
 			options={[
 				{
-					value: 1,
-					label: '浅色模式',
+					value: 'note-light-mode',
+					label: '白天模式',
 				},
 				{
-					value: 2,
-					label: '深色模式',
+					value: 'note-dark-mode',
+					label: '黑夜模式',
+				},
+				{
+					value: 'auto',
+					label: '晚上20:00后自动开启黑夜模式 , 早上八点开启白天模式',
 				},
 			]}
 		/>
 	);
 };
 
-const SettingModal = ({closeModal,open}) => {
+const SettingModal = ({closeModal,open,themeMode,handleSwitchThemeMode}) => {
 	const [activeItem , setActiveItem] = useState('主题');
 	
-	const settingItems = ['主题' , '语言' , '时区' , '隐私' , '反馈'];
+	const settingItems = ['主题' ,'笔记', '语言' , '时区' , '隐私' , '反馈'];
 	
 	const handleOk = () => {
 		
@@ -68,10 +74,11 @@ const SettingModal = ({closeModal,open}) => {
 				cancelText = "取消"
 				okText = "应用"
 				closable = { false }
-				width = { 450 }
+				// width = { 450 }
 				destroyOnClose = { true }
 				keyboard = { true }
 				footer={null}
+				wrapClassName='setting-modal'
 				// loading
 			>
 				<div className = "setting-modal-content">
@@ -87,14 +94,15 @@ const SettingModal = ({closeModal,open}) => {
 					</div>
 					
 					<div className = "setting-panel">
-						{ activeItem === '主题' && <ThemeRadios /> }
+						{ activeItem === '主题' && <ThemeRadios themeMode={themeMode} handleSwitchThemeMode={handleSwitchThemeMode}/> }
+						{ activeItem === '笔记' && <div><p>开启无封面模式</p><Switch defaultChecked = { false } /></div> }
 						{ activeItem === '反馈' && <div>
 							亲爱的用户 :
 							<br />
 							如果您在使用笔记本软件的过程中有任何建议或发现了任何问题与 bug，欢迎随时反馈给我们。
 							<br />
-							请发送邮件至：liqunzhang3@gmail.com
 							我们会认真查看并不断优化，为您提供更好的体验。
+							<FeedbackContent/>
 						</div> }
 						
 						
@@ -106,9 +114,9 @@ const SettingModal = ({closeModal,open}) => {
 };
 
 
-const FeedbackPopoverContent = () => {
+const FeedbackContent = () => {
 	const [copySuccuess , setCopySuccess] = useState(false);
-	const email = 'ferry.bunny@outlook.com';
+	const email = 'liqunzhang3@gmail.com';
 	const handleCopyEmail = () => {
 		navigator.clipboard.writeText(email).then(() => {
 			setCopySuccess(true);
@@ -122,11 +130,11 @@ const FeedbackPopoverContent = () => {
 	};
 	return <div>
 		<p>反馈请发送到以下邮箱:</p>
-		<p>ferry.bunny@outlook.com</p>
-		{ copySuccuess ? <div>
+		<p>liqunzhang3@gmail.com</p>
+		{ copySuccuess ? <div className='feedback-copy-button'>
 			<CopySuccessIcon />
 			<span>已复制</span>
-		</div> : <div onClick = { handleCopyEmail }>
+		</div> : <div onClick = { handleCopyEmail } className='feedback-copy-button'>
 			  <CopyEmailIcon />
 			  <span>复制邮箱</span>
 		  </div> }
@@ -156,4 +164,42 @@ const FeedbackIcon = () => {
 		></path>
 	</svg>;
 };
+const CopyEmailIcon = () => {
+	return <svg
+		t = "1738544435152"
+		className = "icon"
+		viewBox = "0 0 1024 1024"
+		version = "1.1"
+		xmlns = "http://www.w3.org/2000/svg"
+		p-id = "48072"
+		width = "16"
+		height = "16"
+	>
+		<path
+			d = "M337.28 138.688a27.968 27.968 0 0 0-27.968 27.968v78.72h377.344c50.816 0 92.032 41.152 92.032 91.968v377.344h78.656a28.032 28.032 0 0 0 27.968-28.032V166.656a28.032 28.032 0 0 0-27.968-27.968H337.28z m441.408 640v78.656c0 50.816-41.216 91.968-92.032 91.968H166.656a92.032 92.032 0 0 1-91.968-91.968V337.28c0-50.816 41.152-92.032 91.968-92.032h78.72V166.656c0-50.816 41.152-91.968 91.968-91.968h520c50.816 0 91.968 41.152 91.968 91.968v520c0 50.816-41.152 92.032-91.968 92.032h-78.72zM166.656 309.312a27.968 27.968 0 0 0-27.968 28.032v520c0 15.424 12.544 27.968 27.968 27.968h520a28.032 28.032 0 0 0 28.032-27.968V337.28a28.032 28.032 0 0 0-28.032-28.032H166.656z"
+			p-id = "48073"
+		></path>
+	</svg>;
+};
+
+const CopySuccessIcon = () => {
+	return <svg
+		t = "1738545518759"
+		className = "icon"
+		viewBox = "0 0 1024 1024"
+		version = "1.1"
+		xmlns = "http://www.w3.org/2000/svg"
+		p-id = "49135"
+		width = "14"
+		height = "14"
+	>
+		<path
+			d = "M398.46 911.06a62.53 62.53 0 0 1-43.27-17.38L22.12 574.7a62.55 62.55 0 0 1 86.53-90.35L393 756.69l515.8-626.81a62.55 62.55 0 1 1 96.6 79.5L446.76 888.26a62.56 62.56 0 0 1-44.6 22.74c-1.24 0.08-2.47 0.11-3.71 0.11z m0 0"
+			fill = "#797979"
+			p-id = "49136"
+		></path>
+	</svg>;
+};
+
+
 export { SettingModal };

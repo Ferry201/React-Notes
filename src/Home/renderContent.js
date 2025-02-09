@@ -14,7 +14,7 @@ import {
 import RichTextEditor from '../RichTextEditor/RichTextEditor';
 
 
-const HighlightedKeyword = ({text, keyword, maxLength = 50 }) => {
+const HighlightedKeyword = ({text, keyword, maxLength = 50 ,themeMode}) => {
 	const textIndex = text.toLowerCase().indexOf(keyword.toLowerCase());
 	
 	if (textIndex === -1) {
@@ -35,7 +35,7 @@ const HighlightedKeyword = ({text, keyword, maxLength = 50 }) => {
 				part.toLowerCase() === keyword.toLowerCase() ? (
 					<span
 						key={`${part}-${index}`}
-						style={{ background: 'yellow' }}
+						className={ `${ themeMode === 'note-dark-mode' ? 'dark-mode-highlight-title-part' : 'highlight-title-part' }` }
 					>
 						{part}
 					</span>
@@ -64,6 +64,7 @@ const RenderContent = ({
 	isShowSearchResults,
 	handleMoveNote,
 	isShowRecycleNotes,
+	themeMode,
 }) => {
 	const inputAddNoteRef = React.useRef();
 	const wrapperRef = React.useRef();
@@ -213,7 +214,7 @@ const RenderContent = ({
 			} = this.props;
 			return <div
 				key = { id }
-				className = { `${ itemClassName } ${ currentNotebook.currentTheme }` }
+				className = { `${ itemClassName }` }
 				onClick = { () =>{
 						changeNote(noteTitle , noteContent , id)
 				} }
@@ -224,6 +225,7 @@ const RenderContent = ({
 						  text={noteTitle}
 						  keyword={keyword}
 						  maxLength={30}
+						  themeMode={themeMode}
 					  /> :
 					  noteTitle }
 				</span> }
@@ -233,6 +235,7 @@ const RenderContent = ({
 						 text = { convertFromRaw(noteContent).getPlainText() }
 						 keyword = { keyword }
 						 maxLength={50}
+						 themeMode={themeMode}
 					 /> :
 					 convertFromRaw(noteContent).getPlainText()}
 				</span>
@@ -241,7 +244,7 @@ const RenderContent = ({
 					<FormatTime id = { id } />
 					
 					{ showFavoritesOrSearchResults && <div
-						className = { `show-note-book-text ${ currentNotebook.currentTheme }` }
+						className = { `show-note-book-text` }
 					>{ notebook }</div> }
 					
 					{ currentNotebook.id !== 'recycle-notes-id'&&
@@ -258,12 +261,12 @@ const RenderContent = ({
 							} }
 						/> }
 						
-						<FavoriteIcon
-							isFavorited = { isFavorited }
-							handleFavoriteNote = { () => {
-								onFavoriteNote(id);
-							} }
-						/>
+						{/*<FavoriteIcon*/}
+						{/*	isFavorited = { isFavorited }*/}
+						{/*	handleFavoriteNote = { () => {*/}
+						{/*		onFavoriteNote(id);*/}
+						{/*	} }*/}
+						{/*/>*/}
 						
 						{ !showFavoritesOrSearchResults && <NotebooksPopover id = { id } /> }
 						
@@ -619,7 +622,7 @@ const RenderContent = ({
 		{ !showFavoritesOrSearchResults && <div className = "add-new-note-section">
 			{ isExpandNoteEditSection ? <div
 				ref = { wrapperRef }
-				className = { `note-info-input-section ${ currentNotebook.currentTheme }` }
+				className = { `note-info-input-section` }
 			>
 				<div className = "input-and-edit">
 					
@@ -630,6 +633,7 @@ const RenderContent = ({
 						openModal = { openModal }
 						cancelExpandNoteEditSection = { handleCancelEdit }
 						changeNoteEdit = { changeNote }
+						themeMode={themeMode}
 					/>
 				</div>
 				<div className = "edit-item-cancel-button">
@@ -639,7 +643,7 @@ const RenderContent = ({
 				  ref = { inputAddNoteRef }
 				  onClick = { handleExpandNoteEditSection }
 				  type = "text"
-				  className = { `add-note-input ${ currentNotebook.currentTheme }` }
+				  className = { `add-note-input` }
 				  placeholder = "输入笔记 . . ."
 			  /> }
 		</div> }

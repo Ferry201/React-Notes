@@ -15,6 +15,7 @@ import 'draft-js/dist/Draft.css';
 import GetContentButton from '@src/Home/GetContentButton';
 import { FaPaintBrush , FaBold , FaItalic , FaUnderline , FaStrikethrough , FaAlignLeft , FaAlignCenter , FaAlignRight , FaAlignJustify , FaListOl , FaListUl , FaImage,FaUndo,FaRedo } from 'react-icons/fa';
 import './richTextEditor.css';
+import '../App.css'
 import { Popover , Tooltip , Modal , Dropdown } from 'antd';
 import dayjs from "dayjs";
 import { GithubPicker } from 'react-color';
@@ -132,24 +133,6 @@ const BackgroundColorPicker = ({ onSelectColor }) => {
 };
 
 
-const keywordDecorator = (keyword) => {
-	return new CompositeDecorator([
-		{
-			strategy: (contentBlock, callback) => {
-				const text = contentBlock.getText();
-				const regex = new RegExp(keyword, "gi");
-				let matchArr, start;
-				while ((matchArr = regex.exec(text)) !== null) {
-					start = matchArr.index;
-					callback(start, start + keyword.length);
-				}
-			},
-			component: (props) => (
-				<span style={{ backgroundColor: "yellow" }}>{props.children}</span>
-			),
-		},
-	]);
-};
 
 const AddNewNoteModal = ({
 	open ,
@@ -159,6 +142,7 @@ const AddNewNoteModal = ({
 	initialTitle ,
 	initialContent ,
 	currentNotebook ,
+	themeMode,
 	keyword,
 }) => {
 	
@@ -183,9 +167,9 @@ const AddNewNoteModal = ({
 				height = { 300 }
 				destroyOnClose = { true }
 				keyboard = { true }
-				wrapClassName = "edit-note-modal"
+				wrapClassName = {`edit-note-modal ${ themeMode==='note-dark-mode'?'night-theme':currentNotebook.currentTheme }`}
 				closable = { false }
-				// maskClosable={false}
+				maskClosable={false}
 				footer={null}
 			>
 				<RichTextEditor
@@ -196,6 +180,7 @@ const AddNewNoteModal = ({
 					showAllOptions = { true }
 					currentNotebook={currentNotebook}
 					keyword={keyword}
+					themeMode={themeMode}
 				/>
 			</Modal>
 		
@@ -215,6 +200,7 @@ const RichTextEditor = ({
 	changeNoteEdit,
 	keyword,
 	currentNotebook,
+	themeMode
 }) => {
 	const editorRef = useRef(null);
 	const [noteTitle , setNoteTitle] = useState('');
@@ -236,6 +222,25 @@ const RichTextEditor = ({
 	
 	
 	
+	
+	const keywordDecorator = (keyword) => {
+		return new CompositeDecorator([
+			{
+				strategy: (contentBlock, callback) => {
+					const text = contentBlock.getText();
+					const regex = new RegExp(keyword, "gi");
+					let matchArr, start;
+					while ((matchArr = regex.exec(text)) !== null) {
+						start = matchArr.index;
+						callback(start, start + keyword.length);
+					}
+				},
+				component: (props) => (
+					<span style={{ backgroundColor: `${themeMode==='note-dark-mode'?'#5f79bd':'yellow'}` }}>{props.children}</span>
+				),
+			},
+		]);
+	};
 	const HighlightedTitle = ({
 		title ,
 		keyword,
@@ -245,7 +250,7 @@ const RichTextEditor = ({
 		const parts = title.split(new RegExp(`(${keyword})`, "gi")); // 拆分标题
 		return parts.map((part, index) =>
 			part.toLowerCase() === keyword.toLowerCase() ? (
-				<span key={index} className='highlight-title-part'>
+				<span key={index} className= { `${ themeMode === 'note-dark-mode' ? 'dark-mode-highlight-title-part' : 'highlight-title-part' }` }>
 					{part}
 				</span>
 			) : (
@@ -388,19 +393,7 @@ const RichTextEditor = ({
 		>
 			{ showAllOptions && <div>
 				<div className = "modal-top-bar">
-					<div className = "modal-top-left-bar"><Tooltip
-						color='#202124'
-						title = "返回并保存"
-						arrow={false}
-					>
-						<GetContentButton
-							noteTitle={noteTitle}
-							editorState = { editorState }
-							onSave = { onSave }
-						>
-							<ReturnIcon />
-						</GetContentButton>
-					</Tooltip></div>
+					
 					
 					<div className = "modal-top-right-bar">
 						<Tooltip title = "保存"
@@ -552,7 +545,6 @@ const RichTextEditor = ({
 					fontSize : "16px" ,
 					borderBottomLeftRadius : '6px' ,
 					borderBottomRightRadius : '6px' ,
-					background : 'white' ,
 					maxHeight : showAllOptions ? 'calc(100% - 110px)' : '100%' ,
 					padding : '10px' ,
 					overflowY : 'scroll' ,

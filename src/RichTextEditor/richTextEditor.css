@@ -21,6 +21,8 @@ body, html {
 	background: #555;
 }
 .editor-container{
+	background: var(--note-input-bg-color);
+	color: var(--note-content-color);
 	overflow-y: scroll;
 }
 .editor-container::-webkit-scrollbar {
@@ -49,15 +51,14 @@ body, html {
 	height: 40px;
 	width: 100%;
 	align-items: center;
-	background: white;
 	border-top-left-radius: 6px;
 	border-top-right-radius: 6px;
 	box-sizing: border-box;
 	border-bottom: 1px solid #d0d0d0;
 }
 .rich-text-options button{
-	border-radius: 6px;
-	background-color: white;
+	border-radius: 100%;
+	background: var(--note-input-bg-color);
 	outline: unset;
 	border: unset;
 	cursor: pointer;
@@ -68,8 +69,12 @@ body, html {
 	min-height: 16px;
 	min-width: 16px;
 }
+
+.rich-text-options button svg path{
+	fill: var(--note-content-color);
+}
 .rich-text-options button:hover{
-	background-color: #e6e5e5;
+	background-color: var(--add-note-button-bg);
 	border-radius: 100%;
 }
 .align-left {
@@ -113,6 +118,38 @@ body, html {
 	display: flex;
 	align-items: center;
 }
+
+.modal-top-bar .modal-top-right-bar div {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 6px;
+	outline: unset;
+	border: unset;
+	cursor: pointer;
+	user-select: unset;
+	box-sizing: border-box;
+	height: 36px;
+	width: 36px;
+	min-height: 16px;
+	min-width: 16px;
+}
+
+.modal-top-bar .modal-top-right-bar div svg path{
+	fill: var(--note-content-color);
+}
+
+.modal-top-bar .cancel-edit-icon:hover svg path {
+	border-radius: 100%;
+	fill: red;
+}
+
+
+
+.modal-top-bar .modal-top-right-bar div:hover {
+	background-color: var(--add-note-button-bg);
+	border-radius: 100%;
+}
 .edit-note-icons{
 	width: 40%;
 	display: flex;
@@ -145,18 +182,14 @@ body, html {
 	align-items: center;
 }
 
-.edit-note-options .edit-note-option-item:nth-child(-n+3) svg path{
-	fill: #353535;
-}
 .edit-note-options .edit-note-option-item:hover{
-	background: #eeeeee;
+	background: var(--show-note-book-text-bg-color);
 	cursor: pointer;
 }
 .add-new-button {
 	width: 60px;
 	height: 24px;
-	background: #f0f0f0;
-	/*border: 1px solid #515151;*/
+	background: var(--add-note-button-bg);
 	display: flex;
 	flex-direction: row;
 	align-items: center;
@@ -171,6 +204,9 @@ body, html {
 	z-index: 20;
 	user-select: none;
 }
+.add-new-button svg path{
+	fill: var(--note-content-color);
+}
 .add-new-button:hover {
-	background: #d8d8d8;
+	background: var(--show-note-book-text-bg-color);
 }
