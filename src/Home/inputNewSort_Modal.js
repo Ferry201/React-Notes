@@ -16,17 +16,22 @@ const InputNewSortModal = ({
 	closeModal ,
 	open ,
 	onOk ,
+	themeMode,
 }) => {
 	const [sortTitle , setSortTitle] = useState("");
 	const handleOk = () => {
+		if(sortTitle===""){
+			message.warning('请输入分类名')
+		}
 		if(sortTitle!==""){
 			onOk({
 				title : sortTitle ,
 				id : uuidv4(),
 				isCollapse:false
 			});
+			handleCancel();
 		}
-		handleCancel();
+		
 	};
 	const handleCancel = () => {
 		closeModal();
@@ -36,7 +41,6 @@ const InputNewSortModal = ({
 	};
 	return (<>
 		<Modal
-			// title = "设置"
 			open = { open }
 			// centered
 			onOk = { handleOk }
@@ -47,8 +51,8 @@ const InputNewSortModal = ({
 			width = { 250 }
 			destroyOnClose = { true }
 			keyboard = { true }
+			wrapClassName={`${themeMode} input-sort-modal`}
 			// footer={null}
-			// loading
 		>
 			<div>
 				<p>输入新分类标题 :</p>

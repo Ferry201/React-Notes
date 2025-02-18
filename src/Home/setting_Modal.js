@@ -1,118 +1,322 @@
 import React , {
-	useState ,
-	useRef ,
-	useEffect,
+	useState , useRef , useEffect ,
 } from 'react';
 import {
-	Modal ,
-	Input ,
-	message,
-	Radio,
-	Switch
+	Modal , Input , message , Radio , Switch , Divider,
 } from 'antd';
 import './note.css';
 
 
-const style = {
-	display: 'flex',
-	flexDirection: 'column',
-	gap: 12,
-	fontSize:20
-};
-const ThemeRadios = ({themeMode,handleSwitchThemeMode}) => {
-	const [value, setValue] = useState(themeMode);
-	const onChange = (e) => {
-		setValue(e.target.value);
-		handleSwitchThemeMode(e.target.value)
-	};
-	return (
-		<Radio.Group
-			optionType='button'
-			buttonStyle="solid"
-			style={style}
-			onChange={onChange}
-			value={value}
-			options={[
-				{
-					value: 'note-light-mode',
-					label: '白天模式',
-				},
-				{
-					value: 'note-dark-mode',
-					label: '黑夜模式',
-				},
-				{
-					value: 'auto',
-					label: '晚上20:00后自动开启黑夜模式 , 早上八点开启白天模式',
-				},
-			]}
-		/>
-	);
+const ThemeRadioStyle = {
+	display : 'flex' ,
+	flexDirection : 'column' ,
+	gap : 12 ,
+	fontSize : 20,
 };
 
-const SettingModal = ({closeModal,open,themeMode,handleSwitchThemeMode}) => {
+const ThemeRadios = ({
+	settingItems ,
+	updateNoteSettingItems,
+}) => {
+	const [value , setValue] = useState(settingItems.themeMode);
+	const [autoSwitch , setAutoSwitch] = useState(JSON.parse(localStorage.getItem('autoSwitch')) || false);
+	
+	// 自动模式逻辑
+	useEffect(() => {
+		if ( autoSwitch ) {
+			const checkTime = () => {
+				const hours = new Date().getHours();
+				const newMode = (hours >= 20 || hours < 8) ? "note-dark-mode" : "note-light-mode";
+				
+				if ( newMode !== value ) {
+					setValue(newMode);
+					updateNoteSettingItems('themeMode' , newMode);
+				}
+			};
+			
+			checkTime();
+			const interval = setInterval(checkTime , 60000); // 每分钟检查一次
+			return () => clearInterval(interval); // 卸载时清除定时器
+		}
+	} , [autoSwitch , value , updateNoteSettingItems]);
+	
+	// 用户手动切换模式（自动切换关闭）
+	const onChange = (e) => {
+		setValue(e.target.value);
+		updateNoteSettingItems('themeMode' , e.target.value);
+		
+		// 关闭自动模式
+		setAutoSwitch(false);
+		// localStorage.setItem('autoSwitch', JSON.stringify(false));
+	};
+	
+	// 开启/关闭自动模式
+	const onToggleAuto = (checked) => {
+		//antd 会在 onChange 事件触发时自动传入checked
+		setAutoSwitch(checked);
+		// localStorage.setItem('autoSwitch', JSON.stringify(checked));
+		
+		if ( checked ) {
+			// 立即触发自动模式逻辑
+			const hours = new Date().getHours();
+			const newMode = (hours >= 20 || hours < 8) ? "note-dark-mode" : "note-light-mode";
+			setValue(newMode);
+			updateNoteSettingItems('themeMode' , newMode);
+		}
+	};
+	
+	return (<div>
+			{/* 主题模式选择 */ }
+			<Radio.Group
+				optionType = "button"
+				size = "large"
+				buttonStyle = "solid"
+				style = { ThemeRadioStyle }
+				onChange = { onChange }
+				value = { value }
+				options = { [
+					{
+						value : "note-light-mode" ,
+						label : "白天模式",
+					} ,
+					{
+						value : "note-dark-mode" ,
+						label : "黑夜模式",
+					},
+				] }
+			/>
+			
+			{/* 自动切换开关 */ }
+			{/*<div style={{ marginTop: "8px" }}>*/ }
+			{/*	<label>自动切换：</label>*/ }
+			{/*	<Switch*/ }
+			{/*		checked={autoSwitch}*/ }
+			{/*		onChange={onToggleAuto}*/ }
+			{/*	/>*/ }
+			{/*</div>*/ }
+		</div>);
+};
+
+const ChangeNoteCoverMode = () => {
+	
+	return <>
+	</>;
+};
+
+
+const SettingModal = ({
+	closeModal ,
+	open ,
+	settingItems ,
+	updateNoteSettingItems ,
+}) => {
 	const [activeItem , setActiveItem] = useState('主题');
 	
-	const settingItems = ['主题' ,'笔记', '语言' , '时区' , '隐私' , '反馈'];
+	const settingItemsText = ['主题' , '笔记' , '语言' , '时区' , '隐私' , '反馈'];
 	
 	const handleOk = () => {
 		
-		handleCancel()
+		handleCancel();
 	};
 	
 	const handleCancel = () => {
-		closeModal()
+		closeModal();
 	};
 	
 	return (<>
-			<Modal
-				// title = "设置"
-				open = { open }
-				// centered
-				onOk = { handleOk }
-				onCancel = { handleCancel }
-				cancelText = "取消"
-				okText = "应用"
-				closable = { false }
-				// width = { 450 }
-				destroyOnClose = { true }
-				keyboard = { true }
-				footer={null}
-				wrapClassName='setting-modal'
-				// loading
-			>
-				<div className = "setting-modal-content">
-					<div className = "setting-sidebar">
-						{settingItems.map((item , index) => {
-							return <div
-								className = { `setting-item ${ activeItem === item ? 'active-setting-item' : '' }` }
-								key = { `setting-${ index }-${ item }` }
-								onClick={()=>{setActiveItem(item)}}
-							>{item}</div>;
-						}) }
-						
-					</div>
-					
-					<div className = "setting-panel">
-						{ activeItem === '主题' && <ThemeRadios themeMode={themeMode} handleSwitchThemeMode={handleSwitchThemeMode}/> }
-						{ activeItem === '笔记' && <div><p>开启无封面模式</p><Switch defaultChecked = { false } /></div> }
-						{ activeItem === '反馈' && <div>
-							亲爱的用户 :
-							<br />
-							如果您在使用笔记本软件的过程中有任何建议或发现了任何问题与 bug，欢迎随时反馈给我们。
-							<br />
-							我们会认真查看并不断优化，为您提供更好的体验。
-							<FeedbackContent/>
-						</div> }
-						
-						
-					</div>
+		<Modal
+			// title = "设置"
+			open = { open }
+			// centered
+			onOk = { handleOk }
+			onCancel = { handleCancel }
+			cancelText = "取消"
+			okText = "应用"
+			closable = { false }
+			// width = { 450 }
+			destroyOnClose = { true }
+			keyboard = { true }
+			footer = { null }
+			wrapClassName = { `setting-modal ${ settingItems.themeMode }` }
+			// loading
+		>
+			<div className = "setting-modal-content">
+				<div className = "setting-sidebar">
+					{ settingItemsText.map((item , index) => {
+						return <div
+							className = { `setting-item ${ activeItem === item ? 'active-setting-item' : '' }` }
+							key = { `setting-${ index }-${ item }` }
+							onClick = { () => {
+								setActiveItem(item);
+							} }
+						>{ item }</div>;
+					}) }
 				
 				</div>
-			</Modal>
+				
+				<div className = "setting-panel">
+					{ activeItem === '主题' && <div className = "theme-mode-radios"><ThemeRadios
+						settingItems = { settingItems }
+						updateNoteSettingItems = { updateNoteSettingItems }
+					/>
+						{/*<p>晚上20点后自动开启黑夜模式 , 早上8点开启白天模式</p>*/ }
+					</div> }
+					{ activeItem === '笔记' && <NoteDisplaySetting
+						updateNoteSettingItems = { updateNoteSettingItems }
+						settingItems = { settingItems }
+					/> }
+					{ activeItem === '反馈' && <div>
+						亲爱的用户 :
+						<br />
+						如果您在使用笔记本软件的过程中有任何建议或发现了任何问题与 bug，欢迎随时反馈给我们。
+						<br />
+						我们会认真查看并不断优化，为您提供更好的体验。
+						<FeedbackContent />
+					</div> }
+				
+				
+				</div>
+			
+			</div>
+		</Modal>
 	</>);
 };
 
+const NoteDisplaySetting = ({
+	settingItems ,
+	updateNoteSettingItems ,
+}) => {
+	const [listGapselected , setListGapSelected] = useState(settingItems.listModeGap);
+	const [cardColumnSelected , setCardColumnSelected] = useState(settingItems.cardModeColumn);
+	const [gridColumnSelected , setGridColumnSelected] = useState(settingItems.gridModeColumn);
+	const [switchCoverMode , setSwitchCoverMode] = useState(settingItems.coverMode);
+	
+	const listGapRadioChange=(value)=>{
+		setListGapSelected(value)
+		updateNoteSettingItems('listModeGap',value)
+	}
+	
+	const cardColumnRadioChange=(value)=>{
+		setCardColumnSelected(value)
+		updateNoteSettingItems('cardModeColumn',value)
+	}
+	
+	const gridColumnRadioChange=(value)=>{
+		setGridColumnSelected(value)
+		updateNoteSettingItems('gridModeColumn',value)
+	}
+	const handleSwitchCoverMode=(checked)=>{
+		setSwitchCoverMode(checked);
+		updateNoteSettingItems('coverMode',checked)
+	}
+	return <div>
+		<div className = "open-no-cover-mode">
+			<span>
+				{/*{ !settingItems.coverMode ? <span>开启</span> : <span>关闭</span> }*/}
+				<span>笔记本无封面模式</span>
+			</span>
+			<Switch
+				defaultChecked = { switchCoverMode }
+				className = "open-no-cover-mode-radio"
+				onChange={handleSwitchCoverMode}
+			/></div>
+		{/*<p>笔记布局配置</p>*/ }
+		<Divider />
+		
+		<p>列表模式间距</p>
+		<div>
+			<ButtonRadio
+				options = { [
+					{
+						label : "紧凑" ,
+						value : "condensed",
+					} ,
+					{
+						label : "适中" ,
+						value : "comfy",
+					} ,
+					{
+						label : "宽松" ,
+						value : "expanded",
+					},
+				] }
+				value = { listGapselected }
+				onChange = { listGapRadioChange }
+			/>
+		</div>
+		<Divider />
+		
+		<p>卡片模式列数</p>
+		<div>
+			<ButtonRadio
+				options = { [
+					{
+						label : "2列" ,
+						value : "cardTwoColumn",
+					} ,
+					{
+						label : "3列" ,
+						value : "cardThreeColumn",
+					} ,
+					{
+						label : "4列" ,
+						value : "cardFourColumn",
+					} ,
+					{
+						label : "5列" ,
+						value : "cardFiveColumn",
+					} ,
+				] }
+				value = { cardColumnSelected }
+				onChange = { cardColumnRadioChange }
+			/>
+		</div>
+		<Divider />
+		<p>宫格模式列数</p>
+		<div>
+			<ButtonRadio
+				options = { [
+					{
+						label : "2列" ,
+						value : "gridTwoColumn",
+					} ,
+					{
+						label : "3列" ,
+						value : "gridThreeColumn",
+					} ,
+					{
+						label : "4列" ,
+						value : "gridFourColumn",
+					} ,
+					{
+						label : "5列" ,
+						value : "gridFiveColumn",
+					} ,
+				] }
+				value = { gridColumnSelected }
+				onChange = { gridColumnRadioChange }
+			/>
+		</div>
+	</div>;
+};
+
+const ButtonRadio = ({
+	options ,
+	value ,
+	onChange ,
+}) => {
+	return (<div className = "display-radio-group">
+		{ options.map((option) => (<label
+			key = { option.value }
+			className = { `display-radio-btn ${ value === option.value ? "selected-display-radio" : "" }` }
+			onClick = { () => {
+				onChange(option.value);
+			} }
+		>
+			{ option.label }
+		</label>)) }
+	</div>);
+};
 
 const FeedbackContent = () => {
 	const [copySuccuess , setCopySuccess] = useState(false);
@@ -131,15 +335,20 @@ const FeedbackContent = () => {
 	return <div>
 		<p>反馈请发送到以下邮箱:</p>
 		<p>liqunzhang3@gmail.com</p>
-		{ copySuccuess ? <div className='feedback-copy-button'>
-			<CopySuccessIcon />
-			<span>已复制</span>
-		</div> : <div onClick = { handleCopyEmail } className='feedback-copy-button'>
+		{ copySuccuess ?
+		  <div className = "feedback-copy-button">
+			  <CopySuccessIcon />
+			  <span>已复制</span>
+		  </div> :
+		  <div
+			  onClick = { handleCopyEmail }
+			  className = "feedback-copy-button"
+		  >
 			  <CopyEmailIcon />
 			  <span>复制邮箱</span>
 		  </div> }
-	</div>
-}
+	</div>;
+};
 const FeedbackIcon = () => {
 	return <svg
 		style = { { marginLeft : '16px' } }

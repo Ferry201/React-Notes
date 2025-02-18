@@ -4,7 +4,7 @@ import 'rc-tabs/assets/index.css';
 import {
 	message ,
 	Modal ,
-	Divider,
+	Divider ,
 } from 'antd';
 import { ExclamationCircleFilled } from '@ant-design/icons';
 import isEqual from 'lodash/isEqual';
@@ -13,7 +13,7 @@ import { NoteManagePanel } from '@src/Home/note-manage-panel';
 import { v4 as uuidv4 } from 'uuid';
 import coverDefault from "@src/Home/img-collection/cover-default.png";
 import dayjs from "dayjs";
-import { AddNewNoteModal } from '../RichTextEditor/RichTextEditor';
+import RichTextEditor , { AddNewNoteModal } from '../RichTextEditor/RichTextEditor';
 import { NoteBookModal } from "@src/Home/addNoteBook_Model";
 import { InputNewSortModal } from "@src/Home/inputNewSort_Modal";
 import { SettingModal } from './setting_Modal';
@@ -28,7 +28,7 @@ const defaultNotebook = {
 	createdTime : dayjs().valueOf() ,
 	showMode : 'list-mode' ,//当前笔记显示模式
 	currentTheme : 'blue-theme' ,//列表主题,类名
-	belongSortID:'default-sort-id',
+	belongSortID : 'default-sort-id' ,
 };
 
 class NotesApp extends Component {
@@ -53,7 +53,7 @@ class NotesApp extends Component {
 			showSearchResults : false ,
 			showRecycleNotes : false ,
 			currentSortId : null ,
-			themeMode : 'note-light-mode',
+			settingItems : {} ,
 		};
 	}
 	
@@ -63,8 +63,8 @@ class NotesApp extends Component {
 			noteBookData ,
 			currentNotebook ,
 			activeModal ,
-			searchKeyword,
-			allSorts
+			searchKeyword ,
+			allSorts,
 		} = this.state;
 		
 		const getFilteredNotes = () => {
@@ -102,7 +102,7 @@ class NotesApp extends Component {
 		}
 		
 		let allNotebooks = [...noteBookData];
-		allNotebooks = allNotebooks.filter(notebook => notebook.id !== 'favorites-notes-id' && notebook.id !== 'searchResults-notes-id' && notebook.id !== 'recycle-notes-id',
+		allNotebooks = allNotebooks.filter(notebook => notebook.id !== 'favorites-notes-id' && notebook.id !== 'searchResults-notes-id' && notebook.id !== 'recycle-notes-id' ,
 		);
 		
 		if ( activeModal === 'deleteSortConfirm' && allSorts.length === 1 ) {
@@ -126,10 +126,15 @@ class NotesApp extends Component {
 				currentNotebook : prevNotebook ,
 			});
 		}
+		
+		if ( prevState.settingItems.themeMode !== this.state.settingItems.themeMode ) {
+			document.body.className = this.state.settingItems.themeMode;
+		}
 	}
 	
 	
 	componentDidMount () {
+		document.body.className = this.state.settingItems.themeMode;
 		const storedNoteData = JSON.parse(localStorage.getItem('note-info-array')) || [];
 		const currentNotes = storedNoteData.filter(note => note.notebookID === this.state.currentNotebook.id);
 		this.setState({
@@ -165,18 +170,38 @@ class NotesApp extends Component {
 			this.setState({ noteBookData : JSON.parse(storedNoteBooks) });
 		}
 		
-		const storedAllSorts =localStorage.getItem('all-sorts');
+		const storedAllSorts = localStorage.getItem('all-sorts');
 		if ( storedAllSorts === null ) {
 			// 更新组件状态
 			this.handleAddNewSort({
-				title :'默认分类' ,
+				title : '默认分类' ,
 				id : 'default-sort-id' ,
-				isCollapse : false,
+				isCollapse : false ,
 			});
 		} else {
 			// 如果有数据，从 localStorage 中加载
 			this.setState({ allSorts : JSON.parse(storedAllSorts) });
 		}
+		
+		const storedSetting = localStorage.getItem('setting-items');
+		if (!storedSetting) {
+			const defaultSetting = {
+				themeMode: 'note-light-mode',
+				autoSwitch: false,
+				coverMode: false,
+				language: 'chinese',
+				listModeGap:'comfy',
+				cardModeColumn:'cardTwoColumn',
+				gridModeColumn:'gridTwoColumn',
+			};
+			this.setState({ settingItems: defaultSetting }, () => {
+				localStorage.setItem('setting-items', JSON.stringify(defaultSetting));
+			});
+		} else {
+				const parsedSetting = JSON.parse(storedSetting);
+				this.setState({ settingItems: parsedSetting });
+		}
+		
 		
 		if ( this.state.currentNotebook.id !== 'searchResults-notes-id' ) {
 			this.setState({
@@ -384,7 +409,7 @@ class NotesApp extends Component {
 				return {
 					...note ,
 					notebookID : notebook.id ,
-					notebook : notebook.title,
+					notebook : notebook.title ,
 				};
 			}
 			return note;
@@ -411,7 +436,7 @@ class NotesApp extends Component {
 			];
 			return {
 				noteBookData : updatedNotebooks ,
-				currentSortId : null,
+				currentSortId : null ,
 			};
 		} , () => {
 			localStorage.setItem('notebook-array' , JSON.stringify(this.state.noteBookData));
@@ -493,6 +518,7 @@ class NotesApp extends Component {
 			currentNotebook.id ,
 			'favorites-notes-id' ,
 			'searchResults-notes-id' ,
+			'recycle-notes-id' ,
 		];
 		updatedNotebooks = updatedNotebooks.filter((notebook) => !filteredNotebooksID.includes(notebook.id));
 		let newCurrentNotebook = null;
@@ -668,7 +694,7 @@ class NotesApp extends Component {
 	handleRecoverDeletedNote = () => {
 		const {
 			noteListData ,
-			currentID,
+			currentID ,
 		} = this.state;
 		let newNoteList = [...noteListData];
 		newNoteList = newNoteList.map(note => {
@@ -709,11 +735,11 @@ class NotesApp extends Component {
 		});
 	};
 	//点击添加新笔记本
-	handleClickAddNotebook=(id)=>{
+	handleClickAddNotebook = (id) => {
 		this.setState({ currentSortId : id } , () => {
 			this.handleOpenModal('addNotebook');
 		});
-	}
+	};
 	//点击删除分类 
 	handleClickDeleteSort = (id) => {
 		this.setState({ currentSortId : id } , () => {
@@ -721,28 +747,28 @@ class NotesApp extends Component {
 		});
 	};
 	//点击重命名
-	handleClickRenameSort=(id)=>{
-		this.setState({ currentSortId : id })
-	}
+	handleClickRenameSort = (id) => {
+		this.setState({ currentSortId : id });
+	};
 	//重命名分类
 	handlerenameSort = (newTitle) => {
 		const {
 			allSorts ,
-			currentSortId,
+			currentSortId ,
 		} = this.state;
 		let newSorts = [...allSorts];
 		newSorts = newSorts.map(sort => {
 			if ( sort.id === currentSortId ) {
 				return {
 					...sort ,
-					title : newTitle,
+					title : newTitle ,
 				};
 			}
 			return sort;
 		});
 		this.setState({
 			allSorts : newSorts ,
-			currentSortId : null,
+			currentSortId : null ,
 		} , () => {
 			localStorage.setItem('all-sorts' , JSON.stringify(newSorts));
 		});
@@ -760,53 +786,55 @@ class NotesApp extends Component {
 		this.setState({
 			allSorts : newSorts ,
 			currentSortId : null ,
-			noteBookData:newNotebooks,
+			noteBookData : newNotebooks ,
 		} , () => {
 			localStorage.setItem('all-sorts' , JSON.stringify(newSorts));
 			localStorage.setItem('notebook-array' , JSON.stringify(newNotebooks));
 		});
 	};
-	handleClickCollapse=(id)=>{
+	handleClickCollapse = (id) => {
 		this.setState({ currentSortId : id } , () => {
 			this.handleCollapseSort(id);
 		});
-	}
+	};
 	//折叠分类
-	handleCollapseSort=(id)=>{
+	handleCollapseSort = (id) => {
 		const {
 			allSorts ,
-			currentSortId,
+			currentSortId ,
 		} = this.state;
 		let newSorts = [...allSorts];
 		newSorts = newSorts.map(sort => {
 			if ( sort.id === currentSortId ) {
 				return {
 					...sort ,
-					isCollapse : !sort.isCollapse,
+					isCollapse : !sort.isCollapse ,
 				};
 			}
 			return sort;
 		});
 		this.setState({
 			allSorts : newSorts ,
-			currentSortId : null,
+			currentSortId : null ,
 		} , () => {
 			localStorage.setItem('all-sorts' , JSON.stringify(newSorts));
 		});
-	}
+	};
 	
 	getRandomTheme = () => {
 		const themes = [
-			'blue-theme' , 'purple-theme' , 'red-theme' , 'green-theme' , 'gray-theme' , 'orange-theme' , 'pink-theme' ,'yellow-theme',
+			'blue-theme' , 'purple-theme' , 'red-theme' , 'green-theme' , 'gray-theme' , 'orange-theme' , 'pink-theme' , 'yellow-theme' ,
 		];
-		const randomIndex = Math.floor(Math.random() * themes.length); 
-		return themes[randomIndex]; 
+		const randomIndex = Math.floor(Math.random() * themes.length);
+		return themes[randomIndex];
 	};
-	handleSwitchThemeMode = (mode) => {
-		this.setState({
-			themeMode : mode,
-		},()=>{
-			this.state.themeMode
+	
+	updateNoteSettingItems = (key , value) => {
+		const { settingItems } = this.state;
+		let newSettingItems = { ...settingItems };
+		newSettingItems[key] = value;
+		this.setState({ settingItems : newSettingItems } , () => {
+			localStorage.setItem('setting-items' , JSON.stringify(newSettingItems));
 		});
 	};
 	
@@ -826,17 +854,17 @@ class NotesApp extends Component {
 				currentNotebook = { this.state.currentNotebook }
 				setSearchKeyword = { this.setSearchKeyword }
 				clickRecycleBin = { this.handleClickRecycleBin }
-				sorts={this.state.allSorts}
-				handleClickDeleteSort={this.handleClickDeleteSort}
-				handleClickAddNotebook={this.handleClickAddNotebook}
-				handleClickRenameSort={this.handleClickRenameSort}
-				renameSort={this.handlerenameSort}
-				currentSortId={this.state.currentSortId}
-				handleClickCollapse={this.handleClickCollapse}
-				themeMode={this.state.themeMode}
+				sorts = { this.state.allSorts }
+				handleClickDeleteSort = { this.handleClickDeleteSort }
+				handleClickAddNotebook = { this.handleClickAddNotebook }
+				handleClickRenameSort = { this.handleClickRenameSort }
+				renameSort = { this.handlerenameSort }
+				currentSortId = { this.state.currentSortId }
+				handleClickCollapse = { this.handleClickCollapse }
+				settingItems = { this.state.settingItems }
 			/>
 			<NoteManagePanel
-				themeMode={this.state.themeMode}
+				settingItems = { this.state.settingItems }
 				noteList = { this.state.noteListData }
 				notebooks = { this.state.noteBookData }
 				onChangeNote = { this.handleChangeNote }
@@ -856,9 +884,8 @@ class NotesApp extends Component {
 				isShowSearchResults = { this.state.showSearchResults }
 				handleMoveNote = { this.handleMoveNote }
 				isShowRecycleNotes = { this.state.showRecycleNotes }
-				sorts={this.state.allSorts}
+				sorts = { this.state.allSorts }
 			/>
-			
 			
 			
 			{/*添加新笔记note*/ }
@@ -870,113 +897,112 @@ class NotesApp extends Component {
 				initialTitle = { this.state.currentNoteTitle }
 				initialContent = { this.state.currentContent }
 				currentNotebook = { this.state.currentNotebook }
-				themeMode={this.state.themeMode}
+				settingItems = { this.state.settingItems }
 				keyword = { this.state.searchKeyword }
-				
+			
 			/> }
 			
 			
 			{/*添加笔记本 Modal*/ }
-				{ this.state.activeModal === 'addNotebook' && (<NoteBookModal
-					showTitleInput = { true }
-					onOk = { ({
+			{ this.state.activeModal === 'addNotebook' && (<NoteBookModal
+				showTitleInput = { true }
+				onOk = { ({
+					title ,
+					cover ,
+				}) => {
+					const newNoteBook = {
 						title ,
 						cover ,
-					}) => {
-						const newNoteBook = {
-							title ,
-							cover ,
-							id : uuidv4() ,
-							createdTime : dayjs().valueOf() ,
-							showMode : 'list-mode' ,
-							currentTheme : this.getRandomTheme() ,
-							belongSortID:this.state.currentSortId,
-						};
-						this.addNoteBook(newNoteBook);
-					} }
-					closeModal = { this.handleCloseModal }
-					open = { this.state.isModalOpen }
-				/>) }
-				
-				{/*修改笔记本封面 Modal*/ }
-				{ this.state.activeModal === 'changeCover' && (<NoteBookModal
-					showTitleInput = { false }
-					onOk = { ({ cover }) => {
-						this.updateNotebookInfo('cover' , cover);
-					} }
-					closeModal = { this.handleCloseModal }
-					open = { this.state.isModalOpen }
-				/>) }
-				
-				{/*设置Modal*/ }
-				{ this.state.activeModal === 'settingModal' && (<SettingModal
-					closeModal = { this.handleCloseModal }
-					open = { this.state.isModalOpen }
-					themeMode={this.state.themeMode}
-					handleSwitchThemeMode={this.handleSwitchThemeMode}
-				/>) }
-				
-				
-				{/*添加新分类Modal*/ }
-				{ this.state.activeModal === 'InputNewSortModal' && (<InputNewSortModal
-					closeModal = { this.handleCloseModal }
-					open = { this.state.isModalOpen }
-					onOk={this.handleAddNewSort}
-				/>) }
-				
-				
-				
-				{/*  删除分类确认框*/ }
-				{ this.state.activeModal === 'deleteSortConfirm' && this.state.allSorts.length!==1?(useConfirmDialog(
-					'确定删除该分类及属于该分类的笔记本吗?' ,
-					'此操作会永久删除该分类及笔记本' ,
+						id : uuidv4() ,
+						createdTime : dayjs().valueOf() ,
+						showMode : 'list-mode' ,
+						currentTheme : this.getRandomTheme() ,
+						belongSortID : this.state.currentSortId ,
+					};
+					this.addNoteBook(newNoteBook);
+				} }
+				closeModal = { this.handleCloseModal }
+				open = { this.state.isModalOpen }
+			/>) }
+			
+			{/*修改笔记本封面 Modal*/ }
+			{ this.state.activeModal === 'changeCover' && (<NoteBookModal
+				showTitleInput = { false }
+				onOk = { ({ cover }) => {
+					this.updateNotebookInfo('cover' , cover);
+				} }
+				closeModal = { this.handleCloseModal }
+				open = { this.state.isModalOpen }
+			/>) }
+			
+			{/*设置Modal*/ }
+			{ this.state.activeModal === 'settingModal' && (<SettingModal
+				closeModal = { this.handleCloseModal }
+				open = { this.state.isModalOpen }
+				settingItems = { this.state.settingItems }
+				updateNoteSettingItems = { this.updateNoteSettingItems }
+			/>) }
+			
+			
+			{/*添加新分类Modal*/ }
+			{ this.state.activeModal === 'InputNewSortModal' && (<InputNewSortModal
+				closeModal = { this.handleCloseModal }
+				open = { this.state.isModalOpen }
+				onOk = { this.handleAddNewSort }
+			/>) }
+			
+			
+			{/*  删除分类确认框*/ }
+			{ this.state.activeModal === 'deleteSortConfirm' && this.state.allSorts.length !== 1 ? (useConfirmDialog(
+				'确定删除该分类及属于该分类的笔记本吗?' ,
+				'此操作会永久删除该分类及笔记本' ,
+				this.state.isModalOpen ,
+				() => {
+					this.handleDeleteSort(this.state.currentSortId);
+					this.handleCloseModal();
+				} ,
+				this.handleCloseModal ,
+				'danger',
+			)) : null }
+			
+			{/*  删除笔记本确认框*/ }
+			{ this.state.activeModal === 'deleteConfirm' && allNotebooks.length !== 1 ? (useConfirmDialog(
+					(<div>确定删除笔记本: <span className = "delete-confirm-title">{ this.state.currentNotebook.title }</span>吗? </div>) ,
+					(<div>此操作将永久删除该笔记本及该笔记本中所有笔记</div>) ,
 					this.state.isModalOpen ,
 					() => {
-						this.handleDeleteSort(this.state.currentSortId);
-						this.handleCloseModal();
-					} ,
-					this.handleCloseModal,
-					'danger'
-				)):null }
-				
-				{/*  删除笔记本确认框*/ }
-				{ this.state.activeModal === 'deleteConfirm' && allNotebooks.length !== 1 ? (useConfirmDialog(
-						(<div>确定删除笔记本: <span className = "delete-confirm-title">{ this.state.currentNotebook.title }</span>吗? </div>) ,
-						(<div>此操作将永久删除该笔记本及该笔记本中所有笔记</div>) ,
-						this.state.isModalOpen ,
-						() => {
-							this.deleteNotebook();
-							this.handleCloseModal();
-						} ,
-						this.handleCloseModal ,
-						"danger" )
-				) : null }
-				
-				{/*  恢复删除笔记确认框*/ }
-				{ this.state.activeModal === 'recoverConfirm' && useConfirmDialog(
-					'回收站的笔记不可编辑' ,
-					'恢复后可进行编辑 , 确定恢复已删除的笔记吗?' ,
-					this.state.isModalOpen ,
-					() => {
-						this.handleRecoverDeletedNote();
-						this.handleCloseModal();
-					} ,
-					this.handleCloseModal,
-				) }
-				
-				{/*  清空回收站确认框*/ }
-				{ this.state.activeModal === 'clearRecycleConfirm' && useConfirmDialog(
-					'确定清空回收站吗?' ,
-					'此操作会永久删除回收站内的笔记' ,
-					this.state.isModalOpen ,
-					() => {
-						this.handleClearRecycleBin();
+						this.deleteNotebook();
 						this.handleCloseModal();
 					} ,
 					this.handleCloseModal ,
-					'danger' ,
-				) }
+					"danger")
+			) : null }
 			
+			{/*  恢复删除笔记确认框*/ }
+			{ this.state.activeModal === 'recoverConfirm' && useConfirmDialog(
+				'回收站的笔记不可编辑' ,
+				'恢复后可进行编辑 , 确定恢复已删除的笔记吗?' ,
+				this.state.isModalOpen ,
+				() => {
+					this.handleRecoverDeletedNote();
+					this.handleCloseModal();
+				} ,
+				this.handleCloseModal ,
+			) }
+			
+			{/*  清空回收站确认框*/ }
+			{ this.state.activeModal === 'clearRecycleConfirm' && useConfirmDialog(
+				'确定清空回收站吗?' ,
+				'此操作会永久删除回收站内的笔记' ,
+				this.state.isModalOpen ,
+				() => {
+					this.handleClearRecycleBin();
+					this.handleCloseModal();
+				} ,
+				this.handleCloseModal ,
+				'danger' ,
+			) }
+		
 		
 		</div>;
 	}

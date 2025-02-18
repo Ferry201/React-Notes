@@ -64,13 +64,16 @@ const RenderContent = ({
 	isShowSearchResults,
 	handleMoveNote,
 	isShowRecycleNotes,
-	themeMode,
+	settingItems,
 }) => {
 	const inputAddNoteRef = React.useRef();
 	const wrapperRef = React.useRef();
 	
 	const [contents , setContents] = useState([]);
 	const [isExpandNoteEditSection , setIsExpandNoteEditSection] = useState(false);
+	const [listGap , setListGap] = useState('');
+	const [cardModeColumn , setCardModeColumn] = useState('');
+	const [gridModeColumn , setGridModeColumn] = useState('');
 	
 	let notebooksArray=notebooks;
 	let notes = noteList;
@@ -128,6 +131,31 @@ const RenderContent = ({
 		
 		setContents(filteredNotes);
 	} , [currentNotebook , notes , keyword]);
+	
+	useEffect(() => {
+		const gapMap = {
+			comfy : '16px' ,
+			condensed : '6px' ,
+			expanded : '30px',
+		};
+		setListGap(gapMap[settingItems.listModeGap] || '')
+		
+		const cardModeColumnMap={
+			cardTwoColumn:'repeat(2, minmax(0,1fr))',
+			cardThreeColumn:'repeat(3, minmax(0,1fr))',
+			cardFourColumn:'repeat(4, minmax(0,1fr))',
+			cardFiveColumn:'repeat(5, minmax(0,1fr))',
+		}
+		setCardModeColumn(cardModeColumnMap[settingItems.cardModeColumn]||'')
+		
+		const gridModeColumnMap={
+			gridTwoColumn:'note-grid-mode-2-columns',
+			gridThreeColumn:'note-grid-mode-3-columns',
+			gridFourColumn:'note-grid-mode-4-columns',
+			gridFiveColumn:'note-grid-mode-5-columns',
+		}
+		setGridModeColumn(gridModeColumnMap[settingItems.gridModeColumn]||'')
+	} , [settingItems]);
 	
 	
 	useEffect(() => {
@@ -225,7 +253,7 @@ const RenderContent = ({
 						  text={noteTitle}
 						  keyword={keyword}
 						  maxLength={30}
-						  themeMode={themeMode}
+						  themeMode={settingItems.themeMode}
 					  /> :
 					  noteTitle }
 				</span> }
@@ -235,7 +263,7 @@ const RenderContent = ({
 						 text = { convertFromRaw(noteContent).getPlainText() }
 						 keyword = { keyword }
 						 maxLength={50}
-						 themeMode={themeMode}
+						 themeMode={settingItems.themeMode}
 					 /> :
 					 convertFromRaw(noteContent).getPlainText()}
 				</span>
@@ -282,7 +310,7 @@ const RenderContent = ({
 							onConfirm = { () => {
 								onDeleteNote(id);
 							} }
-							getPopupContainer = { (triggerNode) => triggerNode.parentElement }
+							// getPopupContainer = { (triggerNode) => triggerNode.parentElement }
 						>
 							<div>
 								<DeleteIcon />
@@ -300,7 +328,7 @@ const RenderContent = ({
 			return <>
 				{ pinnedNotes.length > 0 && <>
 					{ !showFavoritesOrSearchResults && <p className = "note-list-sub-title">已置顶</p> }
-					<div className = "note-card-mode">
+					<div className = "note-card-mode" style={{gridTemplateColumns:cardModeColumn}}>
 						{ pinnedNotes.map(({
 							id ,
 							noteContent ,
@@ -326,7 +354,7 @@ const RenderContent = ({
 				
 				{  !showFavoritesOrSearchResults && <>{ otherNotes.length > 0 && <>
 					{ pinnedNotes.length > 0 && <p className = "note-list-sub-title">其他</p> }
-					<div className = "note-card-mode">
+					<div className = "note-card-mode" style={{gridTemplateColumns:cardModeColumn}}>
 						{ otherNotes.map(({
 							id ,
 							noteContent ,
@@ -354,12 +382,13 @@ const RenderContent = ({
 		}
 	}
 	
+	
 	class UlMode extends Component {
 		render () {
 			return <>
 				{ pinnedNotes.length > 0 && <>
 					{ !showFavoritesOrSearchResults && <p className = "note-list-sub-title">已置顶</p> }
-					<div className = "note-ul-mode">
+					<div className = "note-ul-mode" style={{gap:listGap}}>
 						{ pinnedNotes.map(({
 							id ,
 							noteContent ,
@@ -385,7 +414,7 @@ const RenderContent = ({
 				
 				{ !showFavoritesOrSearchResults && <>{ otherNotes.length > 0 && <>
 					{ pinnedNotes.length > 0 && <p className = "note-list-sub-title">其他</p> }
-					<div className = "note-ul-mode">
+					<div className = "note-ul-mode" style={{gap:listGap}}>
 						{ otherNotes.map(({
 							id ,
 							noteContent ,
@@ -427,7 +456,7 @@ const RenderContent = ({
 					itemSelector : '.note-grid-mode-item' , // grid-item 选择器
 					columnWidth : '.note-grid-mode-item' , // 每个 item 的宽度
 					percentPosition : true , // 设置百分比定位
-					gutter : 12 , // 设置间距
+					gutter : 16 , // 设置间距
 				});
 			}
 			if ( this.gridRefOther.current ) {
@@ -435,7 +464,7 @@ const RenderContent = ({
 					itemSelector : '.note-grid-mode-item' ,
 					columnWidth : '.note-grid-mode-item' ,
 					percentPosition : true ,
-					gutter : 12 ,
+					gutter : 16 ,
 				});
 			}
 		}
@@ -466,7 +495,7 @@ const RenderContent = ({
 				{ pinnedNotes.length > 0 && (<>
 					{ !showFavoritesOrSearchResults && <p className = "note-list-sub-title">已置顶</p> }
 					<div
-						className = "note-grid-mode"
+						className = { `note-grid-mode ${gridModeColumn}`}
 						ref = { this.gridRefPinned }
 					>
 						{ pinnedNotes.map(({
@@ -495,7 +524,7 @@ const RenderContent = ({
 					{ pinnedNotes.length > 0 && <p className = "note-list-sub-title">其他</p> }
 					
 					<div
-						className = "note-grid-mode"
+						className = { `note-grid-mode ${gridModeColumn}`}
 						ref = { this.gridRefOther }
 					>
 						{ otherNotes.map(({
@@ -536,6 +565,7 @@ const RenderContent = ({
 		
 		return <>
 			{ otherNotebooks.length !== 0 ? <Popover
+				zIndex={100}
 				destroyTooltipOnHide = { true }
 				content = { <MoveNoteContent
 					id = { id }
@@ -544,7 +574,7 @@ const RenderContent = ({
 				placement = "rightBottom"
 				trigger = "click"
 				overlayClassName = "notebooks-popover"
-				getPopupContainer = { (triggerNode) => triggerNode.parentElement }
+				// getPopupContainer = { (triggerNode) => triggerNode.parentElement }
 			>
 				<div><MoveNoteToOtherBook otherNotebooks = { otherNotebooks } /></div>
 			</Popover> : <div><MoveNoteToOtherBook otherNotebooks = { otherNotebooks } /></div> }
@@ -633,7 +663,7 @@ const RenderContent = ({
 						openModal = { openModal }
 						cancelExpandNoteEditSection = { handleCancelEdit }
 						changeNoteEdit = { changeNote }
-						themeMode={themeMode}
+						settingItems={settingItems}
 					/>
 				</div>
 				<div className = "edit-item-cancel-button">
@@ -648,7 +678,7 @@ const RenderContent = ({
 			  /> }
 		</div> }
 		
-		{ contents.length === 0 ? (<div className = {`empty-container ${currentNotebook.currentTheme}`}>
+		{ contents.length === 0 ? (<div className = {`empty-container`}>
 			<EmptyIcon />
 			{ isShowFavoritesNotes ? <p>收藏夹空空如也</p>:
 			  showSearchResults?<p>没有找到匹配的笔记</p> :
@@ -804,7 +834,7 @@ const PinNoteIcon = ({
 }) => {
 	const [pin , setPin] = useState(isPinned); // 本地状态，初始化为 isPinned
 	return <div>
-		<Tooltip title='置顶' arrow={false} placement='bottom'>
+		<Tooltip title={pin?'取消置顶':'置顶'} arrow={false} placement='bottom'>
 			<div
 				className = "note-buttons-common"
 				onClick = { () => {
@@ -868,7 +898,6 @@ const MoveNoteToOtherBook=({otherNotebooks})=>{
 const CancelEditIcon = ({ handleCancel }) => {
 	return <>
 		<Tooltip
-			color='gray'
 			title = "取消编辑"
 			placement = "bottom"
 			zIndex = "1"

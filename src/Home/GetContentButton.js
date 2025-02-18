@@ -13,6 +13,7 @@ const GetContentButton = forwardRef((props , ref) => {
 	} = props;
 	
 	const storeContent = () => {
+		
 		const contentState = editorState.getCurrentContent();
 		const rawContentState = convertToRaw(contentState);
 		let allEmpty = true;
@@ -22,7 +23,7 @@ const GetContentButton = forwardRef((props , ref) => {
 				break;
 			}
 		}
-		if ( allEmpty === true ) {
+		if ( allEmpty === true && noteTitle==='') {
 			message.error('不能输入空笔记');
 			return;
 		}

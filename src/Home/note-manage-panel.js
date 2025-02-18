@@ -1,11 +1,12 @@
-import React , { Component } from 'react';
+import React , { Component ,useState} from 'react';
 import { Reaxlass , reaxper } from 'reaxes-react';
 import { reaxel_sider } from '@src/Home/sider.reaxel';
-import { Modal , Dropdown , Space , Tooltip ,Popover} from 'antd';
+import { Modal , Dropdown , Space , Tooltip , Popover , Menu , Button , message } from 'antd';
 import { ExclamationCircleFilled } from '@ant-design/icons';
 import RenderContent from '@src/Home/renderContent';
 import './note.css';
 import dayjs from "dayjs";
+import { divide } from "lodash/math";
 
 @reaxper
 class NoteManagePanel extends Reaxlass {
@@ -35,9 +36,9 @@ class NoteManagePanel extends Reaxlass {
 		}
 	}
 	
-	
 	generateNoteFeaturesMenu = () => {
 		const otherSorts = this.props.sorts.filter(sort => sort.id !== this.props.currentNotebook.belongSortID);
+	
 		return [
 			{
 				label : <div>重命名</div> ,
@@ -47,18 +48,20 @@ class NoteManagePanel extends Reaxlass {
 				label : <div>换封面</div> ,
 				key : 'change-cover' ,
 			} ,
-			{
-				label : <div>置顶笔记本</div> ,
-				key : 'pinned-notebook' ,
-			} ,
+			// {
+			// 	label : <div>置顶笔记本</div> ,
+			// 	key : 'pinned-notebook' ,
+			// } ,
 			{
 				label : <div>移动到其他分类</div> ,
 				key : 'move-other-sort' ,
 				children : otherSorts.map(sort =>
 					({
-						label : <div onClick={()=>{
-							this.props.updateNotebookInfo('belongSortID',sort.id)
-						}}>{ sort.title }</div> ,
+						label : <div
+							onClick = { () => {
+								this.props.updateNotebookInfo('belongSortID' , sort.id);
+							} }
+						>{ sort.title }</div> ,
 						key : sort.id ,
 					}) ,
 				) ,
@@ -103,25 +106,27 @@ class NoteManagePanel extends Reaxlass {
 	};
 	// 重命名笔记本
 	renameNotebookTitle = (e) => {
-		const newTitle = e.target.value;
-		this.props.updateNotebookInfo('title' , newTitle);
+		if(e.target.value){
+			const newTitle = e.target.value;
+			this.props.updateNotebookInfo('title' , newTitle);
+		}
 	};
 	handleBlur = (e) => {
-		this.setState({
-			isRenaming : false ,
-			title : e.target.value ,
-		} , () => {
-			this.renameNotebookTitle(e);
-		});
-	};
-	handleKeyDown = (e) => {
-		if ( e.key === 'Enter' ) {
+		if(e.target.value){
 			this.setState({
 				isRenaming : false ,
 				title : e.target.value ,
 			} , () => {
 				this.renameNotebookTitle(e);
 			});
+		}else {
+			message.warning('不能输入空标题')
+		}
+		
+	};
+	handleKeyDown = (e) => {
+		if ( e.key === 'Enter' ) {
+			this.handleBlur(e)
 		}
 	};
 	
@@ -147,7 +152,7 @@ class NoteManagePanel extends Reaxlass {
 			isShowSearchResults,
 			handleMoveNote,
 			isShowRecycleNotes,
-			themeMode,
+			settingItems,
 		} = this.props;
 		const {
 			isHover ,
@@ -160,7 +165,7 @@ class NoteManagePanel extends Reaxlass {
 		} = reaxel_sider();
 		let editInFavoritesOrSearchPageOrRecycle = currentNotebook.id === 'favorites-notes-id' || currentNotebook.id === 'searchResults-notes-id'||currentNotebook.id ==='recycle-notes-id';
 		
-		return <div className = { `note-container${ resizing ? ' resizing' : '' } ${ themeMode==='note-dark-mode'?'night-theme':currentNotebook.currentTheme }` }>
+		return <div className = { `note-container${ resizing ? ' resizing' : '' } ${settingItems.themeMode==='note-dark-mode'?'night-theme':currentNotebook.currentTheme }` }>
 			{/*顶部工具栏*/ }
 			<div className = { `main-section-header` }>
 				{/*笔记本名称 & dropdown*/ }
@@ -201,7 +206,7 @@ class NoteManagePanel extends Reaxlass {
 						  onBlur = { this.handleBlur }
 						  onKeyDown = { this.handleKeyDown }
 						  ref = { this.inputRenameRef }
-						  className = "rename-input"
+						  className = "rename-notebook-title-input"
 						  maxLength='12'
 					  />) :
 					  (<h2>{ this.state.title }({ notesAmount })</h2>) }
@@ -225,7 +230,8 @@ class NoteManagePanel extends Reaxlass {
 								}
 							} ,
 						} }
-						trigger = { ['click' , 'hover'] }
+						trigger = { ['click','hover' ] }
+						overlayClassName={`notebook-dropdown-menu ${settingItems.themeMode}`}
 					>
 						<a onClick = { (e) => e.preventDefault() }>
 							<DownOutLinedIcon />
@@ -235,14 +241,17 @@ class NoteManagePanel extends Reaxlass {
 				
 				{/* 切换显示模式 选择主题颜色*/ }
 				{ !editInFavoritesOrSearchPageOrRecycle && <div className = "top-tool-bar">
+					
 					<ModeSelector
 						onSwitchNoteMode = { updateNotebookInfo }
 						showMode = { currentNotebook.showMode }
+						settingItems={settingItems}
 					/>
 					
 					<ThemeColorSelector
 						selectTheme = { updateNotebookInfo }
 						theme = { currentNotebook.currentTheme }
+						settingItems={settingItems}
 					/>
 				</div> }
 			</div>
@@ -266,34 +275,49 @@ class NoteManagePanel extends Reaxlass {
 				isShowSearchResults={isShowSearchResults}
 				handleMoveNote={handleMoveNote}
 				isShowRecycleNotes={isShowRecycleNotes}
-				themeMode={themeMode}
+				settingItems={settingItems}
 			/>
 		</div>;
 	}
 };
-const ThemeColorSelector = ({selectTheme,theme}) => {
+
+
+
+
+const ThemeColorSelector = ({
+	selectTheme ,
+	theme ,
+	settingItems,
+}) => {
 	return <>
 		<Popover
+			trigger = "hover"
 			arrow = { false }
 			content = { <ThemeColorPanel
 				selectTheme = { selectTheme }
 				theme = { theme }
+				settingItems = { settingItems }
 			/> }
+			overlayClassName = { `colors-popover ${ settingItems.themeMode }` }
 		>
 			<div><ColorPalette /></div>
 		</Popover>
 	</>;
 };
-const ThemeColorPanel=({selectTheme,theme})=>{
+const ThemeColorPanel = ({
+	selectTheme ,
+	theme ,
+	settingItems,
+}) => {
 	const allThemeColors = [
-		'blue-theme' , 'purple-theme' , 'red-theme' , 'green-theme' , 'gray-theme' , 'orange-theme' , 'pink-theme' ,'yellow-theme',
-		'gradient-theme-blue-cyan', 'gradient-theme-green-blue', 'gradient-theme-blue-yellow' ,'gradient-theme-blue-pink' , 'image-background-wheat' ,
-		'image-background-windmill' ,'image-background-beach' , 'image-background-tower' , 'image-background-pinksky' , 'image-background-mountain',
+		'blue-theme' , 'purple-theme' , 'red-theme' , 'green-theme' , 'gray-theme' , 'orange-theme' , 'pink-theme' , 'yellow-theme' ,
+		'gradient-theme-blue-cyan' , 'gradient-theme-green-blue' , 'gradient-theme-blue-yellow' , 'gradient-theme-blue-pink' , 'image-background-wheat' ,
+		'image-background-windmill' , 'image-background-beach' , 'image-background-tower' , 'image-background-pinksky' , 'image-background-mountain' ,
 	];
-	return (<div>
-		<div className='themecolor-popover-title'>笔记本主题选择</div>
+	return (<div className = { settingItems.themeMode }>
+		<div className = "themecolor-popover-title">笔记本主题选择</div>
 		<div className = "theme-color-panel">
-			{allThemeColors.map((item)=> {
+			{ allThemeColors.map((item) => {
 				return <div
 					className = {`color-little-box ${item}`}
 					key = { item }
@@ -310,6 +334,7 @@ const ThemeColorPanel=({selectTheme,theme})=>{
 const ModeSelector = ({
 	onSwitchNoteMode ,
 	showMode ,
+	settingItems
 }) => {
 	const modeOptions = [
 		{
@@ -344,6 +369,7 @@ const ModeSelector = ({
 			} ,
 		} }
 		trigger = { ['hover'] }
+		overlayClassName={`note-display-mode-dropdown ${settingItems.themeMode}`}
 	>
 		<a onClick = { (e) => e.preventDefault() }>
 			<Space>

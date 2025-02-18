@@ -16,7 +16,7 @@ import GetContentButton from '@src/Home/GetContentButton';
 import { FaPaintBrush , FaBold , FaItalic , FaUnderline , FaStrikethrough , FaAlignLeft , FaAlignCenter , FaAlignRight , FaAlignJustify , FaListOl , FaListUl , FaImage,FaUndo,FaRedo } from 'react-icons/fa';
 import './richTextEditor.css';
 import '../App.css'
-import { Popover , Tooltip , Modal , Dropdown } from 'antd';
+import { Popover , Tooltip , Modal , Dropdown , Space , message } from 'antd';
 import dayjs from "dayjs";
 import { GithubPicker } from 'react-color';
 import { CirclePicker } from 'react-color';
@@ -25,8 +25,11 @@ import HighlightedKeyword from '../Home/renderContent'
 //todo:选中分区,及时保存
 
 
-
-
+const ImageComponent = (props) => {
+	const entity = props.contentState.getEntity(props.block.getEntityAt(0));
+	const { src } = entity.getData();
+	return <img src={src} alt="Uploaded" style={{ maxWidth: '100%',width:'50%',margin:'0 auto', height: 'auto' }} />;
+};
 
 
 const textAlignStyleMap = {
@@ -37,7 +40,6 @@ const textAlignStyleMap = {
 };
 
 const fontSizeStyleMap = {
-	'FONT_SIZE_10' : { fontSize : '10px' } ,
 	'FONT_SIZE_12' : { fontSize : '12px' } ,
 	'FONT_SIZE_14' : { fontSize : '14px' } ,
 	'FONT_SIZE_16' : { fontSize : '16px' } ,
@@ -100,8 +102,9 @@ const ColorPicker = ({ onSelectColor }) => {
 		/>
 		<div
 			className = "eraser-icon"
-			onClick={removeColor}
-		><EraserIcon />去除颜色
+			onClick = { removeColor }
+		><EraserIcon />
+			<span className = "eraser-text">去除颜色</span>
 		</div>
 	</div>);
 };
@@ -127,7 +130,7 @@ const BackgroundColorPicker = ({ onSelectColor }) => {
 		<div
 			className = "eraser-icon"
 			onClick = { removeColor }
-		><EraserIcon />去除颜色
+		><EraserIcon /><span className = "eraser-text">去除颜色</span>
 		</div>
 	</div>);
 };
@@ -142,7 +145,7 @@ const AddNewNoteModal = ({
 	initialTitle ,
 	initialContent ,
 	currentNotebook ,
-	themeMode,
+	settingItems,
 	keyword,
 }) => {
 	
@@ -159,7 +162,7 @@ const AddNewNoteModal = ({
 			<Modal
 				open = { open }
 				onOk = { handleOk }
-				style = { { top : 80 } }
+				style = { { top : 40 } }
 				onCancel = { onCloseModal }
 				cancelText = "取消"
 				okText = "创建"
@@ -167,7 +170,7 @@ const AddNewNoteModal = ({
 				height = { 300 }
 				destroyOnClose = { true }
 				keyboard = { true }
-				wrapClassName = {`edit-note-modal ${ themeMode==='note-dark-mode'?'night-theme':currentNotebook.currentTheme }`}
+				wrapClassName = {`edit-note-modal ${ settingItems.themeMode==='note-dark-mode'?'night-theme':currentNotebook.currentTheme }`}
 				closable = { false }
 				maskClosable={false}
 				footer={null}
@@ -180,7 +183,7 @@ const AddNewNoteModal = ({
 					showAllOptions = { true }
 					currentNotebook={currentNotebook}
 					keyword={keyword}
-					themeMode={themeMode}
+					settingItems={settingItems}
 				/>
 			</Modal>
 		
@@ -200,7 +203,7 @@ const RichTextEditor = ({
 	changeNoteEdit,
 	keyword,
 	currentNotebook,
-	themeMode
+	settingItems
 }) => {
 	const editorRef = useRef(null);
 	const [noteTitle , setNoteTitle] = useState('');
@@ -220,9 +223,6 @@ const RichTextEditor = ({
 	const [textAlignment , setTextAlignment] = useState('left');//对齐
 	
 	
-	
-	
-	
 	const keywordDecorator = (keyword) => {
 		return new CompositeDecorator([
 			{
@@ -236,7 +236,7 @@ const RichTextEditor = ({
 					}
 				},
 				component: (props) => (
-					<span style={{ backgroundColor: `${themeMode==='note-dark-mode'?'#5f79bd':'yellow'}` }}>{props.children}</span>
+					<span style={{ backgroundColor: `${settingItems.themeMode==='note-dark-mode'?'#5f79bd':'yellow'}` }}>{props.children}</span>
 				),
 			},
 		]);
@@ -250,7 +250,7 @@ const RichTextEditor = ({
 		const parts = title.split(new RegExp(`(${keyword})`, "gi")); // 拆分标题
 		return parts.map((part, index) =>
 			part.toLowerCase() === keyword.toLowerCase() ? (
-				<span key={index} className= { `${ themeMode === 'note-dark-mode' ? 'dark-mode-highlight-title-part' : 'highlight-title-part' }` }>
+				<span key={index} className= { `${ settingItems.themeMode === 'note-dark-mode' ? 'dark-mode-highlight-title-part' : 'highlight-title-part' }` }>
 					{part}
 				</span>
 			) : (
@@ -318,19 +318,51 @@ const RichTextEditor = ({
 		setTextAlignment('right');  // Update alignment state to 'right'
 	};
 	
-	
-	const onAddImage = () => {
-		const url = prompt('Enter the image URL');
-		if ( url ) {
-			const contentState = editorState.getCurrentContent();
-			const contentStateWithEntity = contentState.createEntity(
-				'IMAGE' , 'IMMUTABLE' , { src : url } ,
-			);
-			const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
-			const newEditorState = AtomicBlockUtils.insertAtomicBlock(
-				editorState , entityKey , ' ' ,
-			);
-			setEditorState(newEditorState);
+	function blockRendererFn(block) {
+		if (block.getType() === 'atomic') {
+			return {
+				component: ImageComponent,
+				editable: false
+			};
+		}
+		return null;
+	}
+	const handleImageUpload = (event) => {
+		console.log('Button clicked');
+		const file = event.target.files[0];
+		if (file) {
+			const reader = new FileReader();
+			reader.onload = (e) => {
+				const img = new Image();
+				img.src = e.target.result;
+				img.onload = () => {
+					const canvas = document.createElement('canvas');
+					const maxWidth = 800; // 限制图片的最大宽度
+					const scaleSize = maxWidth / img.width;
+					canvas.width = maxWidth;
+					canvas.height = img.height * scaleSize;
+					
+					const ctx = canvas.getContext('2d');
+					ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+					const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8); // 压缩图片质量
+					
+					const contentState = editorState.getCurrentContent();
+					const contentStateWithEntity = contentState.createEntity(
+						'IMAGE',
+						'IMMUTABLE',
+						{ src: compressedDataUrl }
+					);
+					const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
+					const newEditorState = AtomicBlockUtils.insertAtomicBlock(
+						EditorState.set(editorState, { currentContent: contentStateWithEntity }),
+						entityKey,
+						' '
+					);
+					console.log('Editor state updated');
+					setEditorState(newEditorState);
+				};
+			};
+			reader.readAsDataURL(file);
 		}
 	};
 	
@@ -348,10 +380,21 @@ const RichTextEditor = ({
 	const onRedo = () => {
 		setEditorState(EditorState.redo(editorState));
 	};
-	const onFontSizeChange = (event) => {
-		const fontSize = event.target.value;
-		setEditorState(RichUtils.toggleInlineStyle(editorState , `FONT_SIZE_${ fontSize }`));
+	
+	function myBlockStyleFn(contentBlock) {
+		const type = contentBlock.getType();
+		if (type === 'blockquote') {
+			return 'superFancyBlockquote';
+		}
+	}
+	const handleBlockquote=() => {
+		setEditorState(RichUtils.toggleBlockType(editorState, 'blockquote'))
+	}
+	
+	const onFontSizeChange = (size) => {
+		setEditorState(RichUtils.toggleInlineStyle(editorState, size));
 	};
+	
 	const onBackgroundColorChange = (color) => {
 		if ( color === null ) {
 			setEditorState(RichUtils.toggleInlineStyle(editorState , 'REMOVE_BG_COLOR'));
@@ -360,6 +403,7 @@ const RichTextEditor = ({
 			setEditorState(newEditorState);
 		}
 	};
+	
 	const onFontColorChange = (color) => {
 		if ( color === null ) {
 			setEditorState(RichUtils.toggleInlineStyle(editorState , 'REMOVE_FONT_COLOR'));
@@ -382,6 +426,66 @@ const RichTextEditor = ({
 		</div>
 	);
 	
+	const selectFontSizeContent = (
+		<div>
+			{ Object.entries(fontSizeStyleMap).map(([key, value]) => {
+				return <div
+					key = { key }
+					onClick = { () => {
+						onFontSizeChange(key);
+					} }
+					className='font-size-option'
+				>{ value.fontSize }</div>;
+			})}
+		</div>
+	);
+	
+	const allHeader=[
+		{
+			text:'Heading 1',
+			key:'header-one'
+		},
+		{
+			text:'Heading 2',
+			key:'header-two'
+		},
+		{
+			text:'Heading 3',
+			key:'header-three'
+		},
+		{
+			text:'Heading 4',
+			key:'header-four'
+		},
+		{
+			text:'Heading 5',
+			key:'header-five'
+		},
+		{
+			text:'普通段落',
+			key:'unstyled'
+		},
+	]
+	const selectHeaderContent = (
+		<div>
+			{ allHeader.map((item) => {
+				return <div
+					key = { item.key }
+					onClick = { () => {
+						onBlockTypeChange(item.key);
+					} }
+					className='font-size-option'
+				>{ item.text }</div>;
+			})}
+		</div>
+	);
+	
+	// h1
+	const onBlockTypeChange = (header) => {
+		setEditorState(RichUtils.toggleBlockType(editorState , header));
+	};
+	
+	
 	
 	return (
 		<div
@@ -396,16 +500,23 @@ const RichTextEditor = ({
 					
 					
 					<div className = "modal-top-right-bar">
-						<Tooltip title = "保存"
-							color='#202124'
-							arrow={false}><GetContentButton
-							noteTitle={noteTitle}
+						<Tooltip
+							title = "保存"
+							color = "#202124"
+							arrow = { false }
+						><GetContentButton
+							noteTitle = { noteTitle }
 							editorState = { editorState }
 							onSave = { onSave }
-						> <SaveIcon /></GetContentButton></Tooltip>
-						<Tooltip title = "退出且不保存修改"
-							color='#202124'
-							arrow={false}>
+						>
+							<SaveIcon />
+						</GetContentButton>
+						</Tooltip>
+						<Tooltip
+							title = "退出且不保存修改"
+							color = "#202124"
+							arrow = { false }
+						>
 							<div
 								className = "cancel-edit-icon"
 								onClick = { onCancel }
@@ -416,87 +527,141 @@ const RichTextEditor = ({
 				</div>
 				
 				<div className = "rich-text-options">
-					<Tooltip title = "撤销"
-						color='#202124'
-						arrow={false}>
+					<Tooltip
+						title = "撤销"
+						color = "#202124"
+						arrow = { false }
+					>
 						<button onClick = { onUndo }><FaUndo /></button>
 					</Tooltip>
-					<Tooltip title = "还原"
-						color='#202124'
-						arrow={false}>
+					<Tooltip
+						title = "还原"
+						color = "#202124"
+						arrow = { false }
+					>
 						<button onClick = { onRedo }><FaRedo /></button>
 					</Tooltip>
-					<Tooltip title = "加粗"
-						color='#202124'
-						arrow={false}>
+					<Tooltip
+						title = "加粗"
+						color = "#202124"
+						arrow = { false }
+					>
 						<button onClick = { onBoldClick }><FaBold /></button>
 					</Tooltip>
-					<Tooltip title = "斜体"
-						color='#202124'
-						arrow={false}>
+					<Tooltip
+						title = "斜体"
+						color = "#202124"
+						arrow = { false }
+					>
 						<button onClick = { onItalicClick }><FaItalic /></button>
 					</Tooltip>
-					<Tooltip title = "下划线"
-						color='#202124'
-						arrow={false}>
+					<Tooltip
+						title = "下划线"
+						color = "#202124"
+						arrow = { false }
+					>
 						<button onClick = { onUnderlineClick }><FaUnderline /></button>
 					</Tooltip>
-					<Tooltip title = "删除线"
-						color='#202124'
-						arrow={false}>
+					<Tooltip
+						title = "删除线"
+						color = "#202124"
+						arrow = { false }
+					>
 						<button onClick = { onStrikethroughClick }><FaStrikethrough /></button>
 					</Tooltip>
-					<Tooltip title = "文本靠左"
-						color='#202124'
-						arrow={false}>
+					<Tooltip
+						title = "文本靠左"
+						color = "#202124"
+						arrow = { false }
+					>
 						<button onClick = { onAlignLeft }><FaAlignLeft /></button>
 					</Tooltip>
-					<Tooltip title = "文本居中"
-						color='#202124'
-						arrow={false}>
+					<Tooltip
+						title = "文本居中"
+						color = "#202124"
+						arrow = { false }
+					>
 						<button onClick = { onAlignCenter }><FaAlignCenter /></button>
 					</Tooltip>
-					<Tooltip title = "文本靠右"
-						color='#202124'
-						arrow={false}>
+					<Tooltip
+						title = "文本靠右"
+						color = "#202124"
+						arrow = { false }
+					>
 						<button onClick = { onAlignRight }><FaAlignRight /></button>
 					</Tooltip>
-					<Tooltip title = "添加图片"
-						color='#202124'
-						arrow={false}>
-						<button onClick = { onAddImage }><FaImage /></button>
+					
+					
+					<Tooltip
+						title = "添加图片"
+						color = "#202124"
+						arrow = { false }
+					>
+						<input
+							type = "file"
+							accept = "image/*"
+							onChange = { handleImageUpload }
+							style = { { display : 'none' } }
+							id = "fileUpload"
+						/>
+						<label htmlFor = "fileUpload">
+							<button onClick = { () => document.getElementById('fileUpload').click() }><FaImage /></button>
+						</label>
+					
 					</Tooltip>
-					<Tooltip title = "有序列表"
-						color='#202124'
-						arrow={false}>
+					
+					
+					<Tooltip
+						title = "有序列表"
+						color = "#202124"
+						arrow = { false }
+					>
 						<button onClick = { onOrderedList }><FaListOl /></button>
 					</Tooltip>
-					<Tooltip title = "无序列表"
-						color='#202124'
-						arrow={false}>
+					<Tooltip
+						title = "无序列表"
+						color = "#202124"
+						arrow = { false }
+					>
 						<button onClick = { onUnorderedList }><FaListUl /></button>
 					</Tooltip>
-					<Tooltip title = "字号"
-						color='#202124'
-						arrow={false}>
-						<button><FontSizeIcon /></button>
-					</Tooltip>
-					
-					
-					<select
-						onChange = { onFontSizeChange }
-						defaultValue = "10"
+					<Tooltip
+						title = "引用"
+						color = "#202124"
+						arrow = { false }
 					>
-						<option value = "12">12</option>
-						<option value = "14">14</option>
-						<option value = "16">16</option>
-						<option value = "18">18</option>
-						<option value = "20">20</option>
-						<option value = "22">22</option>
-						<option value = "24">24</option>
-						<option value = "32">32</option>
-					</select>
-					{/* 字体颜色选择器 */ }
+						<button onClick = { handleBlockquote }>
+							<QuotoBlockIcon />
+						</button>
+					</Tooltip>
+					<Popover
+						content = { selectFontSizeContent }
+						trigger = "hover"
+						overlayClassName = "font-size-popover"
+					>
+						<Tooltip title = "字号">
+							<button>
+								<FontSizeIcon />
+							</button>
+						</Tooltip>
+					</Popover>
+					
+					<Popover
+						content = { selectHeaderContent }
+						trigger = "hover"
+						overlayClassName = "font-size-popover"
+					>
+						<Tooltip title = "标题">
+							<button>
+								<HeaderIcon />
+							</button>
+						</Tooltip>
+					</Popover>
+					
+					{/*<SelectHeaderSizeContent onBlockTypeChange={onBlockTypeChange}/>*/ }
+					
+					
+					{/* 字体颜色选择 */ }
 					<Popover
 						content = { selectColorContent }
 					>
@@ -504,7 +669,7 @@ const RichTextEditor = ({
 							<FontColorIcon />
 						</button>
 					</Popover>
-					{/* 背景颜色选择器 */ }
+					{/* 背景颜色选择 */ }
 					<Popover
 						content = { selectBackgroundColorContent }
 					>
@@ -517,11 +682,11 @@ const RichTextEditor = ({
 				</div>
 			</div> }
 			{/*笔记标题输入区*/ }
-			<div className='note-title-section'>
+			<div className = "note-title-section">
 				{ (currentNotebook?.id === "searchResults-notes-id" && keyword && noteTitle) &&
-				 <div className='highlight-note-title'>
-					 <HighlightedTitle
-						 title = { noteTitle }
+					<div className = "highlight-note-title">
+						<HighlightedTitle
+							title = { noteTitle }
 						 keyword = { keyword }
 					 />
 				 </div>}
@@ -565,6 +730,8 @@ const RichTextEditor = ({
 							color:'#1f1f1f',
 						},
 					} }
+					blockRendererFn={blockRendererFn}
+					blockStyleFn={myBlockStyleFn}
 					handleKeyCommand = { handleKeyCommand }
 					onChange = { setEditorState }
 					placeholder = "输入笔记 . . ."
@@ -590,9 +757,22 @@ const RichTextEditor = ({
 					editorState = { editorState }
 					onSave = { onSave }
 				>
-					<AddNewNotebtn
-						onClick = { cancelExpandNoteEditSection }
-					/>
+					<AddNewNotebtn onClick={()=>{
+						const contentState = editorState.getCurrentContent();
+						const rawContentState = convertToRaw(contentState);
+						let allNoteEmpty = true;
+						for ( let i = 0 ; i < rawContentState.blocks.length ; i ++ ) {
+							if ( rawContentState.blocks[i].text.trim() !== '' ) {
+								allNoteEmpty = false;
+								break;
+							}
+						}
+						if ( allNoteEmpty === true && noteTitle==='') {
+							return;
+						}
+						cancelExpandNoteEditSection()
+						
+					}}/>
 				</GetContentButton>
 			
 			</div> }
@@ -602,14 +782,34 @@ const RichTextEditor = ({
 	);
 };
 
+const QuotoBlockIcon=()=> {
+	return <>
+			<svg
+				t = "1739354400128"
+				className = "icon"
+				viewBox = "0 0 1024 1024"
+				version = "1.1"
+				xmlns = "http://www.w3.org/2000/svg"
+				p-id = "14999"
+				width = "16"
+				height = "16"
+			>
+				<path
+					d = "M563.2 607.168a52.224 52.224 0 0 1 0-0.192v-0.064-0.192a460.48 460.48 0 0 1 223.104-394.56 51.2 51.2 0 0 1 52.928 87.68A359.04 359.04 0 0 0 699.648 454.4 153.472 153.472 0 1 1 563.2 607.168z m-409.6 0a52.224 52.224 0 0 1 0-0.192v-0.064-0.192a460.48 460.48 0 0 1 223.104-394.56 51.2 51.2 0 0 1 52.928 87.68A359.04 359.04 0 0 0 290.048 454.4 153.472 153.472 0 1 1 153.6 607.168z"
+					p-id = "15000"
+					fill = "#515151"
+				></path>
+			</svg>
+	</>
+}
 const RichTextIcon = ({ onClick }) => {
 	return <>
 		<Tooltip
-			color='#202124'
+			color = "#202124"
 			title = "富文本编辑模式"
 			placement = "bottom"
 			zIndex = "1"
-			arrow={false}
+			arrow = { false }
 		>
 			<div
 				className = "edit-note-option-item rich-text-option"
@@ -633,16 +833,34 @@ const RichTextIcon = ({ onClick }) => {
 			</div>
 		</Tooltip></>;
 };
+const ImageIcon=()=> {
+	return <svg
+		t = "1739456005143"
+		className = "icon"
+		viewBox = "0 0 1024 1024"
+		version = "1.1"
+		xmlns = "http://www.w3.org/2000/svg"
+		p-id = "17543"
+		width = "16"
+		height = "16"
+	>
+		<path
+			d = "M938.666667 553.92V768c0 64.8-52.533333 117.333333-117.333334 117.333333H202.666667c-64.8 0-117.333333-52.533333-117.333334-117.333333V256c0-64.8 52.533333-117.333333 117.333334-117.333333h618.666666c64.8 0 117.333333 52.533333 117.333334 117.333333v297.92z m-64-74.624V256a53.333333 53.333333 0 0 0-53.333334-53.333333H202.666667a53.333333 53.333333 0 0 0-53.333334 53.333333v344.48A290.090667 290.090667 0 0 1 192 597.333333a286.88 286.88 0 0 1 183.296 65.845334C427.029333 528.384 556.906667 437.333333 704 437.333333c65.706667 0 126.997333 16.778667 170.666667 41.962667z m0 82.24c-5.333333-8.32-21.130667-21.653333-43.648-32.917333C796.768 511.488 753.045333 501.333333 704 501.333333c-121.770667 0-229.130667 76.266667-270.432 188.693334-2.730667 7.445333-7.402667 20.32-13.994667 38.581333-7.68 21.301333-34.453333 28.106667-51.370666 13.056-16.437333-14.634667-28.554667-25.066667-36.138667-31.146667A222.890667 222.890667 0 0 0 192 661.333333c-14.464 0-28.725333 1.365333-42.666667 4.053334V768a53.333333 53.333333 0 0 0 53.333334 53.333333h618.666666a53.333333 53.333333 0 0 0 53.333334-53.333333V561.525333zM320 480a96 96 0 1 1 0-192 96 96 0 0 1 0 192z m0-64a32 32 0 1 0 0-64 32 32 0 0 0 0 64z"
+			fill = "#000000"
+			p-id = "17544"
+		></path>
+	</svg>;
+}
 
 const UndoIcon = () => {
 	return <>
 		
 		<Tooltip
-			color='#202124'
+			color = "#202124"
 			title = "撤销"
 			placement = "bottom"
 			zIndex = "1"
-			arrow={false}
+			arrow = { false }
 		>
 			<div className = "edit-note-option-item undo-option">
 				<svg
@@ -667,11 +885,11 @@ const UndoIcon = () => {
 const RedoIcon = () => {
 	return <>
 		<Tooltip
-			color='#202124'
+			color = "#202124"
 			title = "复原"
 			placement = "bottom"
 			zIndex = "1"
-			arrow={false}
+			arrow = { false }
 		>
 			<div className = "edit-note-option-item redo-option">
 				<svg
@@ -756,6 +974,24 @@ const EraserIcon=()=> {
 			d = "M982.827818 408.890055a32.85895 32.85895 0 0 0 0-46.434253L629.96587 9.593854a32.85895 32.85895 0 0 0-46.434253 0L69.972616 523.104886a131.147983 131.147983 0 0 0 0 185.641074l278.845365 277.118471a131.33986 131.33986 0 0 0 92.484752 38.135569h421.64988a32.81098 32.81098 0 0 0 0-65.621961h-271.122312a65.66993 65.66993 0 0 1-46.434253-112.056214zM422.978472 875.966834a65.573992 65.573992 0 0 1-92.772568 0L116.502808 662.311707a65.573992 65.573992 0 0 1 0-92.772568L247.458914 438.439125l306.523633 306.523633-131.100014 131.004076z"
 			p-id = "3419"
 			fill = "#515151"
+		></path>
+	</svg>;
+}
+const HeaderIcon=()=> {
+	return <svg
+		t = "1739434301235"
+		className = "icon"
+		viewBox = "0 0 1024 1024"
+		version = "1.1"
+		xmlns = "http://www.w3.org/2000/svg"
+		p-id = "16274"
+		width = "16"
+		height = "16"
+	>
+		<path
+			d = "M961.152 950.848q-25.152 0-75.712-2.016t-76.288-2.016q-25.152 0-75.424 2.016t-75.424 2.016q-13.728 0-21.152-11.712t-7.424-26.016q0-17.728 9.728-26.272t22.272-9.728 29.152-4 25.728-8.576q18.848-12 18.848-80l-0.576-223.424q0-12-0.576-17.728-7.424-2.272-28.576-2.272l-385.728 0q-21.728 0-29.152 2.272-0.576 5.728-0.576 17.728l-0.576 212q0 81.152 21.152 93.728 9.152 5.728 27.424 7.424t32.576 2.016 25.728 8.576 11.424 26.016q0 14.848-7.136 27.424t-20.864 12.576q-26.848 0-79.712-2.016t-79.136-2.016q-24.576 0-73.152 2.016t-72.576 2.016q-13.152 0-20.288-12t-7.136-25.728q0-17.152 8.864-25.728t20.576-10.016 27.136-4.288 24-8.576q18.848-13.152 18.848-81.728l-0.576-32.576 0-464.576q0-1.728 0.288-14.848t0-20.864-0.864-22.016-2.016-24-3.712-20.864-6.272-18.016-9.152-10.272q-8.576-5.728-25.728-6.848t-30.272-1.152-23.424-8-10.272-25.728q0-14.848 6.848-27.424t20.576-12.576q26.272 0 79.136 2.016t79.136 2.016q24 0 72.288-2.016t72.288-2.016q14.272 0 21.44 12.576t7.136 27.424q0 17.152-9.728 24.864t-22.016 8.288-28.288 2.272-24.576 7.424q-20 12-20 91.424l0.576 182.848q0 12 0.576 18.272 7.424 1.728 22.272 1.728l399.424 0q14.272 0 21.728-1.728 0.576-6.272 0.576-18.272l0.576-182.848q0-79.424-20-91.424-10.272-6.272-33.44-7.136t-37.728-7.424-14.56-28.288q0-14.848 7.136-27.424t21.44-12.576q25.152 0 75.424 2.016t75.424 2.016q24.576 0 73.728-2.016t73.728-2.016q14.272 0 21.44 12.576t7.136 27.424q0 17.152-10.016 25.152t-22.848 8.288-29.44 1.728-25.152 7.136q-20 13.152-20 92l0.576 538.848q0 68 19.424 80 9.152 5.728 26.272 7.712t30.56 2.56 23.712 8.864 10.272 25.44q0 14.848-6.848 27.424t-20.576 12.576z"
+			p-id = "16275"
+			fill = "#2c2c2c"
 		></path>
 	</svg>;
 }

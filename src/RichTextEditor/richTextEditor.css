@@ -104,7 +104,25 @@ body, html {
 	cursor: pointer;
 }
 .eraser-icon:hover{
-	background: #eeeeee;
+	background: var(--siderbar-icon-hover-bg);
+}
+
+.color-popover-title {
+	padding-bottom: 10px;
+	color: var(--siderbar-font-color);
+}
+.eraser-text{
+	color: var(--siderbar-font-color);
+}
+.eraser-icon svg path{
+	fill: var(--siderbar-icon-color);
+}
+.eraser-icon svg{
+	margin-right: 8px;
+}
+
+.eraser-icon:hover{
+	fill: var(--siderbar-icon-hover-bg);
 }
 .code-block {
 	background-color: #f5f5f5;
@@ -209,4 +227,31 @@ body, html {
 }
 .add-new-button:hover {
 	background: var(--show-note-book-text-bg-color);
+}
+.superFancyBlockquote {
+	color: #888a8c;
+	font-family: 'Microsoft YaHei UI', Georgia, serif;
+	/*font-style: italic;*/
+	text-align: center;
+	/*width: 90%;*/
+	border-left: 3px solid #dedfe2;
+	margin: 10px 0;
+	box-sizing: border-box;
+	padding: 10px 0 10px 14px;
+}
+
+.font-size-option{
+	cursor: pointer;
+	user-select: none;
+	border-radius: 4px;
+	padding: 4px;
+	color: var(--siderbar-font-color);
+}
+
+.font-size-option:hover{
+	background: var(--siderbar-icon-hover-bg);
+}
+
+.font-size-popover.ant-popover .ant-popover-inner{
+	padding: 4px;
 }

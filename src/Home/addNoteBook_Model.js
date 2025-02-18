@@ -63,6 +63,7 @@ const NoteBookModal = ({
 	showTitleInput = undefined ,//控制是否显示标题输入框，使组件适配更多场景。
 	closeModal ,
 	open ,
+	themeMode,
 }) => {
 	// const [isModalOpen , setIsModalOpen] = useState(false);
 	const [imagePreview , setImagePreview] = useState(null); // 用来存储图片预览的 URL
@@ -156,6 +157,7 @@ const NoteBookModal = ({
 				destroyOnClose = { true }
 				keyboard = { true }
 				afterOpenChange = { handleAfterOpen }
+				wrapClassName= { `addNotebook-modal ${themeMode}` }
 			>
 				<div className = "add-NB-modal-content">
 					<div className = "edit-NB-info">

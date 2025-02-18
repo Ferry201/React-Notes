@@ -34,7 +34,7 @@ export class NoteSidebar extends Component {
 	}
 	
 	state = {
-		siderbarWidth : 388 ,
+		siderbarWidth : 448 ,
 		searchKeyword : '' ,
 		isRenameSort:false,
 	};
@@ -112,14 +112,21 @@ export class NoteSidebar extends Component {
 		}) => {
 			return <div
 				className = "notebook-operation-bar"
-				onClick={()=>{this.props.handleClickCollapse(id)}}
+				onClick = { () => {
+					this.props.handleClickCollapse(id);
+				} }
 			>
-				{ this.state.isRenameSort && this.props.currentSortId === id ? <input
-					defaultValue = { title }
-					onBlur = { this.handleBlurRenameInput }
-					onKeyDown={this.handleKeyDown}
-					ref = { this.renameInputRef }
-				/> : <span className = "notebook-amount">{ title }({ notebooksInSort.length })</span> }
+				<div className = "notebook-amount">
+					<span className = { `expand-sort-notebook-icon ${ isCollapse ? 'fold-sort-icon' : "" }` }><ExpandSortNotebookIcon /></span>
+					{ this.state.isRenameSort && this.props.currentSortId === id ? <input
+						defaultValue = { title }
+						onBlur = { this.handleBlurRenameInput }
+						onKeyDown = { this.handleKeyDown }
+						ref = { this.renameInputRef }
+						className = "rename-sort-input"
+					/> :
+						  <span>{ title }({ notebooksInSort.length })</span>
+					   }</div>
 				
 				
 				<span
@@ -131,9 +138,9 @@ export class NoteSidebar extends Component {
 					<ListSortOptions
 						handleClickDeleteSort = { this.props.handleClickDeleteSort }
 						id = { id }
-						isCollapse={isCollapse}
-						handleClickRename = {this.handleClickRename} 
-						handleClickCollapse={this.props.handleClickCollapse}
+						isCollapse = { isCollapse }
+						handleClickRename = { this.handleClickRename }
+						handleClickCollapse = { this.props.handleClickCollapse }
 					/>
 					
 					<Tooltip
@@ -167,11 +174,11 @@ export class NoteSidebar extends Component {
 				width = { siderCollapsed ? 0 : this.state.siderbarWidth }
 				axis = "x" // 只允许水平拖动
 				minConstraints = { [
-					296 ,
+					356 ,
 					0 ,
 				] } // 设置最小宽度
 				maxConstraints = { [
-					480 ,
+					550 ,
 					0 ,
 				] } // 设置最大宽度
 				resizeHandles = { ['e'] } // 右边缘 east
@@ -188,7 +195,7 @@ export class NoteSidebar extends Component {
 					position : 'relative' ,
 					height : '100%' ,
 				} }
-				className = { `resizable-box ${ siderCollapsed ? 'collpased' : '' } ${ resizing ? 'resizing' : '' } ${this.props.themeMode}` }
+				className = { `resizable-box ${ siderCollapsed ? 'collpased' : '' } ${ resizing ? 'resizing' : '' } ${this.props.settingItems.themeMode} ${this.props.currentNotebook.currentTheme}`}
 				handle = { <div className = "resize-handle-container">
 					<div className = "custom-resize-handle" />
 				</div> }
@@ -267,11 +274,14 @@ export class NoteSidebar extends Component {
 										notebooksInSort = { notebooksInSort }
 									/>
 									{/*笔记本列表*/ }
-									{ !sort.isCollapse && <NotebookList
+									{ !sort.isCollapse && (!this.props.settingItems.coverMode?<VisualNotebookList
 										notebooks = { notebooksInSort }
 										selectedNotebookId = { this.props.selectedNotebookId }
 										handleToggleNoteBook = { this.props.handleToggleNoteBook }
-									/> }
+									/>:<PlainNotebookList
+										notebooks = { notebooksInSort }
+										selectedNotebookId = { this.props.selectedNotebookId }
+										handleToggleNoteBook = { this.props.handleToggleNoteBook }/>) }
 								
 								</div>;
 							}) }
@@ -285,7 +295,26 @@ export class NoteSidebar extends Component {
 	}
 }
 
-const NotebookList = ({
+const PlainNotebookList = ({
+	notebooks ,
+	selectedNotebookId ,
+	handleToggleNoteBook ,
+}) => {
+	return <div className = "plain-note-book-list">
+		{ notebooks.map((book , index) => {
+			const isSelected = selectedNotebookId === book.id;
+			return <div
+				key = { `plain-${ book.title }-${ index }` }
+				className = { `plain-note-book-item ${isSelected?'isSelected':''}` }
+				onClick = { () => {
+					handleToggleNoteBook(book);
+				} }
+			><PlainNotebookIcon/>{ book.title }</div>;
+		}) }
+	</div>;
+};
+
+const VisualNotebookList = ({
 	notebooks ,
 	selectedNotebookId ,
 	handleToggleNoteBook ,
@@ -301,18 +330,22 @@ const NotebookList = ({
 					<img
 						src = { book.cover }
 						alt = { book.title }
-						className = { `notebook-cover ${ isSelected ? 'selected' : '' }` }
+						className = { `notebook-cover` }
+						// className = { `notebook-cover ${ isSelected ? 'selected' : '' }` }
 						// onError = { this.handleImageError }
 						onClick = { () => {
 							handleToggleNoteBook(book);
 						} }
 					/>
-					<span className = { `notebook-title ${ isSelected ? 'selected-notebook-title' : '' } ` }>{ book.title }</span>
+					{ isSelected && <span className='current-editing-icon'><EditingIcon/></span> }
+						{/*<span className = { `notebook-title ${ isSelected ? 'selected-notebook-title' : '' } ` }>{ book.title }</span>*/ }
+						<span className = "notebook-title">{ book.title }</span>
 				</div>);
 			}) }
 		</div>
 	</div>;
 }
+
 const SidebarMenu = ({
 	clickFavorites ,
 	clickRecycle ,
@@ -448,7 +481,79 @@ const ListSortOptions = ({
 	</Dropdown>);
 };
 
-const AddNewSortIcon=()=> {
+
+const EditingIcon=()=> {
+	return <svg
+		t = "1739872645433"
+		className = "icon"
+		viewBox = "0 0 1024 1024"
+		version = "1.1"
+		xmlns = "http://www.w3.org/2000/svg"
+		p-id = "54494"
+		width = "16"
+		height = "16"
+	>
+		<path
+			d = "M469.333333 209.066667h85.333334v640h-85.333334z"
+			p-id = "54495"
+		></path>
+		<path
+			d = "M42.666667 870.4c-23.466667 0-42.666667-19.2-42.666667-42.666667V134.4c0-12.8 4.266667-25.6 14.933333-36.266667 17.066667-17.066667 42.666667-17.066667 57.6-17.066666h279.466667c81.066667 0 164.266667 44.8 202.666667 108.8 12.8 19.2 6.4 46.933333-14.933334 57.6-19.2 12.8-46.933333 6.4-57.6-14.933334-23.466667-38.4-78.933333-66.133333-128-66.133333H85.333333v661.333333c0 23.466667-19.2 42.666667-42.666666 42.666667z"
+			p-id = "54496"
+		></path>
+		<path
+			d = "M981.333333 849.066667c-23.466667 0-42.666667-19.2-42.666666-42.666667v-640H693.333333C640 166.4 576 198.4 554.666667 234.666667c-12.8 19.2-38.4 27.733333-57.6 14.933333-19.2-12.8-27.733333-38.4-14.933334-57.6 42.666667-70.4 140.8-108.8 213.333334-108.8h279.466666c6.4 0 23.466667 0 36.266667 12.8 12.8 12.8 12.8 29.866667 12.8 36.266667v674.133333c0 23.466667-19.2 42.666667-42.666667 42.666667zM522.666667 942.933333c-12.8 0-25.6-6.4-34.133334-17.066666-23.466667-32-76.8-55.466667-128-55.466667H42.666667c-23.466667 0-42.666667-19.2-42.666667-42.666667s19.2-42.666667 42.666667-42.666666h317.866666c76.8 0 155.733333 36.266667 196.266667 89.6 14.933333 19.2 10.666667 44.8-8.533333 59.733333-8.533333 6.4-17.066667 8.533333-25.6 8.533333z"
+			p-id = "54497"
+		></path>
+		<path
+			d = "M522.666667 942.933333c-8.533333 0-17.066667-2.133333-25.6-8.533333-19.2-14.933333-23.466667-40.533333-8.533334-59.733333 40.533333-53.333333 119.466667-89.6 196.266667-89.6H981.333333c23.466667 0 42.666667 19.2 42.666667 42.666666s-19.2 42.666667-42.666667 42.666667H684.8c-49.066667 0-102.4 23.466667-128 55.466667-8.533333 10.666667-21.333333 17.066667-34.133333 17.066666z"
+			p-id = "54498"
+		></path>
+	</svg>
+}
+const PlainNotebookIcon = () => {
+	return <svg
+		t = "1739822289353"
+		className = "icon"
+		viewBox = "0 0 1024 1024"
+		version = "1.1"
+		xmlns = "http://www.w3.org/2000/svg"
+		p-id = "27642"
+		width = "16"
+		height = "16"
+	>
+		<path
+			d = "M814.92195555-0.63715555a139.81013333 139.81013333 0 0 1 139.81013334 139.81013333v745.65404444a139.81013333 139.81013333 0 0 1-139.81013334 139.81013333H209.07804445a139.81013333 139.81013333 0 0 1-139.81013334-139.81013333V139.17297778a139.81013333 139.81013333 0 0 1 139.81013334-139.81013333h605.8439111z m0 69.90506666H209.07804445a69.90506667 69.90506667 0 0 0-69.78855823 65.80396942L139.17297778 139.17297778v745.65404444a69.90506667 69.90506667 0 0 0 65.80396942 69.78855823L209.07804445 954.73208889h605.8439111a69.90506667 69.90506667 0 0 0 69.78855823-65.80396942L884.82702222 884.82702222V139.17297778a69.90506667 69.90506667 0 0 0-65.80396942-69.78855823L814.92195555 69.26791111zM570.25422222 535.30168889a34.95253333 34.95253333 0 0 1 0 69.90506666h-302.92195555a34.95253333 34.95253333 0 0 1 0-69.90506666h302.92195555z m186.41351111-256.31857778a34.95253333 34.95253333 0 0 1 0 69.90506667h-489.33546666a34.95253333 34.95253333 0 0 1 0-69.90506667h489.33546666z"
+			fill = "#131415"
+			p-id = "27643"
+		></path>
+	</svg>;
+};
+const ExpandSortNotebookIcon = () => {
+	return <svg
+		t = "1739339998541"
+		className = "icon"
+		viewBox = "0 0 1024 1024"
+		version = "1.1"
+		xmlns = "http://www.w3.org/2000/svg"
+		p-id = "12188"
+		width = "16"
+		height = "16"
+	>
+		<path
+			d = "M1024 0v1024H0V0z"
+			fill = "#555555"
+			fillOpacity = "0"
+			p-id = "12189"
+		></path>
+		<path
+			d = "M968.533333 371.797333l-435.456 426.666667-30.464 29.866667-29.866666-30.464-417.877334-426.666667 60.928-59.733333 388.010667 396.117333 404.992-396.8z"
+			fill = "#555555"
+			p-id = "12190"
+		></path>
+	</svg>;
+};
+const AddNewSortIcon = () => {
 	return <svg
 		t = "1739011322726"
 		className = "icon"
@@ -537,32 +642,7 @@ const AddNewBookIcon = () => {
 	</svg>;
 };
 
-class NoteBookIcon extends Component {
-	render () {
-		return <svg
-			t = "1734471615966"
-			style = { { marginLeft : '16px' } }
-			className = "icon"
-			viewBox = "0 0 1024 1024"
-			version = "1.1"
-			xmlns = "http://www.w3.org/2000/svg"
-			p-id = "97531"
-			width = "20"
-			height = "20"
-		>
-			<path
-				d = "M923.038476 8.094476V770.438095H256.219429c-42.008381 0-76.312381 31.646476-78.628572 70.509715l-0.146286 4.193523v35.05981c0 39.375238 32.889905 72.411429 74.288762 74.630095l4.486096 0.121905h666.819047v60.952381H256.219429c-74.873905 0-136.777143-57.953524-139.605334-130.486857l-0.097524-5.217524V178.858667c0-92.330667 76.190476-167.619048 170.179048-170.666667l5.924571-0.097524h630.418286z m-60.952381 60.952381H292.62019c-61.756952 0-112.274286 47.006476-115.053714 104.838095l-0.097524 4.973715-0.024381 554.349714 1.389715-0.902095a141.653333 141.653333 0 0 1 72.045714-22.723048l5.339429-0.097524 605.866666-0.024381V69.046857z"
-				fill = "#555555"
-				p-id = "97532"
-			></path>
-			<path
-				d = "M306.005333 41.691429v694.954666h-60.952381V41.691429zM923.745524 834.267429v60.952381H240.298667v-60.952381z"
-				fill = "#555555"
-				p-id = "97533"
-			></path>
-		</svg>;
-	}
-}
+
 
 class MarkNoteIcon extends Component {
 	render () {
@@ -635,24 +715,24 @@ const FeedbackIcon = () => {
 class SearchIcon extends Component {
 	render () {
 		return <svg
-			t = "1734471677660"
+			t = "1739340216124"
 			className = "icon"
 			viewBox = "0 0 1024 1024"
 			version = "1.1"
 			xmlns = "http://www.w3.org/2000/svg"
-			p-id = "101141"
-			width = "20"
-			height = "20"
+			p-id = "13904"
+			width = "16"
+			height = "16"
 		>
 			<path
-				d = "M451.784 902.94a451.156 451.156 0 0 1-319.57-132.34 451.156 451.156 0 1 1 638.387-638.386A451.156 451.156 0 0 1 451.784 902.94z m0-827.12a375.964 375.964 0 0 0-265.43 642.898 375.964 375.964 0 1 0 532.364-532.365A375.964 375.964 0 0 0 451.784 75.82z"
-				fill = "#000"
-				p-id = "101142"
+				d = "M469.333333 0C209.066667 0 0 209.066667 0 469.333333s209.066667 469.333333 469.333333 469.333334 469.333333-209.066667 469.333334-469.333334S729.6 0 469.333333 0z m0 853.333333c-213.333333 0-384-170.666667-384-384s170.666667-384 384-384 384 170.666667 384 384-170.666667 384-384 384z"
+				fill = "#303133"
+				p-id = "13905"
 			></path>
 			<path
-				d = "M281.848 660.067a37.596 37.596 0 0 1-26.317-11.279 278.965 278.965 0 0 1 0-393.258 37.596 37.596 0 0 1 53.387 53.387 203.02 203.02 0 0 0 0 287.236 37.596 37.596 0 0 1-26.318 63.914zM986.404 1024a37.596 37.596 0 0 1-26.317-11.279l-241.37-241.369a37.596 37.596 0 1 1 53.388-53.386l241.368 241.368a37.596 37.596 0 0 1-26.317 63.914z"
-				fill = "#000"
-				p-id = "101143"
+				d = "M738.133333 742.4c17.066667-17.066667 42.666667-17.066667 59.733334 0l209.066666 200.533333c17.066667 17.066667 17.066667 42.666667 0 59.733334-17.066667 17.066667-42.666667 17.066667-59.733333 0l-209.066667-200.533334c-17.066667-17.066667-17.066667-42.666667 0-59.733333z"
+				fill = "#303133"
+				p-id = "13906"
 			></path>
 		</svg>;
 	}
