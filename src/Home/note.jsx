@@ -24,6 +24,7 @@ const { confirm } = Modal;
 const defaultNotebook = {
 	title : '我的笔记本' ,
 	cover : coverDefault ,
+	emoji : '📘' ,
 	id : 'default-notebook-id' ,
 	createdTime : dayjs().valueOf() ,
 	showMode : 'list-mode' ,//当前笔记显示模式
@@ -183,12 +184,13 @@ class NotesApp extends Component {
 			this.setState({ allSorts : JSON.parse(storedAllSorts) });
 		}
 		
+		//设置条目
 		const storedSetting = localStorage.getItem('setting-items');
 		if (!storedSetting) {
 			const defaultSetting = {
 				themeMode: 'note-light-mode',
 				autoSwitch: false,
-				coverMode: false,
+				notebookMode: 'plain-notebook',
 				language: 'chinese',
 				listModeGap:'comfy',
 				cardModeColumn:'cardTwoColumn',
@@ -474,6 +476,7 @@ class NotesApp extends Component {
 			}
 			return notebook;
 		});
+		
 		//重命名笔记时修改笔记列表中noteBook的值
 		if ( key === 'title' ) {
 			updatedNotes = updatedNotes.map((note) => {
@@ -486,9 +489,9 @@ class NotesApp extends Component {
 				return note;
 			});
 		}
-		
+		let updatedNotebook;
 		this.setState(prevState => {
-			const updatedNotebook = {
+			updatedNotebook = {
 				...prevState.currentNotebook ,
 				[key] : value ,
 			};
@@ -498,9 +501,9 @@ class NotesApp extends Component {
 				noteListData : updatedNotes ,
 			};
 		} , () => {
-			localStorage.setItem('current-notebook' , JSON.stringify(this.state.currentNotebook));
-			localStorage.setItem('notebook-array' , JSON.stringify(this.state.noteBookData));
-			localStorage.setItem('note-info-array' , JSON.stringify(this.state.noteListData));
+			localStorage.setItem('current-notebook' , JSON.stringify(updatedNotebook));
+			localStorage.setItem('notebook-array' , JSON.stringify(updatedNotebooks));
+			localStorage.setItem('note-info-array' , JSON.stringify(updatedNotes));
 		});
 	};
 	
@@ -839,6 +842,7 @@ class NotesApp extends Component {
 	};
 	
 	
+	
 	render () {
 		let allNotebooks = [...this.state.noteBookData];
 		allNotebooks = allNotebooks.filter(notebook => notebook.id !== 'favorites-notes-id' && notebook.id !== 'searchResults-notes-id' && notebook.id !== 'recycle-notes-id');
@@ -906,13 +910,16 @@ class NotesApp extends Component {
 			{/*添加笔记本 Modal*/ }
 			{ this.state.activeModal === 'addNotebook' && (<NoteBookModal
 				showTitleInput = { true }
+				plainMode = { this.state.settingItems.notebookMode === 'cover-notebook' ? false : true }
 				onOk = { ({
 					title ,
 					cover ,
+					emoji,
 				}) => {
 					const newNoteBook = {
 						title ,
 						cover ,
+						emoji,
 						id : uuidv4() ,
 						createdTime : dayjs().valueOf() ,
 						showMode : 'list-mode' ,
@@ -928,7 +935,10 @@ class NotesApp extends Component {
 			{/*修改笔记本封面 Modal*/ }
 			{ this.state.activeModal === 'changeCover' && (<NoteBookModal
 				showTitleInput = { false }
-				onOk = { ({ cover }) => {
+				plainMode={false}
+				onOk = { ({
+					cover ,
+				}) => {
 					this.updateNotebookInfo('cover' , cover);
 				} }
 				closeModal = { this.handleCloseModal }

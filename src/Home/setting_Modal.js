@@ -189,7 +189,7 @@ const NoteDisplaySetting = ({
 	const [listGapselected , setListGapSelected] = useState(settingItems.listModeGap);
 	const [cardColumnSelected , setCardColumnSelected] = useState(settingItems.cardModeColumn);
 	const [gridColumnSelected , setGridColumnSelected] = useState(settingItems.gridModeColumn);
-	const [switchCoverMode , setSwitchCoverMode] = useState(settingItems.coverMode);
+	const [notebookMode , setNotebookMode] = useState(settingItems.notebookMode);
 	
 	const listGapRadioChange=(value)=>{
 		setListGapSelected(value)
@@ -205,21 +205,29 @@ const NoteDisplaySetting = ({
 		setGridColumnSelected(value)
 		updateNoteSettingItems('gridModeColumn',value)
 	}
-	const handleSwitchCoverMode=(checked)=>{
-		setSwitchCoverMode(checked);
-		updateNoteSettingItems('coverMode',checked)
+	const handleChangeNotebookMode=(value)=>{
+		setNotebookMode(value);
+		updateNoteSettingItems('notebookMode',value)
 	}
 	return <div>
 		<div className = "open-no-cover-mode">
-			<span>
 				{/*{ !settingItems.coverMode ? <span>开启</span> : <span>关闭</span> }*/}
-				<span>笔记本无封面模式</span>
-			</span>
-			<Switch
-				defaultChecked = { switchCoverMode }
-				className = "open-no-cover-mode-radio"
-				onChange={handleSwitchCoverMode}
-			/></div>
+				<p>笔记本展示</p>
+			<ButtonRadio
+				options = { [
+					{
+						label : "封面模式" ,
+						value : "cover-notebook",
+					} ,
+					{
+						label : "文字模式" ,
+						value : "plain-notebook",
+					} ,
+				] }
+				value = { notebookMode }
+				onChange = { handleChangeNotebookMode }
+			/>
+		</div>
 		{/*<p>笔记布局配置</p>*/ }
 		<Divider />
 		

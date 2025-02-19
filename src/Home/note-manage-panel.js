@@ -28,7 +28,7 @@ class NoteManagePanel extends Reaxlass {
 	
 	
 	componentDidUpdate (prevProps) {
-		if ( prevProps.currentNotebook.id !== this.props.currentNotebook.id || prevProps.sorts !== this.props.sorts||prevProps.notebooks!==this.props.notebooks ) {
+		if ( prevProps.currentNotebook.id !== this.props.currentNotebook.id || prevProps.sorts !== this.props.sorts||prevProps.notebooks!==this.props.notebooks||prevProps.settingItems!==this.props.settingItems ) {
 			this.setState({
 				noteFeaturesMenu : this.generateNoteFeaturesMenu() ,
 				title : this.props.currentNotebook.title ,
@@ -47,6 +47,7 @@ class NoteManagePanel extends Reaxlass {
 			{
 				label : <div>换封面</div> ,
 				key : 'change-cover' ,
+				disabled : this.props.settingItems.notebookMode === 'cover-notebook' ? false : true ,
 			} ,
 			// {
 			// 	label : <div>置顶笔记本</div> ,
@@ -57,11 +58,7 @@ class NoteManagePanel extends Reaxlass {
 				key : 'move-other-sort' ,
 				children : otherSorts.map(sort =>
 					({
-						label : <div
-							onClick = { () => {
-								this.props.updateNotebookInfo('belongSortID' , sort.id);
-							} }
-						>{ sort.title }</div> ,
+						label : <div>{ sort.title }</div> ,
 						key : sort.id ,
 					}) ,
 				) ,
@@ -170,46 +167,55 @@ class NoteManagePanel extends Reaxlass {
 			<div className = { `main-section-header` }>
 				{/*笔记本名称 & dropdown*/ }
 				<div className = "note-title-bar">
-					<div
-						onMouseEnter = { this.handleMouseEnter }
-						onMouseLeave = { this.handleMouseLeave }
-					>
-						{ !siderCollapsed ? (
-							<LeftExpandIcon
-								onclick = { () => {
-									this.setState({
-										isHover : false ,
-										isClicked : true ,
-									} , () => {
-										//点击后，鼠标事件会被 isClicked 屏蔽，避免触发 isHover: true
-										toggleSiderCollapse();
-										// 延迟重置 isClicked，防止鼠标事件干扰
-										setTimeout(() => {
-											this.setState({ isClicked : false });
-										} , 0);
-									});
-								} }
-							/>) : (this.state.isHover ? (
-							<RightExpandIcon
-								onclick = { () => {
-									toggleSiderCollapse();
-								} }
-							/>) : (
-								       <DefaultExpandIcon />
-							       )) }
-					</div>
+					{ siderCollapsed && <LeftExpandIcon
+						onClick = { () => {
+							toggleSiderCollapse();
+						} }
+					/> }
+					
+					{/*<div*/}
+					{/*	onMouseEnter = { this.handleMouseEnter }*/}
+					{/*	onMouseLeave = { this.handleMouseLeave }*/}
+					{/*>*/}
+					{/*	{ !siderCollapsed ? (*/}
+					{/*		<LeftExpandIcon*/}
+					{/*			onclick = { () => {*/}
+					{/*				this.setState({*/}
+					{/*					isHover : false ,*/}
+					{/*					isClicked : true ,*/}
+					{/*				} , () => {*/}
+					{/*					//点击后，鼠标事件会被 isClicked 屏蔽，避免触发 isHover: true*/}
+					{/*					toggleSiderCollapse();*/}
+					{/*					// 延迟重置 isClicked，防止鼠标事件干扰*/}
+					{/*					setTimeout(() => {*/}
+					{/*						this.setState({ isClicked : false });*/}
+					{/*					} , 0);*/}
+					{/*				});*/}
+					{/*			} }*/}
+					{/*		/>) : (this.state.isHover ? (*/}
+					{/*		<RightExpandIcon*/}
+					{/*			onclick = { () => {*/}
+					{/*				toggleSiderCollapse();*/}
+					{/*			} }*/}
+					{/*		/>) : (*/}
+					{/*			       <DefaultExpandIcon />*/}
+					{/*		       )) }*/}
+					{/*</div>*/}
 					{/*当前笔记本*/ }
-					{ isRenaming ?
-					  (<input
-						  type = "text"
-						  defaultValue = { this.state.title }
-						  onBlur = { this.handleBlur }
-						  onKeyDown = { this.handleKeyDown }
-						  ref = { this.inputRenameRef }
-						  className = "rename-notebook-title-input"
-						  maxLength='12'
-					  />) :
-					  (<h2>{ this.state.title }({ notesAmount })</h2>) }
+					
+					<div className = "emoji-and-title">
+						<span className = "notebook-emoji">{ currentNotebook.emoji }</span>
+						{ isRenaming ? <input
+							type = "text"
+							defaultValue = { this.state.title }
+							onBlur = { this.handleBlur }
+							onKeyDown = { this.handleKeyDown }
+							ref = { this.inputRenameRef }
+							className = "rename-notebook-title-input"
+							maxLength = "16"
+						/> : <span className = "notebook-title">{ this.state.title }({ notesAmount })</span> }
+					</div>
+					  
 					
 					{/*笔记本下拉操作菜单*/ }
 					{ !isRenaming && !editInFavoritesOrSearchPageOrRecycle && <Dropdown
@@ -223,10 +229,18 @@ class NoteManagePanel extends Reaxlass {
 									});
 								}
 								if ( key === 'change-cover' ) {
-									this.props.openModal('changeCover');
+									openModal('changeCover');
 								}
 								if ( key === 'delete-notebook' ) {
-									this.props.openModal('deleteConfirm');
+									openModal('deleteConfirm');
+								}
+								const otherSorts = this.props.sorts.filter(sort => sort.id !== this.props.currentNotebook.belongSortID);
+								if (otherSorts.some(sort => sort.id === key)) {
+									// 找到被点击的 sort.id
+									const selectedSort = otherSorts.find(sort => sort.id === key);
+									if (selectedSort) {
+										this.props.updateNotebookInfo('belongSortID', selectedSort.id);
+									}
 								}
 							} ,
 						} }
@@ -658,7 +672,7 @@ class DownOutLinedIcon extends Component {
 class DefaultExpandIcon extends Component {
 	render () {
 		return <svg
-			className = "default-expand-icon"
+			className = "default-expand-icon expand-icon"
 			style = { {
 				width : '24px' ,
 				height : '24px' ,
@@ -715,47 +729,45 @@ class RightExpandIcon extends Component {
 
 class LeftExpandIcon extends Component {
 	render () {
-		return <div
-			className = "expand-icon"
-			onClick = { () => {
-				this.props.onclick();
-			} }
-		>
-			<svg
-				className = "left-expand-icon"
-				style = { {
-					width : '20px' ,
-					height : '20px' ,
-					verticalAlign : 'middle' ,
-					fill : ' #555' ,
-					overflow : 'hidden' ,
-				} }
-				viewBox = "0 0 1024 1024"
-				version = "1.1"
-				xmlns = "http://www.w3.org/2000/svg"
-				p-id = "48865"
-			>
-				<path
-					d = "M565.824 512l384.704-384.64000001a48.704 48.704 0 0 0 1.024-68.8 48.704 48.704 0 0 0-68.8 0.96000001L465.344 476.736a49.92 49.92 0 0 0-11.136 17.408c-0.896 2.112-0.89600001 4.48-1.472 6.71999999-0.768 3.648-1.984 7.296-1.98399999 11.13600001s1.152 7.424 1.98399999 11.13600001c0.576 2.176 0.576 4.608 1.472 6.71999999a49.28 49.28 0 0 0 11.136 17.408l417.344 417.28a48.64 48.64 0 0 0 68.8 1.024 48.64 48.64 0 0 0-1.024-68.736L565.824 512z"
-					fill = "#555"
-					p-id = "48866"
-				></path>
-				<path
-					d = "M173.76 512l384.70400001-384.64a48.704 48.704 0 0 0 1.02399999-68.80000001 48.64 48.64 0 0 0-68.864 0.89600001l-417.28 417.216a49.92 49.92 0 0 0-11.136 17.408c-0.896 2.112-0.89600001 4.48-1.40800001 6.784-0.832 3.648-2.048 7.296-2.04799999 11.136s1.216 7.424 2.048 11.072c0.57600001 2.24 0.576 4.608 1.408 6.784a49.28 49.28 0 0 0 11.136 17.408l417.28 417.21600001a48.64 48.64 0 0 0 68.864 1.08799998 48.704 48.704 0 0 0-0.96-68.79999999L173.76 512z"
-					fill = "#555"
-					p-id = "48867"
-				></path>
-			</svg>
-		</div>;
+		return <>
+			<Tooltip  title='展开侧边栏' placement='bottom' arrow={false}>
+				<div
+					className = "expand-icon"
+					onClick = { () => {
+						this.props.onClick();
+					} }
+				>
+					<svg
+						t = "1739990338459"
+						className = "icon"
+						viewBox = "0 0 1024 1024"
+						version = "1.1"
+						xmlns = "http://www.w3.org/2000/svg"
+						p-id = "251109"
+						width = "22"
+						height = "22"
+					>
+						<path
+							d = "M192 162.133333a29.866667 29.866667 0 0 0-29.866667 29.866667v640a29.866667 29.866667 0 0 0 29.866667 29.866667h640a29.866667 29.866667 0 0 0 29.866667-29.866667v-640a29.866667 29.866667 0 0 0-29.866667-29.866667h-640z m-98.133333 29.866667a98.133333 98.133333 0 0 1 98.133333-98.133333h640a98.133333 98.133333 0 0 1 98.133333 98.133333v640a98.133333 98.133333 0 0 1-98.133333 98.133333h-640a98.133333 98.133333 0 0 1-98.133333-98.133333v-640z"
+							fill = "#555555"
+							p-id = "251110"
+						></path>
+						<path
+							d = "M341.333333 93.866667a34.133333 34.133333 0 0 1 34.133334 34.133333v768a34.133333 34.133333 0 0 1-68.266667 0V128a34.133333 34.133333 0 0 1 34.133333-34.133333z"
+							fill = "#555555"
+							p-id = "251111"
+						></path>
+						<path
+							d = "M243.2 896a34.133333 34.133333 0 0 1 34.133333-34.133333h128a34.133333 34.133333 0 1 1 0 68.266666h-128a34.133333 34.133333 0 0 1-34.133333-34.133333zM243.2 128a34.133333 34.133333 0 0 1 34.133333-34.133333h128a34.133333 34.133333 0 1 1 0 68.266666h-128a34.133333 34.133333 0 0 1-34.133333-34.133333z"
+							fill = "#555555"
+							p-id = "251112"
+						></path>
+					</svg>
+				</div>
+			</Tooltip>
+		</>
 	}
 }
-
-
-
-
-
-
-
 
 
 export { NoteManagePanel };

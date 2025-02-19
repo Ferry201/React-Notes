@@ -694,7 +694,7 @@ const RichTextEditor = ({
 					 type = "text"
 					 className = "note-item-title-input"
 					 placeholder = "标题"
-					 maxLength={15}
+					 maxLength={16}
 					 value={noteTitle}
 					 onChange = { (e) => {
 						 setNoteTitle(e.target.value);

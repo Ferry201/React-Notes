@@ -34,7 +34,7 @@ export class NoteSidebar extends Component {
 	}
 	
 	state = {
-		siderbarWidth : 448 ,
+		siderbarWidth : 458 ,
 		searchKeyword : '' ,
 		isRenameSort:false,
 	};
@@ -97,6 +97,7 @@ export class NoteSidebar extends Component {
 	
 	render () {
 		const {
+			toggleSiderCollapse,
 			siderCollapsed ,
 			resizing ,
 			toggleResizing ,
@@ -123,7 +124,8 @@ export class NoteSidebar extends Component {
 						onBlur = { this.handleBlurRenameInput }
 						onKeyDown = { this.handleKeyDown }
 						ref = { this.renameInputRef }
-						className = "rename-sort-input"
+						maxLength='16'
+						className = "rename-sort-input"                    
 					/> :
 						  <span>{ title }({ notebooksInSort.length })</span>
 					   }</div>
@@ -174,11 +176,11 @@ export class NoteSidebar extends Component {
 				width = { siderCollapsed ? 0 : this.state.siderbarWidth }
 				axis = "x" // 只允许水平拖动
 				minConstraints = { [
-					356 ,
+					366 ,
 					0 ,
 				] } // 设置最小宽度
 				maxConstraints = { [
-					550 ,
+					556 ,
 					0 ,
 				] } // 设置最大宽度
 				resizeHandles = { ['e'] } // 右边缘 east
@@ -212,18 +214,33 @@ export class NoteSidebar extends Component {
 						/>
 						
 						<span className = "notebooks-list-text">笔记本列表</span>
-						<Tooltip
-							title = "添加分类"
-							placement = "right"
+						
+						<span className='collapse-sidebar-and-add-new-sort'>
+							<Tooltip
+							title = "收起侧边栏"
+							placement = "bottom"
 							arrow = { false }
 						>
 							<span
-								className = "topbar-icon add-new-sort-icon"
+								className = "topbar-icon collapse-sidebar-icon"
 								onClick = { () => {
-									this.props.openModal('InputNewSortModal');
+									toggleSiderCollapse()
 								} }
-							><AddNewSortIcon /></span>
+							><DrawerIcon /></span>
 						</Tooltip>
+							<Tooltip
+								title = "添加分类"
+								placement = "bottom"
+								arrow = { false }
+							>
+								<span
+									className = "topbar-icon add-new-sort-icon"
+									onClick = { () => {
+										this.props.openModal('InputNewSortModal');
+									} }
+								><AddNewSortIcon /></span>
+							</Tooltip>
+						</span>
 					</div>
 					<Divider style = { { borderColor : '#e4e4e4' } } />
 					
@@ -274,7 +291,7 @@ export class NoteSidebar extends Component {
 										notebooksInSort = { notebooksInSort }
 									/>
 									{/*笔记本列表*/ }
-									{ !sort.isCollapse && (!this.props.settingItems.coverMode?<VisualNotebookList
+									{ !sort.isCollapse && (this.props.settingItems.notebookMode==='cover-notebook'?<VisualNotebookList
 										notebooks = { notebooksInSort }
 										selectedNotebookId = { this.props.selectedNotebookId }
 										handleToggleNoteBook = { this.props.handleToggleNoteBook }
@@ -309,7 +326,12 @@ const PlainNotebookList = ({
 				onClick = { () => {
 					handleToggleNoteBook(book);
 				} }
-			><PlainNotebookIcon/>{ book.title }</div>;
+			>
+				<span className = "plain-notebook-icon">
+					{/*<PlainNotebookIcon />*/}
+					{book.emoji}
+				</span>
+				{ book.title }</div>;
 		}) }
 	</div>;
 };
@@ -481,8 +503,82 @@ const ListSortOptions = ({
 	</Dropdown>);
 };
 
-
-const EditingIcon=()=> {
+//
+// const DrawerIcon=()=> {
+// 	return <svg
+// 		t = "1739990308544"
+// 		className = "icon"
+// 		viewBox = "0 0 1024 1024"
+// 		version = "1.1"
+// 		xmlns = "http://www.w3.org/2000/svg"
+// 		p-id = "250843"
+// 		width = "20"
+// 		height = "20"
+// 	>
+// 		<path
+// 			d = "M864 64H160a96 96 0 0 0-96 96v704a96 96 0 0 0 96 96h768a32 32 0 0 0 32-32V160a96 96 0 0 0-96-96zM160 896a32 32 0 0 1-32-32V160a32 32 0 0 1 32-32h160v768z m736 0H384V128h480a32 32 0 0 1 32 32z"
+// 			p-id = "250844"
+// 			fill = "#555555"
+// 		></path>
+// 	</svg>
+// }
+const DrawerIcon = () => {
+	return <>
+		{/*<svg*/}
+		{/*	t = "1739990519954"*/}
+		{/*	className = "icon"*/}
+		{/*	viewBox = "0 0 1024 1024"*/}
+		{/*	version = "1.1"*/}
+		{/*	xmlns = "http://www.w3.org/2000/svg"*/}
+		{/*	p-id = "251371"*/}
+		{/*	width = "22"*/}
+		{/*	height = "22"*/}
+		{/*>*/}
+		{/*	<path*/}
+		{/*		d = "M832 928H192c-52.928 0-96-43.072-96-96V192c0-52.928 43.072-96 96-96h640c52.928 0 96 43.072 96 96v640c0 52.928-43.072 96-96 96zM192 160c-17.632 0-32 14.368-32 32v640c0 17.664 14.368 32 32 32h640a32 32 0 0 0 32-32V192c0-17.632-14.336-32-32-32H192z"*/}
+		{/*		p-id = "251372"*/}
+		{/*		fill = "#555555"*/}
+		{/*	></path>*/}
+		{/*	<path*/}
+		{/*		d = "M341.344 928a32 32 0 0 1-32-32V128a32 32 0 0 1 64 0v768a32 32 0 0 1-32 32z"*/}
+		{/*		p-id = "251373"*/}
+		{/*		fill = "#555555"*/}
+		{/*	></path>*/}
+		{/*	<path*/}
+		{/*		d = "M405.344 928h-128a32 32 0 1 1 0-64h128a32 32 0 1 1 0 64zM405.344 160h-128a32 32 0 0 1 0-64h128a32 32 0 0 1 0 64z"*/}
+		{/*		p-id = "251374"*/}
+		{/*		fill = "#555555"*/}
+		{/*	></path>*/}
+		{/*</svg>*/}
+		<svg
+			t = "1739990338459"
+			className = "icon"
+			viewBox = "0 0 1024 1024"
+			version = "1.1"
+			xmlns = "http://www.w3.org/2000/svg"
+			p-id = "251109"
+			width = "22"
+			height = "22"
+		>
+			<path
+				d = "M192 162.133333a29.866667 29.866667 0 0 0-29.866667 29.866667v640a29.866667 29.866667 0 0 0 29.866667 29.866667h640a29.866667 29.866667 0 0 0 29.866667-29.866667v-640a29.866667 29.866667 0 0 0-29.866667-29.866667h-640z m-98.133333 29.866667a98.133333 98.133333 0 0 1 98.133333-98.133333h640a98.133333 98.133333 0 0 1 98.133333 98.133333v640a98.133333 98.133333 0 0 1-98.133333 98.133333h-640a98.133333 98.133333 0 0 1-98.133333-98.133333v-640z"
+				fill = "#555555"
+				p-id = "251110"
+			></path>
+			<path
+				d = "M341.333333 93.866667a34.133333 34.133333 0 0 1 34.133334 34.133333v768a34.133333 34.133333 0 0 1-68.266667 0V128a34.133333 34.133333 0 0 1 34.133333-34.133333z"
+				fill = "#555555"
+				p-id = "251111"
+			></path>
+			<path
+				d = "M243.2 896a34.133333 34.133333 0 0 1 34.133333-34.133333h128a34.133333 34.133333 0 1 1 0 68.266666h-128a34.133333 34.133333 0 0 1-34.133333-34.133333zM243.2 128a34.133333 34.133333 0 0 1 34.133333-34.133333h128a34.133333 34.133333 0 1 1 0 68.266666h-128a34.133333 34.133333 0 0 1-34.133333-34.133333z"
+				fill = "#555555"
+				p-id = "251112"
+			></path>
+		</svg>
+	</>
+}
+const EditingIcon = () => {
 	return <svg
 		t = "1739872645433"
 		className = "icon"
@@ -555,45 +651,28 @@ const ExpandSortNotebookIcon = () => {
 };
 const AddNewSortIcon = () => {
 	return <svg
-		t = "1739011322726"
+		t = "1739988955426"
 		className = "icon"
 		viewBox = "0 0 1024 1024"
 		version = "1.1"
 		xmlns = "http://www.w3.org/2000/svg"
-		p-id = "117229"
-		width = "22"
-		height = "22"
+		p-id = "229968"
+		width = "26"
+		height = "26"
 	>
 		<path
-			d = "M901.05641384 103.49076547a38.90564137 38.90564137 0 0 1 1.45896152 77.7853457L901.05641384 181.30204823H45.13230341a38.90564137 38.90564137 0 0 1-1.45896154-77.78534564L45.13230341 103.49076547h855.92411043zM901.05641384 414.73589654a38.90564137 38.90564137 0 0 1 1.45896152 77.78534567L901.05641384 492.54717931H45.16472476a38.90564137 38.90564137 0 0 1-1.45896156-77.78534566l1.45896156-0.02593711H901.05641384zM550.90564137 725.98102762a38.90564137 38.90564137 0 0 1 1.45896157 77.78534567L550.90564137 803.79231035H45.16472476a38.90564137 38.90564137 0 0 1-1.45896156-77.78534565l1.45896156-0.02593708H550.90564137zM978.86769659 726.0069647a38.90564137 38.90564137 0 0 1 1.45896154 77.78534565l-1.45896154 0.02593713h-233.43384828a38.90564137 38.90564137 0 0 1-1.45896157-77.7788614l1.45896157-0.03242138h233.43384828z"
+			d = "M819.2 189.44a30.72 30.72 0 0 1 1.152 61.41952L819.2 250.88H143.36a30.72 30.72 0 0 1-1.152-61.41952L143.36 189.44h675.84zM819.2 435.2a30.72 30.72 0 0 1 1.152 61.41952L819.2 496.64H143.3856a30.72 30.72 0 0 1-1.152-61.41952l1.152-0.02048H819.2zM542.72 680.96a30.72 30.72 0 0 1 1.152 61.41952L542.72 742.4H143.3856a30.72 30.72 0 0 1-1.152-61.41952l1.152-0.02048H542.72zM880.64 680.98048a30.72 30.72 0 0 1 1.152 61.41952l-1.152 0.02048h-184.32a30.72 30.72 0 0 1-1.152-61.4144l1.152-0.0256h184.32z"
 			fill = "#555555"
-			p-id = "117230"
+			p-id = "229969"
 		></path>
 		<path
-			d = "M862.15077245 609.29004056a38.90564137 38.90564137 0 0 1 38.87970428 37.44667982l0.02593711 1.45896155v233.43384832a38.90564137 38.90564137 0 0 1-77.78534568 1.45896153l-0.02593711-1.45896153v-233.43384832a38.90564137 38.90564137 0 0 1 38.9056414-38.90564137z"
+			d = "M788.48 588.82048a30.72 30.72 0 0 1 30.69952 29.568l0.02048 1.152v184.32a30.72 30.72 0 0 1-61.41952 1.152l-0.02048-1.152v-184.32a30.72 30.72 0 0 1 30.72-30.72z"
 			fill = "#555555"
-			p-id = "117231"
+			p-id = "229970"
 		></path>
 	</svg>
 }
-const SiderbarMenuIcon = () => {
-	return <svg
-		t = "1738935585295"
-		className = "icon"
-		viewBox = "0 0 1024 1024"
-		version = "1.1"
-		xmlns = "http://www.w3.org/2000/svg"
-		p-id = "75556"
-		width = "22"
-		height = "22"
-	>
-		<path
-			d = "M904 160H120c-4.4 0-8 3.6-8 8v64c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-64c0-4.4-3.6-8-8-8z m0 624H120c-4.4 0-8 3.6-8 8v64c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-64c0-4.4-3.6-8-8-8z m0-312H120c-4.4 0-8 3.6-8 8v64c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-64c0-4.4-3.6-8-8-8z"
-			fill = "#555555"
-			p-id = "75557"
-		></path>
-	</svg>;
-};
+
 const MoreOperatesIcon = () => {
 	return <svg
 		t = "1738833067354"
@@ -687,30 +766,7 @@ class RecycleBinIcon extends Component {
 }
 
 
-const FeedbackIcon = () => {
-	return <svg
-		style = { { marginLeft : '16px' } }
-		t = "1734469824786"
-		className = "icon"
-		viewBox = "0 0 1024 1024"
-		version = "1.1"
-		xmlns = "http://www.w3.org/2000/svg"
-		p-id = "62600"
-		width = "20"
-		height = "20"
-	>
-		<path
-			d = "M874 80.5H150.7c-47.4 0-86 38.6-86 86v550c0 1.2 0.1 2.5 0.2 3.7l-0.2 192.2c0 14.5 8.7 27.7 22.2 33.3 4.5 1.9 9.2 2.8 13.8 2.8 9.3 0 18.5-3.6 25.4-10.5l136.2-135.4H874c47.4 0 86-38.6 86-86v-550c0-47.5-38.6-86.1-86-86.1z m14 636c0 7.7-6.3 14-14 14H249.5c-9.8-0.5-19.8 2.9-27.4 10.4l-85.4 84.8 0.1-109.2c0-1.3-0.1-2.5-0.2-3.7V166.5c0-7.7 6.3-14 14-14H874c7.7 0 14 6.3 14 14v550z"
-			p-id = "62601"
-			fill = "#000"
-		></path>
-		<path
-			d = "M750.3 297h-476c-19.9 0-36 16.1-36 36s16.1 36 36 36h475.9c19.9 0 36-16.1 36-36s-16.1-36-35.9-36zM505.5 513.4H274.3c-19.9 0-36 16.1-36 36s16.1 36 36 36h231.2c19.9 0 36-16.1 36-36s-16.1-36-36-36z"
-			p-id = "62602"
-			fill = "#000"
-		></path>
-	</svg>;
-};
+
 
 class SearchIcon extends Component {
 	render () {
@@ -756,29 +812,7 @@ const EditAccountIcon = () => {
 		></path>
 	</svg>;
 };
-const CopyMailIcon = () => {
-	return <svg
-		t = "1734555085112"
-		className = "icon"
-		viewBox = "0 0 1024 1024"
-		version = "1.1"
-		xmlns = "http://www.w3.org/2000/svg"
-		p-id = "9066"
-		width = "24"
-		height = "24"
-	>
-		<path
-			d = "M761.088 715.3152a38.7072 38.7072 0 0 1 0-77.4144 37.4272 37.4272 0 0 0 37.4272-37.4272V265.0112a37.4272 37.4272 0 0 0-37.4272-37.4272H425.6256a37.4272 37.4272 0 0 0-37.4272 37.4272 38.7072 38.7072 0 1 1-77.4144 0 115.0976 115.0976 0 0 1 114.8416-114.8416h335.4624a115.0976 115.0976 0 0 1 114.8416 114.8416v335.4624a115.0976 115.0976 0 0 1-114.8416 114.8416z"
-			p-id = "9067"
-			fill = "#8a8a8a"
-		></path>
-		<path
-			d = "M589.4656 883.0976H268.1856a121.1392 121.1392 0 0 1-121.2928-121.2928v-322.56a121.1392 121.1392 0 0 1 121.2928-121.344h321.28a121.1392 121.1392 0 0 1 121.2928 121.2928v322.56c1.28 67.1232-54.1696 121.344-121.2928 121.344zM268.1856 395.3152a43.52 43.52 0 0 0-43.8784 43.8784v322.56a43.52 43.52 0 0 0 43.8784 43.8784h321.28a43.52 43.52 0 0 0 43.8784-43.8784v-322.56a43.52 43.52 0 0 0-43.8784-43.8784z"
-			p-id = "9068"
-			fill = "#8a8a8a"
-		></path>
-	</svg>;
-};
+
 
 const AvatarIcon = () => {
 	return <svg

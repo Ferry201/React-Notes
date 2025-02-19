@@ -1,5 +1,5 @@
 import React , { useState , useRef , useEffect } from 'react';
-import { Modal , Input ,message} from 'antd';
+import { Modal , Input ,message,Tooltip} from 'antd';
 import './note.css';
 import { v4 as uuidv4 } from 'uuid';
 import dayjs from "dayjs";
@@ -29,45 +29,20 @@ import coverTwentyOne from './img-collection/cover-21.png';
 import coverTwentyTwo from './img-collection/cover-22.png';
 import coverTwentyThree from './img-collection/cover-23.png';
 
-const books = [
-	{ cover : coverDefault } ,
-	{ cover : coverTwentyOne } ,
-	{ cover : coverTwentyTwo } ,
-	{ cover : coverOne } ,
-	{ cover : coverTwo } ,
-	{ cover : coverThree } ,
-	{ cover : coverFour } ,
-	{ cover : coverFive } ,
-	{ cover : coverSix } ,
-	{ cover : coverSeven } ,
-	{ cover : coverEight } ,
-	{ cover : coverNine } ,
-	{ cover : coverTen } ,
-	{ cover : coverEleven } ,
-	{ cover : coverTwelve } ,
-	{ cover : coverThirteen } ,
-	{ cover : coverFourteen } ,
-	{ cover : coverFifteen } ,
-	{ cover : coverSixteen } ,
-	{ cover : coverSeventeen } ,
-	{ cover : coverEighteen } ,
-	{ cover : coverNineteen } ,
-	{ cover : coverTwenty } ,
-	{ cover : coverTwentyThree } ,
-	
-];
 
 
 const NoteBookModal = ({
 	onOk ,
 	showTitleInput = undefined ,//控制是否显示标题输入框，使组件适配更多场景。
+	plainMode=undefined,
 	closeModal ,
 	open ,
 	themeMode,
 }) => {
-	// const [isModalOpen , setIsModalOpen] = useState(false);
 	const [imagePreview , setImagePreview] = useState(null); // 用来存储图片预览的 URL
 	const [titlePreview , setTitlePreview] = useState('');
+	const [expandEmojis , setExpandEmojis] = useState(false);
+	const [emoji , setEmoji] = useState(false);
 	const inputTitleRef = useRef(null);
 	
 	const storedNoteBooks = localStorage.getItem('notebook-array');
@@ -86,34 +61,49 @@ const NoteBookModal = ({
 		closeModal();
 		setImagePreview(null); // 清空图片预览
 		setTitlePreview('');
+		setExpandEmojis(false)
 	};
 	
 	const handleOk = () => {
-		if ( showTitleInput === true ) {
-			if ( imagePreview && titlePreview ) {
+		if ( plainMode === true ) {
+			if ( titlePreview ) {
 				onOk({
 					title : titlePreview ,
-					cover : imagePreview ,
+					cover : coverDefault,
+					emoji : emoji || '📘',
 				});
-				handleCancel();//关闭Modal并重置状态
+				handleCancel();
 			}
 			if ( titlePreview === '' ) {
 				message.warning('请输入标题')
 			}
-			if ( imagePreview === null ) {
-				message.warning('请选择封面')
+		}else{
+			if ( showTitleInput === true ) {
+				if ( imagePreview && titlePreview ) {
+					onOk({
+						title : titlePreview ,
+						cover : imagePreview ,
+						emoji : '📘'
+					});
+					handleCancel();//关闭Modal并重置状态
+				}
+				if ( titlePreview === '' ) {
+					message.warning('请输入标题')
+				}
+				if ( imagePreview === null ) {
+					message.warning('请选择封面')
+				}
+			} else {
+				if ( imagePreview ) {
+					onOk({
+						cover : imagePreview ,
+					});
+					handleCancel();
+				}
+				if ( imagePreview === null ) {
+					message.warning('请选择封面')
+				}
 			}
-		} else {
-			if ( imagePreview ) {
-				onOk({
-					cover : imagePreview ,
-				});
-				handleCancel();
-			}
-			if ( imagePreview === null ) {
-				message.warning('请选择封面')
-			}
-			
 		}
 	};
 	
@@ -142,6 +132,14 @@ const NoteBookModal = ({
 		setTitlePreview(e.target.value);//输入标题时更新预览标题
 	};
 	
+	const handleExpandEmojis=()=>{
+		setExpandEmojis(true)
+	}
+	const handleClickEmoji=(item)=>{
+		setEmoji(item)
+	}
+	
+	
 	return (
 		<>
 			<Modal
@@ -159,54 +157,82 @@ const NoteBookModal = ({
 				afterOpenChange = { handleAfterOpen }
 				wrapClassName= { `addNotebook-modal ${themeMode}` }
 			>
-				<div className = "add-NB-modal-content">
+				<div className = {plainMode?'add-NB-modal-content-plain':"add-NB-modal-content"}>
 					<div className = "edit-NB-info">
 						{ showTitleInput && (<div>
 							
 							<p>输入标题</p>
 							
-							<Input
-								autoFocus={true}
-								type = "text"
-								ref = { inputTitleRef }
-								className = "title-input"
-								value = { titlePreview }
-								onChange = { handleInputTitle }
-								placeholder = "输入标题..."
-								allowClear
-								maxLength='12'
-							/>
+							<div className = "plain-mode-emoji-input">
+								{ plainMode &&
+									<Tooltip
+										title = "添加emoji"
+										placement = "left"
+									>
+										<span
+											className = "add-emoji-icon"
+											onClick = { handleExpandEmojis }
+										>
+											{ emoji ? <span>{ emoji }</span> : <AddEmojiIcon /> }
+										
+										</span>
+									</Tooltip> 
+								}
+								<Input
+									autoFocus = { true }
+									type = "text"
+									ref = { inputTitleRef }
+									className = "title-input"
+									value = { titlePreview }
+									onChange = { handleInputTitle }
+									placeholder = "输入标题..."
+									allowClear
+									maxLength = "16"
+								/></div>
 						</div>) }
 						
-						<p>选择封面</p>
-						<div className = "img-cover-box">
-							{/*默认封面图*/ }
-							{ books.map((book , index) => {
-								return (<img
-									key = { index }
-									src = { book.cover }
-									alt = { `cover-${ index }` }
-									width = "50"
-									height = "64"
-									onClick = { () => handleCoverClick(book.cover) }
-								/>);
+						{ plainMode && expandEmojis && (<div>
+							<p>选择表情</p>
+							{ emojiArray.map((item , index) => {
+								return <span
+									key = { `${ item }-${ index }` }
+									className = "emoji-item"
+									onClick={()=>{handleClickEmoji(item)}}
+								>{ item }</span>;
 							}) }
-						</div>
-						<p>或上传自定义封面</p>
-						<label
-							htmlFor = "fileInput"
-							className = "cover-file-upload"
-						>点击上传
-						</label>
-						<input
-							type = "file"
-							id = "fileInput"
-							accept = "image/*"
-							onChange = { handleFileChange }
-							style = { { display : 'none' } }
-						/>
+						</div>) }
+						
+						{ !plainMode&&<div>
+							<p>选择封面</p>
+							<div className = "img-cover-box">
+								{/*默认封面图*/ }
+								{ books.map((book , index) => {
+									return (<img
+										key = { index }
+										src = { book.cover }
+										alt = { `cover-${ index }` }
+										width = "50"
+										height = "64"
+										onClick = { () => handleCoverClick(book.cover) }
+									/>);
+								}) }
+							</div>
+							<p>或上传自定义封面</p>
+							<label
+								htmlFor = "fileInput"
+								className = "cover-file-upload"
+							>点击上传
+							</label>
+							<input
+								type = "file"
+								id = "fileInput"
+								accept = "image/*"
+								onChange = { handleFileChange }
+								style = { { display : 'none' } }
+							/>
+						</div> }
 					</div>
-					<div className = "preview-area">
+					{!plainMode&& <div className = "preview-area">
 						{ imagePreview ? (
 							<div className = "preview-img">
 								<img
@@ -218,12 +244,141 @@ const NoteBookModal = ({
 						) : (
 							  <span style = { { color : 'lightgray' } }>没有预览图片</span> // 没有选择图片时显示的文本
 						  ) }
-					</div>
+					</div> }
 				</div>
 			</Modal>
 		</>
 	);
 };
+
+
+
+const books = [
+	{ cover : coverDefault } ,
+	{ cover : coverTwentyOne } ,
+	{ cover : coverTwentyTwo } ,
+	{ cover : coverOne } ,
+	{ cover : coverTwo } ,
+	{ cover : coverThree } ,
+	{ cover : coverFour } ,
+	{ cover : coverFive } ,
+	{ cover : coverSix } ,
+	{ cover : coverSeven } ,
+	{ cover : coverEight } ,
+	{ cover : coverNine } ,
+	{ cover : coverTen } ,
+	{ cover : coverEleven } ,
+	{ cover : coverTwelve } ,
+	{ cover : coverThirteen } ,
+	{ cover : coverFourteen } ,
+	{ cover : coverFifteen } ,
+	{ cover : coverSixteen } ,
+	{ cover : coverSeventeen } ,
+	{ cover : coverEighteen } ,
+	{ cover : coverNineteen } ,
+	{ cover : coverTwenty } ,
+	{ cover : coverTwentyThree } ,
+
+];
+
+const emojiArray=[
+	'📚',
+	'📔',
+	'📕',
+	'📗',
+	'📘',
+	'📙',
+	'📒',
+	'📋',
+	'📄',
+	'📜',
+	'🗓️',
+	'🍔',
+	'🥝',
+	'🍇',
+	'🥑',
+	'🍉',
+	'🍒',
+	'🥬',
+	'🍜',
+	'🍙',
+	'🍩',
+	'🥯',
+	'🍫',
+	'🍧',
+	'🍹',
+	'🦢',
+	'🦊',
+	'🐾',
+	'🦄',
+	'🪺',
+	'🦚',
+	'🪶',
+	'🦩',
+	'🦜',
+	'🕊️',
+	'🐦‍⬛',
+	'🐬',
+	'🦭',
+	'🦋',
+	'🐜',
+	'🐞',
+	'🦎',
+	'🦀',
+	'🐻‍❄️',
+	'💵',
+	'💳',
+	'☎️',
+	'📷',
+	'🎵',
+	'👓',
+	'👗',
+	'🏡',
+	'🏕️',
+	'🎄',
+	'⚽',
+	'❤️',
+	'💛',
+	'💚',
+	'💜',
+	'🩵',
+	'🩶',
+	'💗',
+	'👄',
+	'😀',
+	'😊',
+	'💀',
+]
+const AddEmojiIcon=()=> {
+	return <>
+			<svg
+				t = "1739906594897"
+				className = "icon"
+				viewBox = "0 0 1024 1024"
+				version = "1.1"
+				xmlns = "http://www.w3.org/2000/svg"
+				p-id = "68654"
+				width = "20"
+				height = "20"
+			>
+				<path
+					d = "M643.008 430.4a53.824 53.824 0 1 0 0-107.712 53.824 53.824 0 0 0 0 107.712z m-262.08 0a53.824 53.824 0 1 0 0-107.712 53.824 53.824 0 0 0 0 107.712zM723.84 544.64H300.16a16.128 16.128 0 0 0-16.192 16.064v0.128C283.968 674.944 391.04 780.8 512 780.8c118.016 0 228.032-105.28 228.032-219.968v-0.128a16.128 16.128 0 0 0-16.192-16.064z"
+					fill = "#666666"
+					p-id = "68655"
+				></path>
+				<path
+					d = "M512 64a448 448 0 0 1 443.456 512.064h-64.768A384 384 0 1 0 512 896v63.936A448 448 0 0 1 512 64z"
+					fill = "#666666"
+					p-id = "68656"
+				></path>
+				<path
+					d = "M863.936 672a32 32 0 0 1 32 32v96h96a32 32 0 1 1 0 64h-96V960a32 32 0 1 1-64 0v-96h-96a32 32 0 0 1 0-64h96V704a32 32 0 0 1 32-32z"
+					fill = "#666666"
+					p-id = "68657"
+				></path>
+			</svg>
+	</>
+}
 
 export { NoteBookModal };
 
