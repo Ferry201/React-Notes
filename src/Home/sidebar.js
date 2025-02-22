@@ -176,7 +176,7 @@ export class NoteSidebar extends Component {
 				width = { siderCollapsed ? 0 : this.state.siderbarWidth }
 				axis = "x" // 只允许水平拖动
 				minConstraints = { [
-					366 ,
+					356 ,
 					0 ,
 				] } // 设置最小宽度
 				maxConstraints = { [
@@ -374,14 +374,14 @@ const SidebarMenu = ({
 	openModal,
 }) => {
 	const modeOptions = [
-		// {
-		// 	label : <div>收藏夹</div> ,
-		// 	key : 'dropdown-favorites' ,
-		// } ,
 		{
 			label : <div>设置</div> ,
 			key : 'dropdown-setting' ,
 		} ,
+		// {
+		// 	label : <div>收藏夹</div> ,
+		// 	key : 'dropdown-favorites' ,
+		// } ,
 		{
 			label : <div>回收站</div> ,
 			key : 'dropdown-recycle-bin' ,

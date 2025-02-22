@@ -9,7 +9,8 @@ import {
 	message ,
 	Popover ,
 	Tooltip,
-	Popconfirm
+	Popconfirm,
+	Drawer,
 } from 'antd';
 import RichTextEditor from '../RichTextEditor/RichTextEditor';
 
@@ -52,9 +53,11 @@ const RenderContent = ({
 	notebooks,
 	changeNote ,
 	deleteNote ,
+	handleDeleteCheckedNote,
 	ShowMode ,
 	currentNotebook ,
 	pinNote ,
+	handlePinCheckedNote,
 	favoriteNote ,//收藏笔记
 	isShowFavorites ,//是否展示收藏夹笔记列表
 	openModal ,
@@ -63,6 +66,7 @@ const RenderContent = ({
 	keyword,
 	isShowSearchResults,
 	handleMoveNote,
+	handleMoveCheckedNote,
 	isShowRecycleNotes,
 	settingItems,
 }) => {
@@ -74,6 +78,25 @@ const RenderContent = ({
 	const [listGap , setListGap] = useState('');
 	const [cardModeColumn , setCardModeColumn] = useState('');
 	const [gridModeColumn , setGridModeColumn] = useState('');
+	const [isDrawerVisible, setIsDrawerVisible] = useState(false);
+	const [checkedNoteIdArray , setCheckedNoteIdAray] = useState([]);
+	
+	
+	
+	
+	const handleClickDrawerOutside = (event) => {
+		if (event.target.closest('.animated-div') === null) {
+			setIsDrawerVisible(false);
+			setCheckedNoteIdAray([])
+		}
+	};
+
+	useEffect(() => {
+		document.addEventListener('click', handleClickDrawerOutside);
+		return () => {
+			document.removeEventListener('click', handleClickDrawerOutside);
+		};
+	}, []);
 	
 	let notebooksArray=notebooks;
 	let notes = noteList;
@@ -223,8 +246,27 @@ const RenderContent = ({
 	
 	let showFavoritesOrSearchResults = isShowFavoritesNotes === true || showSearchResults === true || showRecycleNotes === true;
 	
+	const handleChechedNote = (id) => {
+		if ( checkedNoteIdArray.some(checkedNoteId => checkedNoteId === id) ) {
+			if ( checkedNoteIdArray.length === 1 ) {
+				setIsDrawerVisible(false);
+			}
+			setCheckedNoteIdAray(checkedNoteIdArray.filter(checkedNoteId => checkedNoteId !== id));
+			
+		} else {
+			setCheckedNoteIdAray([...checkedNoteIdArray , id]);
+		}
+		
+		if ( checkedNoteIdArray.length === 0 && !isDrawerVisible ){
+			setIsDrawerVisible(true)
+		}
+		
+	};
 	
-
+	const clearCheckedNotes=()=>{
+		setCheckedNoteIdAray([])
+		setIsDrawerVisible(false)
+	}
 	
 	
 	//通用部分
@@ -240,85 +282,100 @@ const RenderContent = ({
 				titleClassName ,
 				notebook ,
 			} = this.props;
+			let isChecked=checkedNoteIdArray.some(checkedNoteId => checkedNoteId === id);
+			
 			return <div
 				key = { id }
-				className = { `${ itemClassName }` }
-				onClick = { () =>{
-						changeNote(noteTitle , noteContent , id)
+				className = { `${ itemClassName } ${ isChecked ? 'checked-note' : '' }` }
+				onClick = { (e) =>{
+					   if(checkedNoteIdArray.length===0){
+						   changeNote(noteTitle , noteContent , id)
+					   }else{
+						   e.stopPropagation();
+						   handleChechedNote(id);
+					   }
 				} }
 			>
-				{ noteTitle && <span className = "note-item-title">
+				<div className='common-note-item'>{ noteTitle && <span className = "note-item-title">
 					{ currentNotebook.id === 'searchResults-notes-id' ?
 					  <HighlightedKeyword
-						  text={noteTitle}
-						  keyword={keyword}
-						  maxLength={30}
-						  themeMode={settingItems.themeMode}
+						  text = { noteTitle }
+						  keyword = { keyword }
+						  maxLength = { 30 }
+						  themeMode = { settingItems.themeMode }
 					  /> :
 					  noteTitle }
 				</span> }
-				<span className = { `${ titleClassName }` }>
-					{ currentNotebook.id === 'searchResults-notes-id' ?
-					 <HighlightedKeyword
-						 text = { convertFromRaw(noteContent).getPlainText() }
-						 keyword = { keyword }
-						 maxLength={50}
-						 themeMode={settingItems.themeMode}
-					 /> :
-					 convertFromRaw(noteContent).getPlainText()}
-				</span>
-				{/*note details : 时间 ,所属书籍,置顶 ,收藏 ,移动 , 删除 */ }
-				<div className = "note-details">
-					<FormatTime id = { id } />
-					
-					{ showFavoritesOrSearchResults && <div
-						className = { `show-note-book-text` }
-					>{ notebook }</div> }
-					
-					{ currentNotebook.id !== 'recycle-notes-id'&&
-					<div
-						className = "note-operation-buttons"
-						onClick = { (e) => {
-							e.stopPropagation();
-						} }
-					>
-						{ !showFavoritesOrSearchResults && <PinNoteIcon
-							isPinned = { isPinned }
-							handlePinNote = { () => {
-								onPinNote(id);
-							} }
-						/> }
+					<span className = { `${ titleClassName }` }>
+						{ currentNotebook.id === 'searchResults-notes-id' ?
+						  <HighlightedKeyword
+							  text = { convertFromRaw(noteContent).getPlainText() }
+							  keyword = { keyword }
+							  maxLength = { 50 }
+							  themeMode = { settingItems.themeMode }
+						  /> :
+						  convertFromRaw(noteContent).getPlainText() }
+					</span>
+					{/*note details : 时间 ,所属书籍,置顶 ,收藏 ,移动 , 删除 */ }
+					<div className = "note-details">
+						<FormatTime id = { id } notes={notes}/>
 						
-						{/*<FavoriteIcon*/}
-						{/*	isFavorited = { isFavorited }*/}
-						{/*	handleFavoriteNote = { () => {*/}
-						{/*		onFavoriteNote(id);*/}
-						{/*	} }*/}
-						{/*/>*/}
+						{ showFavoritesOrSearchResults && <div
+							className = { `show-note-book-text` }
+						>{ notebook }</div> }
 						
-						{ !showFavoritesOrSearchResults && <NotebooksPopover id = { id } /> }
-						
-						<Popconfirm
-							destroyTooltipOnHide = { true }
-							placement = "top"
-							overlayClassName = "note-delete-popConfirm"
-							title = "确定删除笔记吗?"
-							description = "删除后的笔记将放入回收站"
-							okText = "删除"
-							okType='danger'
-							cancelText = "取消"
-							onConfirm = { () => {
-								onDeleteNote(id);
-							} }
-							// getPopupContainer = { (triggerNode) => triggerNode.parentElement }
-						>
-							<div>
-								<DeleteIcon />
+						{ currentNotebook.id !== 'recycle-notes-id' &&
+							<div
+								className = "note-operation-buttons"
+								onClick = { (e) => {
+									e.stopPropagation();
+								} }
+							>
+								{ !showFavoritesOrSearchResults && <PinNoteIcon
+									isPinned = { isPinned }
+									handlePinNote = { () => {
+										onPinNote(id);
+									} }
+								/> }
+								
+								{/*<FavoriteIcon*/ }
+								{/*	isFavorited = { isFavorited }*/ }
+								{/*	handleFavoriteNote = { () => {*/ }
+								{/*		onFavoriteNote(id);*/ }
+								{/*	} }*/ }
+								{/*/>*/ }
+								{/*移动到其他笔记*/ }
+								
+								
+								{ !showFavoritesOrSearchResults &&
+									<NotebooksPopover
+										id = { id }
+										notebooksArray = { notebooksArray }
+										currentNotebook = { currentNotebook }
+										handleMoveNote={handleMoveNote}
+										placement='rightBottom'
+									/> }
+								
+								
+								<CopyNoteIcon/>
+								
+								<DeleteConfirm
+									onDeleteNote = { () => {
+										onDeleteNote(id);
+									} }
+								/>
 							</div>
-						</Popconfirm>
+						}
 					</div>
-				}
 				</div>
+				
+				{ !showFavoritesOrSearchResults && <CheckNoteIcon
+					onClick = { (e) => {
+						e.stopPropagation();
+						handleChechedNote(id);
+					} }
+					isChecked={isChecked}
+				/> }
 			</div>;
 		}
 	}
@@ -553,102 +610,29 @@ const RenderContent = ({
 		}
 	}
 	
-	const NotebooksPopover=({ id })=>{
-		
-		let filteredNotebooksID = [
-			currentNotebook.id ,
-			'favorites-notes-id' ,
-			'searchResults-notes-id',
-			'recycle-notes-id',
-		];
-		let otherNotebooks=notebooksArray.filter(({id})=>!filteredNotebooksID.includes(id))
-		
-		return <>
-			{ otherNotebooks.length !== 0 ? <Popover
-				zIndex={100}
-				destroyTooltipOnHide = { true }
-				content = { <MoveNoteContent
-					id = { id }
-					otherNotebooks = { otherNotebooks }
-				/> }
-				placement = "rightBottom"
-				trigger = "click"
-				overlayClassName = "notebooks-popover"
-				// getPopupContainer = { (triggerNode) => triggerNode.parentElement }
-			>
-				<div><MoveNoteToOtherBook otherNotebooks = { otherNotebooks } /></div>
-			</Popover> : <div><MoveNoteToOtherBook otherNotebooks = { otherNotebooks } /></div> }
-		</>
-	}
-	const MoveNoteContent = ({
-		id ,
-		otherNotebooks,
-	}) => {
-		return <div>
-			{otherNotebooks.map((notebook,index)=>{
-				return <div
-					key = { `${ notebook.title }-${ notebook.id }-${ index }` }
-					className = "notebooks-popover-item"
-					onClick = { () => {
-							handleMoveNote(id , notebook);
-					} }
-				>
-					{ notebook.title }
-				</div>
-			})}
-		</div>
-	}
-	const FormatTime = ({ id }) => {
-		const [timeIDArray , setTimeIDArray] = useState([]);
-		
-		useEffect(() => {
-			const fetchTimeArray = () => {
-				
-				let initialTimeArray = notes.map(({
-					id ,
-					saveTime ,
-				}) => ({
-					id ,
-					saveTime ,
-					relativeTime : convertTimestampsToRelativeTimes(saveTime) ,
-				}));
-				setTimeIDArray(initialTimeArray);
-			};
-			
-			fetchTimeArray();
-			
-			const timer = setInterval(() => {
-				
-				setTimeIDArray(prevTimeIDArray => {
-					return prevTimeIDArray.map(item => {
-						
-						const newRelativeTime = convertTimestampsToRelativeTimes(item.saveTime);
-						if ( item.relativeTime === newRelativeTime ) return item; // 不变时直接返回
-						return {
-							...item ,
-							relativeTime : newRelativeTime ,
-						};
-					});
-				});
-				
-			} , 3000);
-			
-			return () => {
-				clearInterval(timer);
-			};
-		} , []);
-		
-		return (<div className = "note-time">{ timeIDArray.find(item => item.id === id)?.relativeTime }</div>);
-		
-	};
-	
 	return (<div className = "show-mode-box">
+		<OperateDrawer
+			isDrawerVisible = { isDrawerVisible }
+			checkedNoteIdArray = { checkedNoteIdArray }
+			currentNotebook = { currentNotebook }
+			notebooksArray = { notebooksArray }
+			handlePinCheckedNote = { handlePinCheckedNote }
+			handleMoveCheckedNote = { handleMoveCheckedNote }
+			handleDeleteCheckedNote = { handleDeleteCheckedNote }
+			clearCheckedNotes = { clearCheckedNotes }
+		/>
+		
 		{/*输入笔记区*/ }
 		{ currentNotebook.id === 'recycle-notes-id' && contents.length !== 0 &&
 			<div className = "recycleBin-mention">
 				<span>回收站的笔记会在15天后删除</span>
-				<span onClick={()=>{openModal('clearRecycleConfirm')}}>清空回收站</span>
-			</div>}
+				<span
+					onClick = { () => {
+						openModal('clearRecycleConfirm');
+					} }
+				>清空回收站
+				</span>
+			</div> }
 		{ !showFavoritesOrSearchResults && <div className = "add-new-note-section">
 			{ isExpandNoteEditSection ? <div
 				ref = { wrapperRef }
@@ -663,11 +647,11 @@ const RenderContent = ({
 						openModal = { openModal }
 						cancelExpandNoteEditSection = { handleCancelEdit }
 						changeNoteEdit = { changeNote }
-						settingItems={settingItems}
+						settingItems = { settingItems }
 					/>
 				</div>
 				<div className = "edit-item-cancel-button">
-					<CancelEditIcon handleCancel = { handleCancelEdit } />
+					<CancelEditButton handleCancel = { handleCancelEdit } tooltipText='取消编辑'/>
 				</div>
 			</div> : <input
 				  ref = { inputAddNoteRef }
@@ -678,11 +662,11 @@ const RenderContent = ({
 			  /> }
 		</div> }
 		
-		{ contents.length === 0 ? (<div className = {`empty-container`}>
+		{ contents.length === 0 ? (<div className = { `empty-container` }>
 			<EmptyIcon />
-			{ isShowFavoritesNotes ? <p>收藏夹空空如也</p>:
-			  showSearchResults?<p>没有找到匹配的笔记</p> :
-			  showRecycleNotes?<p>回收站空无一物</p>:
+			{ isShowFavoritesNotes ? <p>收藏夹空空如也</p> :
+			  showSearchResults ? <p>没有找到匹配的笔记</p> :
+			  showRecycleNotes ? <p>回收站空无一物</p> :
 			  <p>还没有笔记 , 点击上方输入框创建吧 !</p> }
 		</div>) : (<div className = "show-noteList-box">
 			{ ShowMode === 'list-mode' && <UlMode /> }
@@ -690,8 +674,176 @@ const RenderContent = ({
 			{ ShowMode === 'card-mode' && <CardMode /> }
 		</div>) }
 	</div>);
+	
 };
 
+
+const OperateDrawer = ({
+	isDrawerVisible ,
+	checkedNoteIdArray ,
+	handlePinCheckedNote ,
+	currentNotebook ,
+	notebooksArray ,
+	handleMoveCheckedNote,
+	handleDeleteCheckedNote,
+	clearCheckedNotes,
+}) => {
+	return <div className = { `animated-div ${ isDrawerVisible ? 'show' : '' }` }>
+		
+		<span className='drawer-left'>
+			<CancelEditButton
+				handleCancel = { clearCheckedNotes }
+				tooltipText = "取消所有选中"
+			/>
+			<span>选择了&nbsp;{ checkedNoteIdArray.length }&nbsp;个笔记</span>
+		</span>
+		<span className = "drawer-icon">
+			<span
+				onClick = { () => {
+					handlePinCheckedNote(checkedNoteIdArray);
+					clearCheckedNotes()
+				} }
+			><PinCheckedNoteIcon /></span>
+			<NotebooksPopover
+				id = { checkedNoteIdArray }
+				currentNotebook = { currentNotebook }
+				notebooksArray = { notebooksArray }
+				handleMoveNote = { handleMoveCheckedNote }
+				clearCheckedNotes={clearCheckedNotes}
+				placement='bottom'
+			/>
+			<DeleteConfirm
+				onDeleteNote = { () => {
+					handleDeleteCheckedNote(checkedNoteIdArray);
+				} }
+			/>
+		</span>
+	</div>;
+};
+
+const NotebooksPopover = ({
+	id ,
+	currentNotebook ,
+	notebooksArray ,
+	handleMoveNote ,
+	clearCheckedNotes,
+	placement,
+}) => {
+	
+	let filteredNotebooksID = [
+		currentNotebook.id ,
+		'favorites-notes-id' ,
+		'searchResults-notes-id' ,
+		'recycle-notes-id' ,
+	];
+	let otherNotebooks = notebooksArray.filter(({ id }) => !filteredNotebooksID.includes(id));
+	
+	return <>
+		{ otherNotebooks.length !== 0 && id.length !== 0 ? <Popover
+			zIndex = { 100 }
+			destroyTooltipOnHide = { true }
+			content = { <MoveNoteContent
+				id = { id }
+				otherNotebooks = { otherNotebooks }
+				handleMoveNote = { handleMoveNote }
+				clearCheckedNotes = { clearCheckedNotes }
+			/> }
+			placement = {placement}
+			trigger = "click"
+			overlayClassName = "notebooks-popover"
+			// getPopupContainer = { (triggerNode) => triggerNode.parentElement }
+		>
+			<div><MoveNoteToOtherBook otherNotebooks = { otherNotebooks } /></div>
+		</Popover> : <div><MoveNoteToOtherBook otherNotebooks = { otherNotebooks } /></div> }
+	</>
+}
+
+const MoveNoteContent = ({
+	id ,
+	otherNotebooks,
+	handleMoveNote,
+	clearCheckedNotes
+}) => {
+	return <div>
+		{otherNotebooks.map((notebook,index)=>{
+			return <div
+				key = { `${ notebook.title }-${ notebook.id }-${ index }` }
+				className = "notebooks-popover-item"
+				onClick = { () => {
+					handleMoveNote(id , notebook);
+					if(clearCheckedNotes){
+						clearCheckedNotes()
+					}
+				} }
+			>
+				{ notebook.title }
+			</div>
+		})}
+	</div>
+}
+
+const FormatTime = ({ notes,id }) => {
+	const [timeIDArray , setTimeIDArray] = useState([]);
+	
+	useEffect(() => {
+		const fetchTimeArray = () => {
+			
+			let initialTimeArray = notes.map(({
+				id ,
+				saveTime ,
+			}) => ({
+				id ,
+				saveTime ,
+				relativeTime : convertTimestampsToRelativeTimes(saveTime) ,
+			}));
+			setTimeIDArray(initialTimeArray);
+		};
+		
+		fetchTimeArray();
+		
+		const timer = setInterval(() => {
+			
+			setTimeIDArray(prevTimeIDArray => {
+				return prevTimeIDArray.map(item => {
+					
+					const newRelativeTime = convertTimestampsToRelativeTimes(item.saveTime);
+					if ( item.relativeTime === newRelativeTime ) return item; // 不变时直接返回
+					return {
+						...item ,
+						relativeTime : newRelativeTime ,
+					};
+				});
+			});
+			
+		} , 3000);
+		
+		return () => {
+			clearInterval(timer);
+		};
+	} , []);
+	
+	return (<div className = "note-time">{ timeIDArray.find(item => item.id === id)?.relativeTime }</div>);
+	
+};
+
+const DeleteConfirm=({onDeleteNote})=>{
+	return <>
+		<Popconfirm
+			destroyTooltipOnHide = { true }
+			placement = "top"
+			overlayClassName = "note-delete-popConfirm"
+			title = "确定删除笔记吗?"
+			description = "删除后的笔记将放入回收站"
+			okText = "删除"
+			okType = "danger"
+			cancelText = "取消"
+			onConfirm = {onDeleteNote} 
+		>
+			<div>
+				<DeleteIcon />
+			</div>
+		</Popconfirm></>
+}
 
 const convertTimestampsToRelativeTimes = (timestamp) => {
 	const now = dayjs(); // 当前时间
@@ -756,7 +908,7 @@ const EmptyIcon = () => {
 
 class DeleteIcon extends Component {
 	render () {
-		return <div>
+		return <>
 			<Tooltip title='删除' arrow={false} placement='bottom'>
 				<div className = "note-buttons-common">
 					<svg
@@ -766,8 +918,6 @@ class DeleteIcon extends Component {
 						version = "1.1"
 						xmlns = "http://www.w3.org/2000/svg"
 						p-id = "84258"
-						width = "16"
-						height = "16"
 					>
 						<path
 							d = "M725.333333 170.666667h213.333334v85.333333h-85.333334v640a42.666667 42.666667 0 0 1-42.666666 42.666667H213.333333a42.666667 42.666667 0 0 1-42.666666-42.666667V256H85.333333V170.666667h213.333334V85.333333h426.666666v85.333334zM384 384v341.333333h85.333333V384H384z m170.666667 0v341.333333h85.333333V384h-85.333333z"
@@ -777,7 +927,7 @@ class DeleteIcon extends Component {
 					</svg>
 				</div>
 			</Tooltip>
-		</div>
+		</>
 	}
 }
 
@@ -787,9 +937,7 @@ class FavoriteIcon extends Component {
 		isFavorite : this.props.isFavorited ,
 	};
 	handleFavorite = () => {
-		this.setState({ isFavorite : !this.state.isFavorite } , () => {
-			console.log(this.state.isFavorite);
-		});
+		this.setState({ isFavorite : !this.state.isFavorite });
 	};
 	
 	render () {
@@ -797,8 +945,8 @@ class FavoriteIcon extends Component {
 			isFavorited ,
 			handleFavoriteNote ,
 		} = this.props;
-		return <div>
-			<Tooltip title='收藏' arrow={false} placement='bottom'>
+		return <>
+			<Tooltip title={this.state.isFavorite?'取消收藏':'收藏'} arrow={false} placement='bottom'>
 				<div
 					className = "note-buttons-common star-container"
 					onClick = { () => {
@@ -813,8 +961,6 @@ class FavoriteIcon extends Component {
 						version = "1.1"
 						xmlns = "http://www.w3.org/2000/svg"
 						p-id = "74981"
-						width = "16"
-						height = "16"
 					>
 						<path
 							d = "M1003.52 390.826667c-6.826667-20.48-23.893333-34.133333-44.373333-37.546667l-273.066667-42.666667L563.2 49.493333C554.666667 29.013333 534.186667 17.066667 512 17.066667s-40.96 11.946667-51.2 32.426666l-122.88 261.12-273.066667 40.96c-20.48 3.413333-37.546667 17.066667-44.373333 37.546667-6.826667 20.48-1.706667 42.666667 13.653333 56.32l199.68 204.8L186.026667 938.666667c-3.413333 20.48 5.12 42.666667 23.893333 54.613333 17.066667 11.946667 40.96 13.653333 59.733333 3.413333L512 865.28l244.053333 136.533333c8.533333 3.413333 17.066667 6.826667 25.6 6.826667 30.72 0 56.32-25.6 56.32-56.32 0-6.826667-1.706667-11.946667-3.413333-17.066667l-44.373333-279.893333 199.68-204.8c15.36-17.066667 20.48-39.253333 13.653333-59.733333z"
@@ -824,8 +970,32 @@ class FavoriteIcon extends Component {
 					</svg>
 				</div>
 			</Tooltip>
-		</div>
+		</>
 	}
+}
+const PinCheckedNoteIcon=()=>{
+	return <>
+		<Tooltip title={'置顶'} arrow={false} placement='bottom'>
+			<div
+				className = "note-buttons-common"
+			>
+				<svg
+					t = "1734625720322"
+					className = { `pin-note-button` }
+					viewBox = "0 0 1024 1024"
+					version = "1.1"
+					xmlns = "http://www.w3.org/2000/svg"
+					p-id = "85415"
+				>
+					<path
+						d = "M951.296 424.96L1024 352.256 671.744 0 599.04 72.704l70.144 70.656-168.96 168.96a296.96 296.96 0 0 0-286.72 75.264L143.36 458.24 72.704 387.584 0 460.8l245.248 245.248-139.776 139.776 72.704 72.704 140.288-140.288L563.2 1024l72.704-72.704-70.144-70.656 70.144-70.144a296.96 296.96 0 0 0 75.776-287.232l168.96-168.96z"
+						fill = "#bfbfbf"
+						p-id = "85416"
+					></path>
+				</svg>
+			</div>
+		</Tooltip>
+	</>
 }
 
 const PinNoteIcon = ({
@@ -833,7 +1003,7 @@ const PinNoteIcon = ({
 	handlePinNote ,
 }) => {
 	const [pin , setPin] = useState(isPinned); // 本地状态，初始化为 isPinned
-	return <div>
+	return <>
 		<Tooltip title={pin?'取消置顶':'置顶'} arrow={false} placement='bottom'>
 			<div
 				className = "note-buttons-common"
@@ -849,8 +1019,6 @@ const PinNoteIcon = ({
 					version = "1.1"
 					xmlns = "http://www.w3.org/2000/svg"
 					p-id = "85415"
-					width = "16"
-					height = "16"
 				>
 					<path
 						d = "M951.296 424.96L1024 352.256 671.744 0 599.04 72.704l70.144 70.656-168.96 168.96a296.96 296.96 0 0 0-286.72 75.264L143.36 458.24 72.704 387.584 0 460.8l245.248 245.248-139.776 139.776 72.704 72.704 140.288-140.288L563.2 1024l72.704-72.704-70.144-70.656 70.144-70.144a296.96 296.96 0 0 0 75.776-287.232l168.96-168.96z"
@@ -860,28 +1028,102 @@ const PinNoteIcon = ({
 				</svg>
 			</div>
 		</Tooltip>
-	</div>
+	</>
 };
-const MoveNoteToOtherBook=({otherNotebooks})=>{
-	return <div>
-		<Tooltip title='移动到其他笔记本' arrow={false} placement='bottom'>
+
+const CheckNoteIcon = ({
+	onClick ,
+	isChecked,
+}) => {
+	return <>
+		
+		<Tooltip
+			title = {isChecked?'取消选择笔记':'选择笔记'}
+			placement = "bottom"
+			arrow = { false }
+		>
+			
+			<div
+				className = "check-note-button"
+				onClick = { onClick }
+			>
+				<svg
+					t = "1740066015638"
+					className = { `check-note-icon ${ isChecked ? 'isChecked' : '' }` }
+					viewBox = "0 0 1024 1024"
+					version = "1.1"
+					xmlns = "http://www.w3.org/2000/svg"
+					p-id = "264755"
+				>
+					<path
+						d = "M512 0c282.752 0 512 229.248 512 512s-229.248 512-512 512S0 794.752 0 512 229.248 0 512 0z m286.165333 353.834667a42.666667 42.666667 0 0 0-60.330666 0l-273.322667 273.28-143.914667-145.493334-3.968-3.584a42.666667 42.666667 0 0 0-56.704 63.573334l174.08 176.042666 4.010667 3.584a42.666667 42.666667 0 0 0 56.490667-3.413333l303.658666-303.658667 3.541334-4.010666a42.666667 42.666667 0 0 0-3.541334-56.32z"
+						fill = "#bfbfbf"
+						p-id = "264756"
+					></path>
+				</svg>
+			</div>
+		</Tooltip>
+	</>
+}
+
+const CopyNoteIcon=()=> {
+	return <>
+		<Tooltip
+			title = "复制笔记"
+			arrow = { false }
+			placement = "bottom"
+		>
 			<div
 				className = "note-buttons-common"
-				onClick={()=>{
+			>
+				<svg
+					t = "1740147516964"
+					className = "icon"
+					viewBox = "0 0 1024 1024"
+					version = "1.1"
+					xmlns = "http://www.w3.org/2000/svg"
+					p-id = "280332"
+					width = "16"
+					height = "16"
+				>
+					<path
+						d = "M281.85 98.99v136.677l506.299 0.184V745.39H928.35V98.99z"
+						p-id = "280333"
+						fill = "#bfbfbf"
+					></path>
+					<path
+						d = "M98.05 330.59h597.5v597.5H98.05z"
+						p-id = "280334"
+						fill = "#bfbfbf"
+					></path>
+				</svg>
+			</div>
+		</Tooltip>
+	</>
+}
+
+const MoveNoteToOtherBook = ({ otherNotebooks }) => {
+	return <>
+		<Tooltip
+			title = "移动到其他笔记本"
+			arrow = { false }
+			placement = "bottom"
+		>
+			<div
+				className = "note-buttons-common"
+				onClick = { () => {
 					if ( otherNotebooks.length === 0 ) {
-						message.warning('再创建一个笔记本才可以移动~')
+						message.warning('再创建一个笔记本才可以移动~');
 					}
-				}}
+				} }
 			>
 				<svg
 					t = "1738247133739"
-					className = { `move-note-button` }
+					className = "move-note-button"
 					viewBox = "0 0 1024 1024"
 					version = "1.1"
 					xmlns = "http://www.w3.org/2000/svg"
 					p-id = "19613"
-					width = "16"
-					height = "16"
 				>
 					<path
 						d = "M958.272 213.248a59.712 59.712 0 0 1 59.712 59.712V870.4a59.776 59.776 0 0 1-59.776 59.712H121.92a59.712 59.712 0 0 1-59.712-59.712V187.712A59.712 59.712 0 0 1 121.856 128h244.544a64 64 0 0 1 32.704 8.96l98.24 58.304a128 128 0 0 0 65.344 17.92h395.52z m-328.96 160a41.856 41.856 0 1 0-59.136 59.2l103.552 103.488H283.2a41.792 41.792 0 1 0 0 83.648h378.624l-91.712 91.52a41.792 41.792 0 1 0 59.2 59.264l168.896-168.96a41.728 41.728 0 0 0 0-59.136h0.064l-168.96-168.96z"
@@ -891,34 +1133,35 @@ const MoveNoteToOtherBook=({otherNotebooks})=>{
 				</svg>
 			</div>
 		</Tooltip>
-	</div>
+	</>
 }
 
 
-const CancelEditIcon = ({ handleCancel }) => {
+const CancelEditButton = ({ handleCancel ,tooltipText}) => {
 	return <>
 		<Tooltip
-			title = "取消编辑"
+			title = {tooltipText}
 			placement = "bottom"
 			zIndex = "1"
+			arrow={false}
 		>
-			<svg
-				onClick = { handleCancel }
-				t = "1736085320917"
-				className = "icon"
-				viewBox = "0 0 1024 1024"
-				version = "1.1"
-				xmlns = "http://www.w3.org/2000/svg"
-				p-id = "136123"
-				width = "14"
-				height = "14"
-			>
-				<path
-					d = "M103.34374999 866.46875001l354.65625001-354.65625001L103.34374999 157.0625c-14.90625001-14.90625001-14.90625001-39.09375001 2e-8-54 14.90625001-14.90625001 39.09375001-14.90625001 54 0L512 457.71874999 866.75 103.0625c14.90625001-14.90625001 39.09375001-14.90625001 54 0 14.90625001 14.90625001 14.90625001 39.09375001 0 54L566 511.71874999 920.75 866.46875001c14.90625001 14.90625001 14.90625001 39.09375001 0 53.99999998-7.50000001 7.40625001-17.25 11.15625001-27 11.15625001s-19.50000001-3.75-27-11.15625001L512.09375001 565.71875001 157.34374999 920.375c-7.50000001 7.40625001-17.25 11.15625001-26.99999998 11.15625001-9.75 0-19.50000001-3.75-27-11.15625001-14.90625001-14.90625001-14.90625001-39 0-53.90625001z"
-					fill = "#707070"
-					p-id = "136124"
-				></path>
-			</svg>
+			<div className='cancel-edit-button note-buttons-common'>
+				<svg
+					onClick = { handleCancel }
+					t = "1736085320917"
+					className = "cancel-icon"
+					viewBox = "0 0 1024 1024"
+					version = "1.1"
+					xmlns = "http://www.w3.org/2000/svg"
+					p-id = "136123"
+				>
+					<path
+						d = "M103.34374999 866.46875001l354.65625001-354.65625001L103.34374999 157.0625c-14.90625001-14.90625001-14.90625001-39.09375001 2e-8-54 14.90625001-14.90625001 39.09375001-14.90625001 54 0L512 457.71874999 866.75 103.0625c14.90625001-14.90625001 39.09375001-14.90625001 54 0 14.90625001 14.90625001 14.90625001 39.09375001 0 54L566 511.71874999 920.75 866.46875001c14.90625001 14.90625001 14.90625001 39.09375001 0 53.99999998-7.50000001 7.40625001-17.25 11.15625001-27 11.15625001s-19.50000001-3.75-27-11.15625001L512.09375001 565.71875001 157.34374999 920.375c-7.50000001 7.40625001-17.25 11.15625001-26.99999998 11.15625001-9.75 0-19.50000001-3.75-27-11.15625001-14.90625001-14.90625001-14.90625001-39 0-53.90625001z"
+						fill = "#707070"
+						p-id = "136124"
+					></path>
+				</svg>
+			</div>
 		</Tooltip>
 	</>;
 };

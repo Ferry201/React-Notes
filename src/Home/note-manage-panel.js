@@ -1,4 +1,4 @@
-import React , { Component ,useState} from 'react';
+import React , { Component , useState } from 'react';
 import { Reaxlass , reaxper } from 'reaxes-react';
 import { reaxel_sider } from '@src/Home/sider.reaxel';
 import { Modal , Dropdown , Space , Tooltip , Popover , Menu , Button , message } from 'antd';
@@ -6,7 +6,7 @@ import { ExclamationCircleFilled } from '@ant-design/icons';
 import RenderContent from '@src/Home/renderContent';
 import './note.css';
 import dayjs from "dayjs";
-import { divide } from "lodash/math";
+import { EmojiArray } from "@src/Home/addNoteBook_Model";
 
 @reaxper
 class NoteManagePanel extends Reaxlass {
@@ -28,7 +28,7 @@ class NoteManagePanel extends Reaxlass {
 	
 	
 	componentDidUpdate (prevProps) {
-		if ( prevProps.currentNotebook.id !== this.props.currentNotebook.id || prevProps.sorts !== this.props.sorts||prevProps.notebooks!==this.props.notebooks||prevProps.settingItems!==this.props.settingItems ) {
+		if ( prevProps.currentNotebook.id !== this.props.currentNotebook.id || prevProps.sorts !== this.props.sorts || prevProps.notebooks !== this.props.notebooks || prevProps.settingItems !== this.props.settingItems ) {
 			this.setState({
 				noteFeaturesMenu : this.generateNoteFeaturesMenu() ,
 				title : this.props.currentNotebook.title ,
@@ -38,7 +38,7 @@ class NoteManagePanel extends Reaxlass {
 	
 	generateNoteFeaturesMenu = () => {
 		const otherSorts = this.props.sorts.filter(sort => sort.id !== this.props.currentNotebook.belongSortID);
-	
+		
 		return [
 			{
 				label : <div>重命名</div> ,
@@ -78,10 +78,10 @@ class NoteManagePanel extends Reaxlass {
 					} ,
 				] ,
 			} ,
-			{
-				label : <div>分享</div> ,
-				key : 'share-notebook' ,
-			} ,
+			// {
+			// 	label : <div>分享</div> ,
+			// 	key : 'share-notebook' ,
+			// } ,
 			{
 				label : <div className = "dropdown-delete-notebook-button">删除笔记本</div> ,
 				key : 'delete-notebook' ,
@@ -103,53 +103,55 @@ class NoteManagePanel extends Reaxlass {
 	};
 	// 重命名笔记本
 	renameNotebookTitle = (e) => {
-		if(e.target.value){
+		if ( e.target.value ) {
 			const newTitle = e.target.value;
 			this.props.updateNotebookInfo('title' , newTitle);
 		}
 	};
 	handleBlur = (e) => {
-		if(e.target.value){
+		if ( e.target.value ) {
 			this.setState({
 				isRenaming : false ,
 				title : e.target.value ,
 			} , () => {
 				this.renameNotebookTitle(e);
 			});
-		}else {
-			message.warning('不能输入空标题')
+		} else {
+			message.warning('不能输入空标题');
 		}
 		
 	};
 	handleKeyDown = (e) => {
 		if ( e.key === 'Enter' ) {
-			this.handleBlur(e)
+			this.handleBlur(e);
 		}
 	};
-	
 	
 	
 	render () {
 		const {
 			onChangeNote ,
 			onDeleteNote ,
+			handleDeleteCheckedNote,
 			onToggleSidebar ,
 			currentNotebook ,
 			notesAmount ,
 			updateNotebookInfo ,
 			pinNote ,
+			handlePinCheckedNote,
 			favoriteNote ,
 			isShowFavorites ,
 			noteList ,
-			notebooks,
-			openModal,
-			onSave,
-			onCancel,
-			searchKeyword,
-			isShowSearchResults,
-			handleMoveNote,
-			isShowRecycleNotes,
-			settingItems,
+			notebooks ,
+			openModal ,
+			onSave ,
+			onCancel ,
+			searchKeyword ,
+			isShowSearchResults ,
+			handleMoveNote ,
+			handleMoveCheckedNote,
+			isShowRecycleNotes ,
+			settingItems ,
 		} = this.props;
 		const {
 			isHover ,
@@ -160,9 +162,9 @@ class NoteManagePanel extends Reaxlass {
 			siderCollapsed ,
 			resizing ,
 		} = reaxel_sider();
-		let editInFavoritesOrSearchPageOrRecycle = currentNotebook.id === 'favorites-notes-id' || currentNotebook.id === 'searchResults-notes-id'||currentNotebook.id ==='recycle-notes-id';
+		let editInFavoritesOrSearchPageOrRecycle = currentNotebook.id === 'favorites-notes-id' || currentNotebook.id === 'searchResults-notes-id' || currentNotebook.id === 'recycle-notes-id';
 		
-		return <div className = { `note-container${ resizing ? ' resizing' : '' } ${settingItems.themeMode==='note-dark-mode'?'night-theme':currentNotebook.currentTheme }` }>
+		return <div className = { `note-container${ resizing ? ' resizing' : '' } ${ settingItems.themeMode === 'note-dark-mode' ? 'night-theme' : currentNotebook.currentTheme }` }>
 			{/*顶部工具栏*/ }
 			<div className = { `main-section-header` }>
 				{/*笔记本名称 & dropdown*/ }
@@ -173,38 +175,49 @@ class NoteManagePanel extends Reaxlass {
 						} }
 					/> }
 					
-					{/*<div*/}
-					{/*	onMouseEnter = { this.handleMouseEnter }*/}
-					{/*	onMouseLeave = { this.handleMouseLeave }*/}
-					{/*>*/}
-					{/*	{ !siderCollapsed ? (*/}
-					{/*		<LeftExpandIcon*/}
-					{/*			onclick = { () => {*/}
-					{/*				this.setState({*/}
-					{/*					isHover : false ,*/}
-					{/*					isClicked : true ,*/}
-					{/*				} , () => {*/}
-					{/*					//点击后，鼠标事件会被 isClicked 屏蔽，避免触发 isHover: true*/}
-					{/*					toggleSiderCollapse();*/}
-					{/*					// 延迟重置 isClicked，防止鼠标事件干扰*/}
-					{/*					setTimeout(() => {*/}
-					{/*						this.setState({ isClicked : false });*/}
-					{/*					} , 0);*/}
-					{/*				});*/}
-					{/*			} }*/}
-					{/*		/>) : (this.state.isHover ? (*/}
-					{/*		<RightExpandIcon*/}
-					{/*			onclick = { () => {*/}
-					{/*				toggleSiderCollapse();*/}
-					{/*			} }*/}
-					{/*		/>) : (*/}
-					{/*			       <DefaultExpandIcon />*/}
-					{/*		       )) }*/}
-					{/*</div>*/}
+					{/*<div*/ }
+					{/*	onMouseEnter = { this.handleMouseEnter }*/ }
+					{/*	onMouseLeave = { this.handleMouseLeave }*/ }
+					{/*>*/ }
+					{/*	{ !siderCollapsed ? (*/ }
+					{/*		<LeftExpandIcon*/ }
+					{/*			onclick = { () => {*/ }
+					{/*				this.setState({*/ }
+					{/*					isHover : false ,*/ }
+					{/*					isClicked : true ,*/ }
+					{/*				} , () => {*/ }
+					{/*					//点击后，鼠标事件会被 isClicked 屏蔽，避免触发 isHover: true*/ }
+					{/*					toggleSiderCollapse();*/ }
+					{/*					// 延迟重置 isClicked，防止鼠标事件干扰*/ }
+					{/*					setTimeout(() => {*/ }
+					{/*						this.setState({ isClicked : false });*/ }
+					{/*					} , 0);*/ }
+					{/*				});*/ }
+					{/*			} }*/ }
+					{/*		/>) : (this.state.isHover ? (*/ }
+					{/*		<RightExpandIcon*/ }
+					{/*			onclick = { () => {*/ }
+					{/*				toggleSiderCollapse();*/ }
+					{/*			} }*/ }
+					{/*		/>) : (*/ }
+					{/*			       <DefaultExpandIcon />*/ }
+					{/*		       )) }*/ }
+					{/*</div>*/ }
 					{/*当前笔记本*/ }
 					
 					<div className = "emoji-and-title">
-						<span className = "notebook-emoji">{ currentNotebook.emoji }</span>
+						{ settingItems.notebookMode === 'plain-notebook' &&  <>{ !editInFavoritesOrSearchPageOrRecycle ?
+						      <Popover
+							      trigger = "hover"
+							      arrow = { false }
+							      content = { <EmojisPanel updateEmoji = { updateNotebookInfo } /> }
+							      overlayClassName = { `emoji-popover ${ settingItems.themeMode }` }
+							      placement = "bottomLeft"
+						      >
+							      <span className = "notebook-emoji">{ currentNotebook.emoji }</span>
+						      </Popover> : <span className = "notebook-emoji">{ currentNotebook.emoji }</span>
+						}</> }
+						
 						{ isRenaming ? <input
 							type = "text"
 							defaultValue = { this.state.title }
@@ -215,7 +228,7 @@ class NoteManagePanel extends Reaxlass {
 							maxLength = "16"
 						/> : <span className = "notebook-title">{ this.state.title }({ notesAmount })</span> }
 					</div>
-					  
+					
 					
 					{/*笔记本下拉操作菜单*/ }
 					{ !isRenaming && !editInFavoritesOrSearchPageOrRecycle && <Dropdown
@@ -235,17 +248,17 @@ class NoteManagePanel extends Reaxlass {
 									openModal('deleteConfirm');
 								}
 								const otherSorts = this.props.sorts.filter(sort => sort.id !== this.props.currentNotebook.belongSortID);
-								if (otherSorts.some(sort => sort.id === key)) {
+								if ( otherSorts.some(sort => sort.id === key) ) {
 									// 找到被点击的 sort.id
 									const selectedSort = otherSorts.find(sort => sort.id === key);
-									if (selectedSort) {
-										this.props.updateNotebookInfo('belongSortID', selectedSort.id);
+									if ( selectedSort ) {
+										this.props.updateNotebookInfo('belongSortID' , selectedSort.id);
 									}
 								}
 							} ,
 						} }
-						trigger = { ['click','hover' ] }
-						overlayClassName={`notebook-dropdown-menu ${settingItems.themeMode}`}
+						trigger = { ['click' , 'hover'] }
+						overlayClassName = { `notebook-dropdown-menu ${ settingItems.themeMode }` }
 					>
 						<a onClick = { (e) => e.preventDefault() }>
 							<DownOutLinedIcon />
@@ -259,13 +272,13 @@ class NoteManagePanel extends Reaxlass {
 					<ModeSelector
 						onSwitchNoteMode = { updateNotebookInfo }
 						showMode = { currentNotebook.showMode }
-						settingItems={settingItems}
+						settingItems = { settingItems }
 					/>
 					
 					<ThemeColorSelector
 						selectTheme = { updateNotebookInfo }
 						theme = { currentNotebook.currentTheme }
-						settingItems={settingItems}
+						settingItems = { settingItems }
 					/>
 				</div> }
 			</div>
@@ -274,34 +287,51 @@ class NoteManagePanel extends Reaxlass {
 			{/*Note List*/ }
 			<RenderContent
 				noteList = { noteList }
-				notebooks={notebooks}
+				notebooks = { notebooks }
 				changeNote = { onChangeNote }
 				deleteNote = { onDeleteNote }
+				handleDeleteCheckedNote={handleDeleteCheckedNote}
 				ShowMode = { currentNotebook.showMode }
 				currentNotebook = { currentNotebook }
 				pinNote = { pinNote }
+				handlePinCheckedNote={handlePinCheckedNote}
+				handleMoveCheckedNote={handleMoveCheckedNote}
 				favoriteNote = { favoriteNote }
 				isShowFavorites = { isShowFavorites }
 				openModal = { openModal }
 				onSave = { onSave }
 				onCancel = { onCancel }
-				keyword={searchKeyword}
-				isShowSearchResults={isShowSearchResults}
-				handleMoveNote={handleMoveNote}
-				isShowRecycleNotes={isShowRecycleNotes}
-				settingItems={settingItems}
+				keyword = { searchKeyword }
+				isShowSearchResults = { isShowSearchResults }
+				handleMoveNote = { handleMoveNote }
+				isShowRecycleNotes = { isShowRecycleNotes }
+				settingItems = { settingItems }
 			/>
 		</div>;
 	}
 };
 
-
-
+const EmojisPanel = ({updateEmoji}) => {
+	
+	return (<div>
+		<div className = "emoji-popover-panel">
+			{ EmojiArray.map((item,index) => {
+				return <div
+					className = 'emoji-little-box'
+					key = { `popover-${item}-${index}` }
+					onClick = { () => {
+						updateEmoji('emoji' , item);
+					} }
+				>{item}</div>;
+			}) }
+		</div>
+	</div>);
+};
 
 const ThemeColorSelector = ({
 	selectTheme ,
 	theme ,
-	settingItems,
+	settingItems ,
 }) => {
 	return <>
 		<Popover
@@ -314,58 +344,62 @@ const ThemeColorSelector = ({
 			/> }
 			overlayClassName = { `colors-popover ${ settingItems.themeMode }` }
 		>
-			<div><ColorPalette /></div>
+			<div style={{marginLeft:'20px'}}><ColorPalette /></div>
 		</Popover>
 	</>;
 };
 const ThemeColorPanel = ({
 	selectTheme ,
 	theme ,
-	settingItems,
+	settingItems ,
 }) => {
 	const allThemeColors = [
 		'blue-theme' , 'purple-theme' , 'red-theme' , 'green-theme' , 'gray-theme' , 'orange-theme' , 'pink-theme' , 'yellow-theme' ,
 		'gradient-theme-blue-cyan' , 'gradient-theme-green-blue' , 'gradient-theme-blue-yellow' , 'gradient-theme-blue-pink' , 'image-background-wheat' ,
-		'image-background-windmill' , 'image-background-beach' , 'image-background-tower' , 'image-background-pinksky' , 'image-background-mountain' ,
+		'image-background-sunset','image-background-blueSky','image-background-windmill' , 'image-background-dragonfly' , 'image-background-tower' , 'image-background-field' , 'image-background-mountain' ,
 	];
 	return (<div className = { settingItems.themeMode }>
-		<div className = "themecolor-popover-title">笔记本主题选择</div>
+		<div className = "themecolor-popover-title">主题</div>
 		<div className = "theme-color-panel">
 			{ allThemeColors.map((item) => {
+				const isCurrentTheme = theme === item;
 				return <div
-					className = {`color-little-box ${item}`}
+					className = { `color-little-box ${ item } ${isCurrentTheme?'current-theme':''}` }
 					key = { item }
-					onClick={()=>{selectTheme('currentTheme' , item);}}
-				></div>;
+					onClick = { () => {
+						selectTheme('currentTheme' , item);
+					} }
+				>
+					
+				</div>;
 			}) }
 		</div>
-	</div>)
-}
-
+	</div>);
+};
 
 
 //显示模式选择器
 const ModeSelector = ({
 	onSwitchNoteMode ,
 	showMode ,
-	settingItems
+	settingItems ,
 }) => {
 	const modeOptions = [
 		{
 			key : 'modeOptions' ,
 			type : 'group' ,
-			label : '笔记显示模式' ,
+			label : '视图' ,
 			children : [
 				{
-					label : <div>列表模式</div> ,
+					label : <div>列表视图</div> ,
 					key : 'list-mode' ,
 				} ,
 				{
-					label : <div>卡片模式</div> ,
+					label : <div>卡片视图</div> ,
 					key : 'card-mode' ,
 				} ,
 				{
-					label : <div>宫格模式</div> ,
+					label : <div>宫格视图</div> ,
 					key : 'grid-mode' ,
 				} ,
 			] ,
@@ -383,7 +417,7 @@ const ModeSelector = ({
 			} ,
 		} }
 		trigger = { ['hover'] }
-		overlayClassName={`note-display-mode-dropdown ${settingItems.themeMode}`}
+		overlayClassName = { `note-display-mode-dropdown ${ settingItems.themeMode }` }
 	>
 		<a onClick = { (e) => e.preventDefault() }>
 			<Space>
@@ -485,7 +519,6 @@ const ThemeSelector = ({
 					] ,
 				} ,
 			
-			
 			] ,
 		} ,
 	
@@ -512,136 +545,155 @@ const ThemeSelector = ({
 	</Dropdown>);
 };
 
+const CheckedBackgroundTheme=()=> {
+	return <svg
+		t = "1740179206294"
+		className = "icon"
+		viewBox = "0 0 1300 1024"
+		version = "1.1"
+		xmlns = "http://www.w3.org/2000/svg"
+		p-id = "282694"
+		width = "16"
+		height = "16"
+	>
+		<path
+			d = "M1230.490183 89.988301h-101.410965a46.247857 46.247857 0 0 0-36.403936 17.644765L494.332018 865.522151 207.465288 502.039995a46.433592 46.433592 0 0 0-36.403936-17.644765H69.650388a11.608398 11.608398 0 0 0-9.100984 18.666304l397.471546 503.525869c18.573437 23.495397 54.234435 23.495397 72.900739 0l708.669478-898.025665a11.515531 11.515531 0 0 0-9.100984-18.573437z"
+			fill = "#707070"
+			fillOpacity = ".65"
+			p-id = "282695"
+		></path>
+	</svg>;
+}
 const CardModeIcon = () => {
-	return <div>
-			<div
-				className = { `notelist-header-icon card-mode-icon-box` }
-			
+	return <>
+		<div
+			className = { `notelist-header-icon card-mode-icon-box` }
+		
+		>
+			<svg
+				t = "1734629911980"
+				className = "icon"
+				viewBox = "0 0 1024 1024"
+				version = "1.1"
+				xmlns = "http://www.w3.org/2000/svg"
+				p-id = "117271"
+				width = "20"
+				height = "20"
 			>
-				<svg
-					t = "1734629911980"
-					className = "icon"
-					viewBox = "0 0 1024 1024"
-					version = "1.1"
-					xmlns = "http://www.w3.org/2000/svg"
-					p-id = "117271"
-					width = "20"
-					height = "20"
-				>
-					<path
-						d = "M25.6 640A102.4 102.4 0 0 1 128 537.6h256A102.4 102.4 0 0 1 486.4 640v256A102.4 102.4 0 0 1 384 998.4H128A102.4 102.4 0 0 1 25.6 896v-256zM128 614.4a25.6 25.6 0 0 0-25.6 25.6v256c0 14.08 11.52 25.6 25.6 25.6h256a25.6 25.6 0 0 0 25.6-25.6v-256a25.6 25.6 0 0 0-25.6-25.6H128zM537.6 640A102.4 102.4 0 0 1 640 537.6h256a102.4 102.4 0 0 1 102.4 102.4v256a102.4 102.4 0 0 1-102.4 102.4h-256A102.4 102.4 0 0 1 537.6 896v-256z m102.4-25.6a25.6 25.6 0 0 0-25.6 25.6v256c0 14.08 11.52 25.6 25.6 25.6h256a25.6 25.6 0 0 0 25.6-25.6v-256a25.6 25.6 0 0 0-25.6-25.6h-256zM25.6 128A102.4 102.4 0 0 1 128 25.6h256A102.4 102.4 0 0 1 486.4 128v256A102.4 102.4 0 0 1 384 486.4H128A102.4 102.4 0 0 1 25.6 384V128zM128 102.4a25.6 25.6 0 0 0-25.6 25.6v256c0 14.08 11.52 25.6 25.6 25.6h256a25.6 25.6 0 0 0 25.6-25.6V128a25.6 25.6 0 0 0-25.6-25.6H128zM537.6 128A102.4 102.4 0 0 1 640 25.6h256A102.4 102.4 0 0 1 998.4 128v256A102.4 102.4 0 0 1 896 486.4h-256A102.4 102.4 0 0 1 537.6 384V128z m102.4-25.6a25.6 25.6 0 0 0-25.6 25.6v256c0 14.08 11.52 25.6 25.6 25.6h256a25.6 25.6 0 0 0 25.6-25.6V128a25.6 25.6 0 0 0-25.6-25.6h-256z"
-						fill = "#000000"
-						p-id = "117272"
-					></path>
-				</svg>
-			</div>
-	</div>;
+				<path
+					d = "M25.6 640A102.4 102.4 0 0 1 128 537.6h256A102.4 102.4 0 0 1 486.4 640v256A102.4 102.4 0 0 1 384 998.4H128A102.4 102.4 0 0 1 25.6 896v-256zM128 614.4a25.6 25.6 0 0 0-25.6 25.6v256c0 14.08 11.52 25.6 25.6 25.6h256a25.6 25.6 0 0 0 25.6-25.6v-256a25.6 25.6 0 0 0-25.6-25.6H128zM537.6 640A102.4 102.4 0 0 1 640 537.6h256a102.4 102.4 0 0 1 102.4 102.4v256a102.4 102.4 0 0 1-102.4 102.4h-256A102.4 102.4 0 0 1 537.6 896v-256z m102.4-25.6a25.6 25.6 0 0 0-25.6 25.6v256c0 14.08 11.52 25.6 25.6 25.6h256a25.6 25.6 0 0 0 25.6-25.6v-256a25.6 25.6 0 0 0-25.6-25.6h-256zM25.6 128A102.4 102.4 0 0 1 128 25.6h256A102.4 102.4 0 0 1 486.4 128v256A102.4 102.4 0 0 1 384 486.4H128A102.4 102.4 0 0 1 25.6 384V128zM128 102.4a25.6 25.6 0 0 0-25.6 25.6v256c0 14.08 11.52 25.6 25.6 25.6h256a25.6 25.6 0 0 0 25.6-25.6V128a25.6 25.6 0 0 0-25.6-25.6H128zM537.6 128A102.4 102.4 0 0 1 640 25.6h256A102.4 102.4 0 0 1 998.4 128v256A102.4 102.4 0 0 1 896 486.4h-256A102.4 102.4 0 0 1 537.6 384V128z m102.4-25.6a25.6 25.6 0 0 0-25.6 25.6v256c0 14.08 11.52 25.6 25.6 25.6h256a25.6 25.6 0 0 0 25.6-25.6V128a25.6 25.6 0 0 0-25.6-25.6h-256z"
+					fill = "#000000"
+					p-id = "117272"
+				></path>
+			</svg>
+		</div>
+	</>;
 };
 const ListModeIcon = () => {
-	return <div>
-			<div
-				className = { `notelist-header-icon list-mode-icon-box` }
+	return <>
+		<div
+			className = { `notelist-header-icon list-mode-icon-box` }
+		>
+			<svg
+				xmlns = "http://www.w3.org/2000/svg"
+				viewBox = "0 0 1024 1024"
+				width = "20"
+				height = "20"
 			>
-				<svg
-					xmlns = "http://www.w3.org/2000/svg"
-					viewBox = "0 0 1024 1024"
-					width = "20"
-					height = "20"
-				>
-					<rect
-						x = "50"
-						y = "70"
-						width = "924"
-						height = "220"
-						stroke = "#000000"
-						fill = "none"
-						strokeWidth = "75"
-						rx = "18"
-						ry = "18"
-					/>
-					<rect
-						x = "50"
-						y = "410"
-						width = "924"
-						height = "220"
-						stroke = "#000000"
-						fill = "none"
-						strokeWidth = "75"
-						rx = "20"
-						ry = "20"
-					/>
-					<rect
-						x = "50"
-						y = "740"
-						width = "924"
-						height = "220"
-						stroke = "#000000"
-						fill = "none"
-						strokeWidth = "75"
-						rx = "20"
-						ry = "20"
-					/>
-				</svg>
-			</div>
-	</div>;
+				<rect
+					x = "50"
+					y = "70"
+					width = "924"
+					height = "220"
+					stroke = "#000000"
+					fill = "none"
+					strokeWidth = "75"
+					rx = "18"
+					ry = "18"
+				/>
+				<rect
+					x = "50"
+					y = "410"
+					width = "924"
+					height = "220"
+					stroke = "#000000"
+					fill = "none"
+					strokeWidth = "75"
+					rx = "20"
+					ry = "20"
+				/>
+				<rect
+					x = "50"
+					y = "740"
+					width = "924"
+					height = "220"
+					stroke = "#000000"
+					fill = "none"
+					strokeWidth = "75"
+					rx = "20"
+					ry = "20"
+				/>
+			</svg>
+		</div>
+	</>;
 };
 const GridModeIcon = () => {
-	return <div>
-			<div
-				className = "notelist-header-icon"
+	return <>
+		<div
+			className = "notelist-header-icon"
+		>
+			<svg
+				t = "1734630128020"
+				className = "icon"
+				viewBox = "0 0 1024 1024"
+				version = "1.1"
+				xmlns = "http://www.w3.org/2000/svg"
+				p-id = "119720"
+				width = "20"
+				height = "20"
 			>
-				<svg
-					t = "1734630128020"
-					className = "icon"
-					viewBox = "0 0 1024 1024"
-					version = "1.1"
-					xmlns = "http://www.w3.org/2000/svg"
-					p-id = "119720"
-					width = "20"
-					height = "20"
-				>
-					<path
-						d = "M424.228571 36.571429H87.771429C58.514286 36.571429 36.571429 58.514286 36.571429 87.771429v336.457142c0 29.257143 21.942857 51.2 51.2 51.2h336.457142c29.257143 0 51.2-21.942857 51.2-51.2V87.771429c0-29.257143-21.942857-51.2-51.2-51.2z m-21.942857 73.142857v292.571428h-292.571428v-292.571428h292.571428z m21.942857 438.857143H87.771429c-29.257143 0-51.2 21.942857-51.2 51.2v336.457142c0 29.257143 21.942857 51.2 51.2 51.2h336.457142c29.257143 0 51.2-21.942857 51.2-51.2V599.771429c0-29.257143-21.942857-51.2-51.2-51.2z m-21.942857 73.142857v292.571428h-292.571428v-292.571428h292.571428z m533.942857 73.142857H599.771429c-29.257143 0-51.2 21.942857-51.2 51.2v190.171428c0 29.257143 21.942857 51.2 51.2 51.2h336.457142c29.257143 0 51.2-21.942857 51.2-51.2v-190.171428c0-29.257143-21.942857-51.2-51.2-51.2z m-21.942857 73.142857v146.285714h-292.571428v-146.285714h292.571428z m21.942857-731.428571H599.771429c-29.257143 0-51.2 21.942857-51.2 51.2v482.742857c0 29.257143 21.942857 51.2 51.2 51.2h336.457142c29.257143 0 51.2-21.942857 51.2-51.2V87.771429c0-29.257143-21.942857-51.2-51.2-51.2z m-21.942857 73.142857v438.857143h-292.571428v-438.857143h292.571428z"
-						p-id = "119721"
-						fill = "#000000"
-					></path>
-				</svg>
-			</div>
-	</div>;
+				<path
+					d = "M424.228571 36.571429H87.771429C58.514286 36.571429 36.571429 58.514286 36.571429 87.771429v336.457142c0 29.257143 21.942857 51.2 51.2 51.2h336.457142c29.257143 0 51.2-21.942857 51.2-51.2V87.771429c0-29.257143-21.942857-51.2-51.2-51.2z m-21.942857 73.142857v292.571428h-292.571428v-292.571428h292.571428z m21.942857 438.857143H87.771429c-29.257143 0-51.2 21.942857-51.2 51.2v336.457142c0 29.257143 21.942857 51.2 51.2 51.2h336.457142c29.257143 0 51.2-21.942857 51.2-51.2V599.771429c0-29.257143-21.942857-51.2-51.2-51.2z m-21.942857 73.142857v292.571428h-292.571428v-292.571428h292.571428z m533.942857 73.142857H599.771429c-29.257143 0-51.2 21.942857-51.2 51.2v190.171428c0 29.257143 21.942857 51.2 51.2 51.2h336.457142c29.257143 0 51.2-21.942857 51.2-51.2v-190.171428c0-29.257143-21.942857-51.2-51.2-51.2z m-21.942857 73.142857v146.285714h-292.571428v-146.285714h292.571428z m21.942857-731.428571H599.771429c-29.257143 0-51.2 21.942857-51.2 51.2v482.742857c0 29.257143 21.942857 51.2 51.2 51.2h336.457142c29.257143 0 51.2-21.942857 51.2-51.2V87.771429c0-29.257143-21.942857-51.2-51.2-51.2z m-21.942857 73.142857v438.857143h-292.571428v-438.857143h292.571428z"
+					p-id = "119721"
+					fill = "#000000"
+				></path>
+			</svg>
+		</div>
+	</>;
 };
 
 
 class ColorPalette extends Component {
 	render () {
-		return <div>
-				<div className = "notelist-header-icon">
-					<svg
-						t = "1734813093634"
-						className = "icon"
-						viewBox = "0 0 1024 1024"
-						version = "1.1"
-						xmlns = "http://www.w3.org/2000/svg"
-						p-id = "233500"
-						width = "22"
-						height = "22"
-					>
-						<path
-							d = "M465.408 1021.1328c-21.504 0-44.1344-2.048-68.6592-5.12l-6.144-1.024c-174.336-26.624-293.2736-195.8912-298.3936-203.0592C-76.032 555.6736 8.0896 296.192 167.0656 152.6272 324.9664 9.0624 588.4928-52.48 819.2 133.1712c148.736 119.9616 193.8432 286.0544 195.8912 293.2224v2.048c21.504 116.8896 4.096 203.0592-52.2752 258.4576-86.1696 83.0976-228.6592 56.3712-248.2176 52.2752-26.6752-3.072-46.1312 5.12-60.4672 22.528-15.36 19.456-18.432 45.1072-13.312 60.4672 14.336 43.1104 16.384 75.8784 6.144 100.5056-29.7984 64.6656-90.2656 98.4576-181.5552 98.4576z m-65.6384-67.6352l6.144 1.024c99.4816 15.36 160-4.096 184.576-59.4944 0-1.024 5.12-14.336-8.192-55.3472-13.312-36.9664-3.072-85.1456 23.552-117.9136 27.6992-34.8672 68.6592-50.2272 116.8896-45.1072l3.072 1.024c1.024 0 128.1024 27.648 193.792-35.9424 40.0384-38.9632 52.3264-106.6496 34.9184-201.0112-4.096-13.312-48.2304-157.9008-175.3088-259.4304C578.2016 17.3056 347.4944 71.68 208.0256 197.7856 79.872 314.624-14.4896 537.088 143.36 778.1888c1.024 0 108.6976 153.8048 256.3584 175.3088z"
-							fill = "#000000"
-							p-id = "233501"
-							stroke = "#000000"
-							strokeWidth = "6"
-						></path>
-						<path
-							d = "M158.8736 538.1632a61.5424 61.5424 0 1 0 123.0336 0 61.5424 61.5424 0 0 0-123.0336 0z m71.7312-184.5248a61.5424 61.5424 0 1 0 123.0848 0 61.5424 61.5424 0 0 0-123.0848 0z m184.5248-102.5536a61.5424 61.5424 0 1 0 123.0848 0 61.5424 61.5424 0 0 0-123.0848 0z m205.1072 51.2512a61.5424 61.5424 0 1 0 123.0848 0 61.5424 61.5424 0 0 0-123.0848 0z m102.5536 164.096a61.5424 61.5424 0 1 0 123.0848-0.0512 61.5424 61.5424 0 0 0-123.0848 0z"
-							fill = "#000000"
-							p-id = "233502"
-							stroke = "#000000"
-							strokeWidth = "6"
-						></path>
-					</svg>
-				</div>
-		</div>;
+		return <>
+			<div className = "notelist-header-icon">
+				<svg
+					t = "1734813093634"
+					className = "icon"
+					viewBox = "0 0 1024 1024"
+					version = "1.1"
+					xmlns = "http://www.w3.org/2000/svg"
+					p-id = "233500"
+					width = "22"
+					height = "22"
+				>
+					<path
+						d = "M465.408 1021.1328c-21.504 0-44.1344-2.048-68.6592-5.12l-6.144-1.024c-174.336-26.624-293.2736-195.8912-298.3936-203.0592C-76.032 555.6736 8.0896 296.192 167.0656 152.6272 324.9664 9.0624 588.4928-52.48 819.2 133.1712c148.736 119.9616 193.8432 286.0544 195.8912 293.2224v2.048c21.504 116.8896 4.096 203.0592-52.2752 258.4576-86.1696 83.0976-228.6592 56.3712-248.2176 52.2752-26.6752-3.072-46.1312 5.12-60.4672 22.528-15.36 19.456-18.432 45.1072-13.312 60.4672 14.336 43.1104 16.384 75.8784 6.144 100.5056-29.7984 64.6656-90.2656 98.4576-181.5552 98.4576z m-65.6384-67.6352l6.144 1.024c99.4816 15.36 160-4.096 184.576-59.4944 0-1.024 5.12-14.336-8.192-55.3472-13.312-36.9664-3.072-85.1456 23.552-117.9136 27.6992-34.8672 68.6592-50.2272 116.8896-45.1072l3.072 1.024c1.024 0 128.1024 27.648 193.792-35.9424 40.0384-38.9632 52.3264-106.6496 34.9184-201.0112-4.096-13.312-48.2304-157.9008-175.3088-259.4304C578.2016 17.3056 347.4944 71.68 208.0256 197.7856 79.872 314.624-14.4896 537.088 143.36 778.1888c1.024 0 108.6976 153.8048 256.3584 175.3088z"
+						fill = "#000000"
+						p-id = "233501"
+						stroke = "#000000"
+						strokeWidth = "6"
+					></path>
+					<path
+						d = "M158.8736 538.1632a61.5424 61.5424 0 1 0 123.0336 0 61.5424 61.5424 0 0 0-123.0336 0z m71.7312-184.5248a61.5424 61.5424 0 1 0 123.0848 0 61.5424 61.5424 0 0 0-123.0848 0z m184.5248-102.5536a61.5424 61.5424 0 1 0 123.0848 0 61.5424 61.5424 0 0 0-123.0848 0z m205.1072 51.2512a61.5424 61.5424 0 1 0 123.0848 0 61.5424 61.5424 0 0 0-123.0848 0z m102.5536 164.096a61.5424 61.5424 0 1 0 123.0848-0.0512 61.5424 61.5424 0 0 0-123.0848 0z"
+						fill = "#000000"
+						p-id = "233502"
+						stroke = "#000000"
+						strokeWidth = "6"
+					></path>
+				</svg>
+			</div>
+		</>;
 	}
 }
 
@@ -730,7 +782,11 @@ class RightExpandIcon extends Component {
 class LeftExpandIcon extends Component {
 	render () {
 		return <>
-			<Tooltip  title='展开侧边栏' placement='bottom' arrow={false}>
+			<Tooltip
+				title = "展开侧边栏"
+				placement = "bottom"
+				arrow = { false }
+			>
 				<div
 					className = "expand-icon"
 					onClick = { () => {
@@ -765,7 +821,7 @@ class LeftExpandIcon extends Component {
 					</svg>
 				</div>
 			</Tooltip>
-		</>
+		</>;
 	}
 }
 

@@ -354,7 +354,35 @@ class NotesApp extends Component {
 		});
 	};
 	
-	//置顶note
+	//删除选中笔记
+	handleDeleteCheckedNote=(checkedIdArray)=>{
+		const {
+			noteListData ,
+		} = this.state;
+		let updatedList = [...noteListData];
+		// updatedList = updatedList.filter((note) => note.id !== id);
+		updatedList = updatedList.map(note => {
+			if ( checkedIdArray.includes(note.id) ) {
+				return {
+					...note ,
+					isDeleted : true ,
+					deletedTime : dayjs().valueOf() ,
+				};
+			}
+			return note;
+		});
+		this.setState({
+			noteListData : updatedList ,
+			currentID : null ,
+			currentContent : null ,
+			currentNoteTitle : null ,
+			// notesAmount : currentNotes.length ,
+		} , () => {
+			localStorage.setItem('note-info-array' , JSON.stringify(updatedList));
+		});
+	}
+	
+	//置顶单个note
 	handlePinNote = (id) => {
 		const {
 			noteListData ,
@@ -376,6 +404,27 @@ class NotesApp extends Component {
 			localStorage.setItem('note-info-array' , JSON.stringify(updatedNoteList));
 		});
 	};
+	//置顶选中的多个笔记
+	handlePinCheckedNote=(checkedIdArray)=>{
+		const {
+			noteListData ,
+		} = this.state;
+		let updatedNoteList = [...noteListData];
+		updatedNoteList=updatedNoteList.map(note=>{
+			if(checkedIdArray.includes(note.id)){
+				return {
+					...note,
+					isPinned : !note.isPinned ,
+					pinnedTime : !note.isPinned ? dayjs().valueOf() : null ,
+				}
+			}
+			return note
+		})
+		
+		this.setState({noteListData:updatedNoteList},()=>{
+			localStorage.setItem('note-info-array' , JSON.stringify(updatedNoteList));
+		})
+	}
 	//收藏note
 	handleFavoriteNote = (id) => {
 		const {
@@ -420,6 +469,28 @@ class NotesApp extends Component {
 		this.setState({
 			noteListData : updatedNoteList ,
 		} , () => {
+			localStorage.setItem('note-info-array' , JSON.stringify(updatedNoteList));
+		});
+	};
+	
+	//移动选中的笔记到别的笔记本
+	handleMoveCheckedNote = (checkedIdArray , notebook) => {
+		const {
+			noteListData ,
+		} = this.state;
+		let updatedNoteList = [...noteListData];
+		updatedNoteList = updatedNoteList.map(note => {
+			if ( checkedIdArray.includes(note.id) ) {
+				return {
+					...note ,
+					notebookID : notebook.id ,
+					notebook : notebook.title ,
+				};
+			}
+			return note;
+		});
+		
+		this.setState({ noteListData : updatedNoteList } , () => {
 			localStorage.setItem('note-info-array' , JSON.stringify(updatedNoteList));
 		});
 	};
@@ -627,6 +698,7 @@ class NotesApp extends Component {
 			const newNoteBook = {
 				title : '搜索结果' ,
 				cover : null ,
+				emoji : '🔍' ,
 				id : 'searchResults-notes-id' ,
 				createdTime : dayjs().valueOf() ,
 				showMode : 'list-mode' ,
@@ -675,6 +747,7 @@ class NotesApp extends Component {
 			const newNoteBook = {
 				title : '回收站' ,
 				cover : null ,
+				emoji : '🗑️' ,
 				id : 'recycle-notes-id' ,
 				createdTime : dayjs().valueOf() ,
 				showMode : 'list-mode' ,
@@ -873,6 +946,7 @@ class NotesApp extends Component {
 				notebooks = { this.state.noteBookData }
 				onChangeNote = { this.handleChangeNote }
 				onDeleteNote = { this.handleDeleteNote }
+				handleDeleteCheckedNote={this.handleDeleteCheckedNote}
 				onToggleSidebar = { this.toggleSidebar }
 				sidebarIsVisible = { this.state.isSidebarVisible }
 				currentNotebook = { this.state.currentNotebook }
@@ -880,6 +954,7 @@ class NotesApp extends Component {
 				openModal = { this.handleOpenModal }
 				notesAmount = { this.state.notesAmount }
 				pinNote = { this.handlePinNote }
+				handlePinCheckedNote={this.handlePinCheckedNote}
 				favoriteNote = { this.handleFavoriteNote }
 				isShowFavorites = { this.state.showFavoritedNotes }
 				onSave = { this.handleSaveNote }
@@ -887,6 +962,7 @@ class NotesApp extends Component {
 				searchKeyword = { this.state.searchKeyword }
 				isShowSearchResults = { this.state.showSearchResults }
 				handleMoveNote = { this.handleMoveNote }
+				handleMoveCheckedNote={this.handleMoveCheckedNote}
 				isShowRecycleNotes = { this.state.showRecycleNotes }
 				sorts = { this.state.allSorts }
 			/>
@@ -936,14 +1012,14 @@ class NotesApp extends Component {
 			{ this.state.activeModal === 'changeCover' && (<NoteBookModal
 				showTitleInput = { false }
 				plainMode={false}
-				onOk = { ({
-					cover ,
-				}) => {
+				onOk = { (cover) => {
 					this.updateNotebookInfo('cover' , cover);
 				} }
 				closeModal = { this.handleCloseModal }
 				open = { this.state.isModalOpen }
 			/>) }
+			
+			
 			
 			{/*设置Modal*/ }
 			{ this.state.activeModal === 'settingModal' && (<SettingModal
