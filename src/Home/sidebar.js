@@ -23,6 +23,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import dayjs from "dayjs";
 import coverDefault from './img-collection/cover-default.png';
+import { translations } from "@src/Home/translations";
 
 
 @reaxper
@@ -37,6 +38,7 @@ export class NoteSidebar extends Component {
 		siderbarWidth : 458 ,
 		searchKeyword : '' ,
 		isRenameSort:false,
+		currentLanguage:'',
 	};
 	
 	componentDidUpdate (prevProps,prevState) {
@@ -45,11 +47,14 @@ export class NoteSidebar extends Component {
 				searchKeyword : '' ,
 			});
 		}
+		if ( prevProps.settingItems !== this.props.settingItems ) {
+			this.setState({ currentLanguage : translations[this.props.settingItems.language] });
+		}
 	}
 	componentDidMount () {
-		if(this.props.currentNotebook.title){
-			this.setState({activeItem:this.props.currentNotebook.title})
-		}
+		// if(this.props.currentNotebook.title){
+		// 	this.setState({activeItem:this.props.currentNotebook.title})
+		// }
 	}
 	
 	handleSetWidth = (width) => {
@@ -63,7 +68,7 @@ export class NoteSidebar extends Component {
 	handleImageError = (e) => {
 		if ( e.target.src !== coverDefault ) {  // 仅当图片的 src 不是默认封面时才替换
 			e.target.src = coverDefault; // 设置默认封面
-			message.error('图片加载失败，使用默认封面');
+			message.error('图片加载失败，使用默认封面',1);
 		}
 	};
 	
@@ -108,8 +113,10 @@ export class NoteSidebar extends Component {
 		const NotebookSortAndOperates = ({
 			title ,
 			id ,
+			index,
 			isCollapse,
 			notebooksInSort,
+			currentLanguage,
 		}) => {
 			return <div
 				className = "notebook-operation-bar"
@@ -128,7 +135,8 @@ export class NoteSidebar extends Component {
 						className = "rename-sort-input"                    
 					/> :
 						  <span>{ title }({ notebooksInSort.length })</span>
-					   }</div>
+					   }
+				</div>
 				
 				
 				<span
@@ -143,13 +151,17 @@ export class NoteSidebar extends Component {
 						isCollapse = { isCollapse }
 						handleClickRename = { this.handleClickRename }
 						handleClickCollapse = { this.props.handleClickCollapse }
+						handleMoveSort={this.props.handleMoveSort}
+						index={index}
+						currentLanguage={currentLanguage}
 					/>
 					
 					<Tooltip
-						title = "添加笔记本"
+						title = {this.state.currentLanguage?.addNotebook}
 						placement = "top"
 						zIndex = "1"
 						arrow = { false }
+						color='#a6aaad'
 					>
 						<span
 							className = "add-notebook-icon-box"
@@ -180,7 +192,7 @@ export class NoteSidebar extends Component {
 					0 ,
 				] } // 设置最小宽度
 				maxConstraints = { [
-					556 ,
+					566 ,
 					0 ,
 				] } // 设置最大宽度
 				resizeHandles = { ['e'] } // 右边缘 east
@@ -211,15 +223,17 @@ export class NoteSidebar extends Component {
 							clickFavorites = { this.props.clickFavorites }
 							clickRecycle = { this.props.clickRecycleBin }
 							openModal = { this.props.openModal }
+							currentLanguage={this.state.currentLanguage}
 						/>
 						
-						<span className = "notebooks-list-text">笔记本列表</span>
+						<span className = "notebooks-list-text">{this.state.currentLanguage?.notebookList}</span>
 						
 						<span className='collapse-sidebar-and-add-new-sort'>
 							<Tooltip
-							title = "收起侧边栏"
+							title = {this.state.currentLanguage?.collapseSidebar}
 							placement = "bottom"
 							arrow = { false }
+							color='#a6aaad'
 						>
 							<span
 								className = "topbar-icon collapse-sidebar-icon"
@@ -229,9 +243,10 @@ export class NoteSidebar extends Component {
 							><DrawerIcon /></span>
 						</Tooltip>
 							<Tooltip
-								title = "添加分类"
+								title = {this.state.currentLanguage?.addCategory}
 								placement = "bottom"
 								arrow = { false }
+								color='#a6aaad'
 							>
 								<span
 									className = "topbar-icon add-new-sort-icon"
@@ -256,7 +271,7 @@ export class NoteSidebar extends Component {
 							ref = { this.searchInputRef }
 							className = "search-input"
 							// className = {`search-input ${ this.state.activeItem==='搜索'?'active-search-input':''}`}
-							placeholder = { '搜索笔记' }
+							placeholder = {this.state.currentLanguage?.searchNote}
 							value = { this.state.searchKeyword }
 							onChange = { (e) => {
 								this.handleSearchKeyword(e.target.value);
@@ -278,17 +293,19 @@ export class NoteSidebar extends Component {
 						
 						{/*笔记本列表*/ }
 						<div className = "all-sorts-notebook">
-							{ this.props.sorts.map((sort) => {
+							{ this.props.sorts.map((sort,index) => {
 								const notebooksInSort = notebooks.filter(
 									notebook => notebook.belongSortID === sort.id ,
 								);
 								return <div key = { sort.id }>
 									{/*分类标题*/ }
 									<NotebookSortAndOperates
+										index={index}
 										title = { sort.title }
 										id = { sort.id }
 										isCollapse = { sort.isCollapse }
 										notebooksInSort = { notebooksInSort }
+										currentLanguage={this.state.currentLanguage}
 									/>
 									{/*笔记本列表*/ }
 									{ !sort.isCollapse && (this.props.settingItems.notebookMode==='cover-notebook'?<VisualNotebookList
@@ -372,10 +389,11 @@ const SidebarMenu = ({
 	clickFavorites ,
 	clickRecycle ,
 	openModal,
+	currentLanguage,
 }) => {
 	const modeOptions = [
 		{
-			label : <div>设置</div> ,
+			label : <div>{currentLanguage.settings}</div> ,
 			key : 'dropdown-setting' ,
 		} ,
 		// {
@@ -383,7 +401,7 @@ const SidebarMenu = ({
 		// 	key : 'dropdown-favorites' ,
 		// } ,
 		{
-			label : <div>回收站</div> ,
+			label : <div>{currentLanguage.trash}</div> ,
 			key : 'dropdown-recycle-bin' ,
 		} ,
 		
@@ -414,9 +432,10 @@ const SidebarMenu = ({
 		<a onClick = { (e) => e.preventDefault() }>
 			<Space>
 				<Tooltip
-					title = "菜单"
+					title = {currentLanguage.menu}
 					placement = "right"
 					arrow = { false }
+					color='#a6aaad'
 				>
 					<span className = "topbar-icon expand-drawer-icon"><SettingIcon/></span>
 				</Tooltip>
@@ -431,38 +450,41 @@ const ListSortOptions = ({
 	id,
 	isCollapse,
 	handleClickRename,
-	handleClickCollapse
+	handleClickCollapse,
+	handleMoveSort,
+	index,
+	currentLanguage
 }) => {
 	const modeOptions = [
 		{
-			label : <div>重命名</div> ,
+			label : <div>{currentLanguage.rename}</div> ,
 			key : 'rename-sort' ,
 		} ,
 		
 		{
-			label : <div>移动</div> ,
+			label : <div>{currentLanguage.move}</div> ,
 			key : 'move-sort' ,
 			children : [
 				{
-					key : 'move-top-direction' ,
+					key : 'move-up-direction' ,
 					label : <div>
-						向上移动
+						{currentLanguage.moveUp}
 					</div> ,
 				} ,
 				{
-					key : 'move-bottom-direction' ,
+					key : 'move-down-direction' ,
 					label : <div>
-						向下移动
+						{currentLanguage.moveDown}
 					</div> ,
 				} ,
 			] ,
 		} ,
 		{
-			label : <div>{ isCollapse ? '展开' : '折叠' }</div> ,
+			label : <div>{ isCollapse ? `${currentLanguage.expand}` : `${currentLanguage.collapse}` }</div> ,
 			key : 'collapse-sort' ,
 		} ,
 		{
-			label : <div className = 'delete-current-sort'>删除</div> ,
+			label : <div className = 'delete-current-sort'>{currentLanguage.delete}</div> ,
 			key : 'delete-sort' ,
 		} ,
 	];
@@ -477,11 +499,21 @@ const ListSortOptions = ({
 			 if(key==='delete-sort'){
 				 handleClickDeleteSort(id)
 			 }
+			 
 			 if(key==='rename-sort'){
 				 handleClickRename(id)
 			 }
+			 
 			 if(key==='collapse-sort'){
 				 handleClickCollapse(id)
+			 }
+			 
+			 if(key==='move-up-direction'){
+				 handleMoveSort(index,-1)
+			 }
+			 
+			 if(key==='move-down-direction'){
+				 handleMoveSort(index,1)
 			 }
 				 
 			} ,
@@ -491,10 +523,11 @@ const ListSortOptions = ({
 		<a onClick = { (e) => e.preventDefault() }>
 			<Space>
 				<Tooltip
-					title = "重命名..."
+					title = {currentLanguage.renameCategory}
 					placement = "top"
 					zIndex = "1"
 					arrow = { false }
+					color='#a6aaad'
 				>
 					<span className='list-sort-options'><MoreOperatesIcon /></span>
 				</Tooltip>
@@ -503,53 +536,10 @@ const ListSortOptions = ({
 	</Dropdown>);
 };
 
-//
-// const DrawerIcon=()=> {
-// 	return <svg
-// 		t = "1739990308544"
-// 		className = "icon"
-// 		viewBox = "0 0 1024 1024"
-// 		version = "1.1"
-// 		xmlns = "http://www.w3.org/2000/svg"
-// 		p-id = "250843"
-// 		width = "20"
-// 		height = "20"
-// 	>
-// 		<path
-// 			d = "M864 64H160a96 96 0 0 0-96 96v704a96 96 0 0 0 96 96h768a32 32 0 0 0 32-32V160a96 96 0 0 0-96-96zM160 896a32 32 0 0 1-32-32V160a32 32 0 0 1 32-32h160v768z m736 0H384V128h480a32 32 0 0 1 32 32z"
-// 			p-id = "250844"
-// 			fill = "#555555"
-// 		></path>
-// 	</svg>
-// }
+
 const DrawerIcon = () => {
 	return <>
-		{/*<svg*/}
-		{/*	t = "1739990519954"*/}
-		{/*	className = "icon"*/}
-		{/*	viewBox = "0 0 1024 1024"*/}
-		{/*	version = "1.1"*/}
-		{/*	xmlns = "http://www.w3.org/2000/svg"*/}
-		{/*	p-id = "251371"*/}
-		{/*	width = "22"*/}
-		{/*	height = "22"*/}
-		{/*>*/}
-		{/*	<path*/}
-		{/*		d = "M832 928H192c-52.928 0-96-43.072-96-96V192c0-52.928 43.072-96 96-96h640c52.928 0 96 43.072 96 96v640c0 52.928-43.072 96-96 96zM192 160c-17.632 0-32 14.368-32 32v640c0 17.664 14.368 32 32 32h640a32 32 0 0 0 32-32V192c0-17.632-14.336-32-32-32H192z"*/}
-		{/*		p-id = "251372"*/}
-		{/*		fill = "#555555"*/}
-		{/*	></path>*/}
-		{/*	<path*/}
-		{/*		d = "M341.344 928a32 32 0 0 1-32-32V128a32 32 0 0 1 64 0v768a32 32 0 0 1-32 32z"*/}
-		{/*		p-id = "251373"*/}
-		{/*		fill = "#555555"*/}
-		{/*	></path>*/}
-		{/*	<path*/}
-		{/*		d = "M405.344 928h-128a32 32 0 1 1 0-64h128a32 32 0 1 1 0 64zM405.344 160h-128a32 32 0 0 1 0-64h128a32 32 0 0 1 0 64z"*/}
-		{/*		p-id = "251374"*/}
-		{/*		fill = "#555555"*/}
-		{/*	></path>*/}
-		{/*</svg>*/}
+		
 		<svg
 			t = "1739990338459"
 			className = "icon"

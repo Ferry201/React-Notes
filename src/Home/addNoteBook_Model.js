@@ -28,6 +28,7 @@ import coverTwenty from './img-collection/cover-20.png';
 import coverTwentyOne from './img-collection/cover-21.png';
 import coverTwentyTwo from './img-collection/cover-22.png';
 import coverTwentyThree from './img-collection/cover-23.png';
+import { translations } from "@src/Home/translations";
 
 
 const NoteBookModal = ({
@@ -36,13 +37,19 @@ const NoteBookModal = ({
 	plainMode = undefined ,
 	closeModal ,
 	open ,
-	themeMode ,
+	settingItems ,
 }) => {
 	const [imagePreview , setImagePreview] = useState(null); // 用来存储图片预览的 URL
 	const [titlePreview , setTitlePreview] = useState('');
 	const [emoji , setEmoji] = useState(null);
 	const [expandEmoji , setExpandEmoji] = useState(false);
 	const inputTitleRef = useRef(null);
+	
+	const [currentLanguage , setCurrentLanguage] = useState(translations[settingItems.language]);
+	
+	useEffect(() => {
+		setCurrentLanguage(translations[settingItems.language]);
+	} , [settingItems.language]);
 	
 	const storedNoteBooks = localStorage.getItem('notebook-array');
 	
@@ -73,7 +80,7 @@ const NoteBookModal = ({
 				handleCancel();
 			}
 			if ( titlePreview === '' ) {
-				message.warning('请输入标题');
+				message.warning(currentLanguage.enterTitle);
 			}
 		}
 		
@@ -87,7 +94,7 @@ const NoteBookModal = ({
 				handleCancel();//关闭Modal并重置状态
 			}
 			if ( titlePreview === '' ) {
-				message.warning('请输入标题');
+				message.warning(currentLanguage.enterTitle);
 			}
 			if ( imagePreview === null ) {
 				message.warning('请选择封面');
@@ -144,31 +151,32 @@ const NoteBookModal = ({
 	return (
 		<>
 			<Modal
-				title = { showTitleInput && "新建笔记本" }
+				title = { showTitleInput && currentLanguage.createNewNotebook }
 				open = { open }
 				// centered
 				onOk = { handleOk }
 				onCancel = { handleCancel }
-				cancelText = "取消"
-				okText = "完成"
+				cancelText = {currentLanguage.cancel}
+				okText = {currentLanguage.done}
 				closable = { false }
 				width = { 450 }
 				destroyOnClose = { true }
 				keyboard = { true }
 				afterOpenChange = { handleAfterOpen }
-				wrapClassName = { `addNotebook-modal ${ themeMode }` }
+				wrapClassName = { `addNotebook-modal` }
 			>
 				<div className = { plainMode ? 'add-NB-modal-content-plain' : "add-NB-modal-content" }>
 					<div className = "edit-NB-info">
 						{ showTitleInput && (<div>
 							
-							<p>输入标题</p>
+							<p>{currentLanguage.enterNotebookTitle}</p>
 							
 							<div className = "plain-mode-emoji-input">
 								{ plainMode &&
 									<Tooltip
 										title = "添加emoji"
 										placement = "left"
+										color='#a6aaad'
 									>
 										<span
 											className = "add-emoji-icon"
@@ -186,14 +194,14 @@ const NoteBookModal = ({
 									className = "title-input"
 									value = { titlePreview }
 									onChange = { handleInputTitle }
-									placeholder = "输入标题..."
+									placeholder = {currentLanguage.enter}
 									allowClear
 									maxLength = "16"
 								/></div>
 						</div>) }
 						
 						{ plainMode && expandEmoji && (<div>
-							<p>选择表情</p>
+							<p>{currentLanguage.chooseEmoji}</p>
 							{ EmojiArray.map((item , index) => {
 								return <span
 									key = { `${ item }-${ index }` }
@@ -206,7 +214,7 @@ const NoteBookModal = ({
 						</div>) }
 						
 						{ !plainMode && <div>
-							<p>选择封面</p>
+							<p>{currentLanguage.selectCover}</p>
 							<div className = "img-cover-box">
 								{/*默认封面图*/ }
 								{ books.map((book , index) => {
@@ -220,11 +228,11 @@ const NoteBookModal = ({
 									/>);
 								}) }
 							</div>
-							<p>或上传自定义封面</p>
+							<p>{currentLanguage.UploadCustomCover}</p>
 							<label
 								htmlFor = "fileInput"
 								className = "cover-file-upload"
-							>点击上传
+							>{currentLanguage.clickUpload}
 							</label>
 							<input
 								type = "file"
@@ -245,7 +253,7 @@ const NoteBookModal = ({
 								<p className = "preview-title">{ titlePreview }</p>
 							</div>
 						) : (
-							  <span style = { { color : 'lightgray' } }>没有预览图片</span> // 没有选择图片时显示的文本
+							  <span style = { { color : 'lightgray' } }>{currentLanguage.noPreviewCover}</span> // 没有选择图片时显示的文本
 						  ) }
 					</div> }
 				</div>
@@ -328,6 +336,13 @@ const EmojiArray = [
 	'🦎' ,
 	'🦀' ,
 	'🐻‍❄️' ,
+	'🎄' ,
+	'🍁' ,
+	'🌷' ,
+	'🪴' ,
+	'🌻' ,
+	'🌵' ,
+	'⛄' ,
 	'💵' ,
 	'💳' ,
 	'☎️' ,
@@ -337,7 +352,6 @@ const EmojiArray = [
 	'👗' ,
 	'🏡' ,
 	'🏕️' ,
-	'🎄' ,
 	'⚽' ,
 	'❤️' ,
 	'💛' ,

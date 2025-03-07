@@ -10,18 +10,32 @@ import {
 } from 'antd';
 import './note.css';
 import { v4 as uuidv4 } from 'uuid';
+import { translations } from "@src/Home/translations";
 
 
 const InputNewSortModal = ({
 	closeModal ,
 	open ,
 	onOk ,
-	themeMode,
+	settingItems
 }) => {
 	const [sortTitle , setSortTitle] = useState("");
+	const inputSortRef=useRef(null);
+	const [currentLanguage , setCurrentLanguage] = useState(translations[settingItems.language]);
+	
+	useEffect(() => {
+		setCurrentLanguage(translations[settingItems.language]);
+	} , [settingItems.language]);
+	
+	const handleAfterOpen = () => {
+		if ( inputSortRef.current ) {
+			inputSortRef.current.focus();
+		}
+	};
+	
 	const handleOk = () => {
 		if(sortTitle===""){
-			message.warning('请输入分类名')
+			message.warning(`${currentLanguage.PleaseEnterCategoryName}`,2)
 		}
 		if(sortTitle!==""){
 			onOk({
@@ -30,6 +44,7 @@ const InputNewSortModal = ({
 				isCollapse:false
 			});
 			handleCancel();
+			// message.success(`已添加${sortTitle}分类`,1)
 		}
 		
 	};
@@ -41,24 +56,27 @@ const InputNewSortModal = ({
 	};
 	return (<>
 		<Modal
+			title={currentLanguage.PleaseEnterCategoryName}
 			open = { open }
 			// centered
 			onOk = { handleOk }
 			onCancel = { handleCancel }
-			cancelText = "取消"
-			okText = "新建"
+			cancelText = {currentLanguage.cancel}
+			okText = {currentLanguage.done}
 			closable = { false }
-			width = { 250 }
+			width = { 300 }
 			destroyOnClose = { true }
 			keyboard = { true }
-			wrapClassName={`${themeMode} input-sort-modal`}
+			wrapClassName={` input-sort-modal`}
+			afterOpenChange={handleAfterOpen}
 			// footer={null}
 		>
 			<div>
-				<p>输入新分类标题 :</p>
+				
 				<input
+					ref={inputSortRef}
 					type = "text"
-					placeholder = "输入..."
+					placeholder ={currentLanguage.enter}
 					className = "input-new-sort"
 					value = { sortTitle }
 					onChange = { handleInputTitle }

@@ -12,15 +12,16 @@ import {
 	SelectionState,
 } from 'draft-js';
 import 'draft-js/dist/Draft.css';
-import GetContentButton from '@src/Home/GetContentButton';
+import GetNoteContent from '../Home/GetNoteContent';
 import { FaPaintBrush , FaBold , FaItalic , FaUnderline , FaStrikethrough , FaAlignLeft , FaAlignCenter , FaAlignRight , FaAlignJustify , FaListOl , FaListUl , FaImage,FaUndo,FaRedo } from 'react-icons/fa';
 import './richTextEditor.css';
 import '../App.css'
-import { Popover , Tooltip , Modal , Dropdown , Space , message } from 'antd';
+import { Popover , Tooltip , Modal , Dropdown , Space , message , Col } from 'antd';
 import dayjs from "dayjs";
 import { GithubPicker } from 'react-color';
 import { CirclePicker } from 'react-color';
 import HighlightedKeyword from '../Home/renderContent'
+import { translations } from "@src/Home/translations";
 
 //todo:选中分区,及时保存
 
@@ -72,68 +73,54 @@ const backgroundColorStyleMap = {
 };
 const fontColorStyleMap = {
 	FONT_RED : { color : '#f04d4d' } ,
+	FONT_GREEN : { color : '#f6849c' } ,
 	FONT_ORANGE : { color : '#f4a255' } ,
-	FONT_GREEN : { color : '#4fec3a' } ,
 	FONT_PINK : { color : '#339b33' } ,
 	FONT_BLUE : { color : '#68c7e7' } ,
 	FONT_PURPLE : { color : '#ab7cf7' } ,
 };
 
-const ColorPicker = ({ onSelectColor }) => {
-	const [color , setColor] = useState('#ffffff');
+const ColorPicker = ({ColorStyleMap, onSelectColor ,colorType,currentLanguage}) => {
+	const [selectedColor , setSelectedColor] = useState('#ffffff');
+	let changeKeyName = 'color';
+	if ( colorType === 'backgroundColor' ) {
+		changeKeyName = 'backgroundColor';
+	}
 	
 	const handleChangeComplete = (color) => {
-		setColor(color.hex); // 找到对应的键
-		const colorKey = Object.keys(fontColorStyleMap).find(key => fontColorStyleMap[key].color === color.hex);
+		setSelectedColor(color); // 找到对应的键
+		const colorKey = Object.keys(ColorStyleMap).find(key => ColorStyleMap[key][changeKeyName] === color);
 		if ( typeof onSelectColor === 'function' ) {
 			onSelectColor(colorKey);
 		}
 	};
 	const removeColor = () => {
-		setColor('black'); // 将颜色设置为 null
+		// setSelectedColor('black');
+		// setColor('transparent'); 
 		onSelectColor(null); // 通知父组件去除颜色
 	};
-	const colors = Object.values(fontColorStyleMap).map(style => style.color);
-	return (<div>
-		<CirclePicker
-			color = { color }
-			onChangeComplete = { handleChangeComplete }
-			colors = { colors }
-		/>
+	const colors = Object.values(ColorStyleMap).map(style => style[changeKeyName]);
+	return (<div className='font-color-content'>
+		<div className='all-font-colors'>
+			{ colors.map(color => {
+				let isCurrentColor=color===selectedColor;
+				return <div
+					style = { { background : `${ color }`,borderColor : `${ color }`} }
+					key = { `fontColor-${ color }` }
+					className = { `font-color-circle ${ isCurrentColor ? 'selected-color' : '' }` }
+					onClick={()=>{handleChangeComplete(color)}}
+				></div>;
+			}) }
+		</div>
 		<div
 			className = "eraser-icon"
 			onClick = { removeColor }
 		><EraserIcon />
-			<span className = "eraser-text">去除颜色</span>
+			<span className = "eraser-text">{currentLanguage.remove_color}</span>
 		</div>
 	</div>);
 };
-const BackgroundColorPicker = ({ onSelectColor }) => {
-	const [color , setColor] = useState('#ffffff');
-	
-	const handleChangeComplete = (color) => {
-		setColor(color.hex); // 找到对应的键
-		const colorKey = Object.keys(backgroundColorStyleMap).find(key => backgroundColorStyleMap[key].backgroundColor === color.hex);
-		onSelectColor(colorKey);
-	};
-	const removeColor = () => {
-		setColor('transparent'); // 将颜色设置为 null
-		onSelectColor(null); // 通知父组件去除颜色
-	};
-	const colors = Object.values(backgroundColorStyleMap).map(style => style.backgroundColor);
-	return (<div>
-		<CirclePicker
-			color = { color }
-			onChangeComplete = { handleChangeComplete }
-			colors = { colors }
-		/>
-		<div
-			className = "eraser-icon"
-			onClick = { removeColor }
-		><EraserIcon /><span className = "eraser-text">去除颜色</span>
-		</div>
-	</div>);
-};
+
 
 
 
@@ -151,7 +138,9 @@ const AddNewNoteModal = ({
 	
 	
 	const handleCancel = () => {
+		console.log('我关闭了');
 		onCloseModal();
+		GetNoteContent(EditorState.createWithContent(convertFromRaw(initialContent)) , initialTitle , onSave);
 	};
 	
 	const handleOk = () => {
@@ -163,7 +152,7 @@ const AddNewNoteModal = ({
 				open = { open }
 				onOk = { handleOk }
 				style = { { top : 40 } }
-				onCancel = { onCloseModal }
+				onCancel = { handleCancel }
 				cancelText = "取消"
 				okText = "创建"
 				width = { 800 }
@@ -172,8 +161,9 @@ const AddNewNoteModal = ({
 				keyboard = { true }
 				wrapClassName = {`edit-note-modal ${ settingItems.themeMode==='note-dark-mode'?'night-theme':currentNotebook.currentTheme }`}
 				closable = { false }
-				maskClosable={false}
+				maskClosable={true}
 				footer={null}
+				// afterOpenChange={()=>{GetNoteContent(initialContent , initialTitle , onSave);}}
 			>
 				<RichTextEditor
 					onSave = { onSave }
@@ -209,6 +199,11 @@ const RichTextEditor = ({
 	const [noteTitle , setNoteTitle] = useState('');
 	const [editorState , setEditorState] = useState(initialContent ? EditorState.createWithContent(convertFromRaw(initialContent)) : EditorState.createEmpty());
 	
+	const [currentLanguage , setCurrentLanguage] = useState(translations[settingItems.language]);
+	
+	useEffect(() => {
+		setCurrentLanguage(translations[settingItems.language]);
+	} , [settingItems.language]);
 	useEffect(() => {
 		editorRef.current.focus();
 	} , []);
@@ -241,6 +236,7 @@ const RichTextEditor = ({
 			},
 		]);
 	};
+	
 	const HighlightedTitle = ({
 		title ,
 		keyword,
@@ -415,14 +411,25 @@ const RichTextEditor = ({
 	
 	const selectBackgroundColorContent = (
 		<div>
-			<div className = "color-popover-title">字体背景颜色选择</div>
-			<BackgroundColorPicker onSelectColor = { onBackgroundColorChange } />
+			<div className = "color-popover-title">{currentLanguage.font_background_color_picker}</div>
+			<ColorPicker
+				onSelectColor = { onBackgroundColorChange }
+				ColorStyleMap = { backgroundColorStyleMap }
+				colorType = "backgroundColor"
+				currentLanguage={currentLanguage}
+			/>
 		</div>
 	);
+	
 	const selectColorContent = (
 		<div>
-			<div className = "color-popover-title">字体颜色选择</div>
-			<ColorPicker onSelectColor = { onFontColorChange } />
+			<div className = "color-popover-title">{currentLanguage.font_color_picker}</div>
+			<ColorPicker
+				onSelectColor = { onFontColorChange }
+				ColorStyleMap = { fontColorStyleMap }
+				colorType = "color"
+				currentLanguage={currentLanguage}
+			/>
 		</div>
 	);
 	
@@ -462,7 +469,7 @@ const RichTextEditor = ({
 			key:'header-five'
 		},
 		{
-			text:'普通段落',
+			text:`${currentLanguage.NormalParagraph}`,
 			key:'unstyled'
 		},
 	]
@@ -497,95 +504,92 @@ const RichTextEditor = ({
 		>
 			{ showAllOptions && <div>
 				<div className = "modal-top-bar">
+					<Tooltip
+						title = {currentLanguage.exit_without_saving_changes}
+						color='#a6aaad'
+						arrow = { false }
+					>
+						<div
+							className = "cancel-edit-icon"
+							onClick = { onCancel }
+						><CancelEditIcon />
+						</div>
+					</Tooltip>
 					
-					
-					<div className = "modal-top-right-bar">
-						<Tooltip
-							title = "保存"
-							color = "#202124"
-							arrow = { false }
-						><GetContentButton
-							noteTitle = { noteTitle }
-							editorState = { editorState }
-							onSave = { onSave }
-						>
-							<SaveIcon />
-						</GetContentButton>
-						</Tooltip>
-						<Tooltip
-							title = "退出且不保存修改"
-							color = "#202124"
-							arrow = { false }
-						>
-							<div
-								className = "cancel-edit-icon"
-								onClick = { onCancel }
-							><CancelEditIcon />
-							</div>
-						</Tooltip>
-					</div>
+					<Tooltip
+						title = { currentLanguage.save }
+						color = "#a6aaad"
+						arrow = { false }
+					>
+						<div
+							onClick = { () => {
+								GetNoteContent(editorState , noteTitle , onSave);
+							} }
+						><SaveIcon /></div>
+					</Tooltip>
+						
 				</div>
 				
 				<div className = "rich-text-options">
 					<Tooltip
-						title = "撤销"
-						color = "#202124"
+						title = {currentLanguage.undo}
+						color = "#a6aaad"
 						arrow = { false }
 					>
 						<button onClick = { onUndo }><FaUndo /></button>
 					</Tooltip>
 					<Tooltip
-						title = "还原"
-						color = "#202124"
+						title = {currentLanguage.redo}
+						color = "#a6aaad"
 						arrow = { false }
 					>
 						<button onClick = { onRedo }><FaRedo /></button>
 					</Tooltip>
 					<Tooltip
-						title = "加粗"
-						color = "#202124"
+						title = {currentLanguage.bold}
+						color = "#a6aaad"
 						arrow = { false }
 					>
 						<button onClick = { onBoldClick }><FaBold /></button>
 					</Tooltip>
 					<Tooltip
-						title = "斜体"
-						color = "#202124"
+						title = {currentLanguage.italic}
+						color = "#a6aaad"
 						arrow = { false }
 					>
 						<button onClick = { onItalicClick }><FaItalic /></button>
 					</Tooltip>
 					<Tooltip
-						title = "下划线"
-						color = "#202124"
+						title = {currentLanguage.underline}
+						color = "#a6aaad"
 						arrow = { false }
 					>
 						<button onClick = { onUnderlineClick }><FaUnderline /></button>
 					</Tooltip>
 					<Tooltip
-						title = "删除线"
-						color = "#202124"
+						title = {currentLanguage.strikethrough}
+						color = "#a6aaad"
 						arrow = { false }
 					>
 						<button onClick = { onStrikethroughClick }><FaStrikethrough /></button>
 					</Tooltip>
 					<Tooltip
-						title = "文本靠左"
-						color = "#202124"
+						title = {currentLanguage.align_left}
+						color = "#a6aaad"
 						arrow = { false }
 					>
 						<button onClick = { onAlignLeft }><FaAlignLeft /></button>
 					</Tooltip>
 					<Tooltip
-						title = "文本居中"
-						color = "#202124"
+						title = {currentLanguage.align_center}
+						color = "#a6aaad"
 						arrow = { false }
 					>
 						<button onClick = { onAlignCenter }><FaAlignCenter /></button>
 					</Tooltip>
 					<Tooltip
-						title = "文本靠右"
-						color = "#202124"
+						title = {currentLanguage.align_right}
+						color = "#a6aaad"
 						arrow = { false }
 					>
 						<button onClick = { onAlignRight }><FaAlignRight /></button>
@@ -593,8 +597,8 @@ const RichTextEditor = ({
 					
 					
 					<Tooltip
-						title = "添加图片"
-						color = "#202124"
+						title = {currentLanguage.add_image}
+						color = "#a6aaad"
 						arrow = { false }
 					>
 						<input
@@ -612,22 +616,22 @@ const RichTextEditor = ({
 					
 					
 					<Tooltip
-						title = "有序列表"
-						color = "#202124"
+						title = {currentLanguage.ordered_list}
+						color = "#a6aaad"
 						arrow = { false }
 					>
 						<button onClick = { onOrderedList }><FaListOl /></button>
 					</Tooltip>
 					<Tooltip
-						title = "无序列表"
-						color = "#202124"
+						title ={currentLanguage.unordered_list}
+						color = "#a6aaad"
 						arrow = { false }
 					>
 						<button onClick = { onUnorderedList }><FaListUl /></button>
 					</Tooltip>
 					<Tooltip
-						title = "引用"
-						color = "#202124"
+						title = {currentLanguage.quote}
+						color = "#a6aaad"
 						arrow = { false }
 					>
 						<button onClick = { handleBlockquote }>
@@ -639,7 +643,11 @@ const RichTextEditor = ({
 						trigger = "hover"
 						overlayClassName = "font-size-popover"
 					>
-						<Tooltip title = "字号">
+						<Tooltip
+							title = {currentLanguage.font_size}
+							color = "#a6aaad"
+							arrow = { false }
+						>
 							<button>
 								<FontSizeIcon />
 							</button>
@@ -651,7 +659,11 @@ const RichTextEditor = ({
 						trigger = "hover"
 						overlayClassName = "font-size-popover"
 					>
-						<Tooltip title = "标题">
+						<Tooltip
+							title = {currentLanguage.heading}
+							color = "#a6aaad"
+							arrow = { false }
+						>
 							<button>
 								<HeaderIcon />
 							</button>
@@ -664,6 +676,7 @@ const RichTextEditor = ({
 					{/* 字体颜色选择 */ }
 					<Popover
 						content = { selectColorContent }
+						trigger = "hover"
 					>
 						<button>
 							<FontColorIcon />
@@ -672,6 +685,7 @@ const RichTextEditor = ({
 					{/* 背景颜色选择 */ }
 					<Popover
 						content = { selectBackgroundColorContent }
+						trigger = "hover"
 					>
 						<button>
 							<FontBackgroundIcon />
@@ -681,19 +695,20 @@ const RichTextEditor = ({
 				
 				</div>
 			</div> }
+			
 			{/*笔记标题输入区*/ }
 			<div className = "note-title-section">
 				{ (currentNotebook?.id === "searchResults-notes-id" && keyword && noteTitle) &&
 					<div className = "highlight-note-title">
 						<HighlightedTitle
 							title = { noteTitle }
-						 keyword = { keyword }
+							 keyword = { keyword }
 					 />
 				 </div>}
 				 <input
 					 type = "text"
 					 className = "note-item-title-input"
-					 placeholder = "标题"
+					 placeholder = {currentLanguage?.noteTitle}
 					 maxLength={16}
 					 value={noteTitle}
 					 onChange = { (e) => {
@@ -734,30 +749,29 @@ const RichTextEditor = ({
 					blockStyleFn={myBlockStyleFn}
 					handleKeyCommand = { handleKeyCommand }
 					onChange = { setEditorState }
-					placeholder = "输入笔记 . . ."
+					placeholder = {currentLanguage.inputNote}
 					className = "rich-text-input"
 					textAlignment = { textAlignment }
 				/>
 			</div>
+			
 			{/*操作区: 富文本, 撤销, 复原, 添加按钮*/ }
 			{ !showAllOptions && <div className = "edit-note-options">
 				<div className = "edit-note-icons">
 					<RichTextIcon
 						onClick = { () => {
-							openModal('addNewNote');
+							// openModal('addNewNote');
 							changeNoteEdit(noteTitle,convertToRaw(editorState.getCurrentContent()),null)
 						} }
+						currentLanguage={currentLanguage}
 					/>
-						<div onClick = { onUndo }><UndoIcon /></div>
-						<div onClick = { onRedo }><RedoIcon /></div>
+						<div onClick = { onUndo }><UndoIcon currentLanguage={currentLanguage}/></div>
+						<div onClick = { onRedo }><RedoIcon currentLanguage={currentLanguage}/></div>
 				</div>
 				
-				<GetContentButton
-					noteTitle={noteTitle}
-					editorState = { editorState }
-					onSave = { onSave }
-				>
-					<AddNewNotebtn onClick={()=>{
+				
+				<AddNewNotebtn
+					onClick = { () => {
 						const contentState = editorState.getCurrentContent();
 						const rawContentState = convertToRaw(contentState);
 						let allNoteEmpty = true;
@@ -767,13 +781,16 @@ const RichTextEditor = ({
 								break;
 							}
 						}
-						if ( allNoteEmpty === true && noteTitle==='') {
+						if ( allNoteEmpty === true && noteTitle === '' ) {
+							message.error('不能输入空笔记',1);
 							return;
 						}
-						cancelExpandNoteEditSection()
+						GetNoteContent(editorState , noteTitle , onSave);
+						cancelExpandNoteEditSection();
 						
-					}}/>
-				</GetContentButton>
+					} }
+					currentLanguage = { currentLanguage }
+				/>
 			
 			</div> }
 		
@@ -802,11 +819,11 @@ const QuotoBlockIcon=()=> {
 			</svg>
 	</>
 }
-const RichTextIcon = ({ onClick }) => {
+const RichTextIcon = ({ onClick ,currentLanguage}) => {
 	return <>
 		<Tooltip
-			color = "#202124"
-			title = "富文本编辑模式"
+			color='#a6aaad'
+			title = {currentLanguage?.rich_text_mode}
 			placement = "bottom"
 			zIndex = "1"
 			arrow = { false }
@@ -852,12 +869,12 @@ const ImageIcon=()=> {
 	</svg>;
 }
 
-const UndoIcon = () => {
+const UndoIcon = ({currentLanguage}) => {
 	return <>
 		
 		<Tooltip
-			color = "#202124"
-			title = "撤销"
+			color='#a6aaad'
+			title = {currentLanguage.undo}
 			placement = "bottom"
 			zIndex = "1"
 			arrow = { false }
@@ -882,11 +899,11 @@ const UndoIcon = () => {
 		</Tooltip>
 	</>;
 };
-const RedoIcon = () => {
+const RedoIcon = ({currentLanguage}) => {
 	return <>
 		<Tooltip
-			color = "#202124"
-			title = "复原"
+			color='#a6aaad'
+			title = {currentLanguage.redo}
 			placement = "bottom"
 			zIndex = "1"
 			arrow = { false }
@@ -916,19 +933,11 @@ const RedoIcon = () => {
 	</>;
 };
 
-class AddNewNotebtn extends Component {
-	constructor () {
-		super();
-	}
-	
-	render () {
-		const {
-			onClick ,
-		} = this.props;
+const AddNewNotebtn=({onClick,currentLanguage})=>{
 		return <div>
 			<Tooltip
-				color='#202124'
-				title = "添加笔记"
+				color='#a6aaad'
+				title = {currentLanguage.add_note}
 				placement = "bottom"
 				zIndex = "1"
 				arrow={false}
@@ -956,8 +965,6 @@ class AddNewNotebtn extends Component {
 				</div>
 			</Tooltip>
 		</div>;
-		
-	}
 }
 const EraserIcon=()=> {
 	return <svg

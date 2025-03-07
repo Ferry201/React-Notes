@@ -2,105 +2,54 @@ import React , {
 	useState , useRef , useEffect ,
 } from 'react';
 import {
-	Modal , Input , message , Radio , Switch , Divider,
+	Modal , Switch , Divider ,
 } from 'antd';
 import './note.css';
+import { translations } from "@src/Home/translations";
 
 
 const ThemeRadioStyle = {
 	display : 'flex' ,
 	flexDirection : 'column' ,
 	gap : 12 ,
-	fontSize : 20,
+	fontSize : 20 ,
 };
 
 const ThemeRadios = ({
 	settingItems ,
-	updateNoteSettingItems,
+	updateNoteSettingItems ,
+	currentLanguage ,
 }) => {
-	const [value , setValue] = useState(settingItems.themeMode);
+	const [theme , setTheme] = useState(settingItems.themeMode);
 	const [autoSwitch , setAutoSwitch] = useState(JSON.parse(localStorage.getItem('autoSwitch')) || false);
 	
-	// 自动模式逻辑
-	useEffect(() => {
-		if ( autoSwitch ) {
-			const checkTime = () => {
-				const hours = new Date().getHours();
-				const newMode = (hours >= 20 || hours < 8) ? "note-dark-mode" : "note-light-mode";
-				
-				if ( newMode !== value ) {
-					setValue(newMode);
-					updateNoteSettingItems('themeMode' , newMode);
-				}
-			};
-			
-			checkTime();
-			const interval = setInterval(checkTime , 60000); // 每分钟检查一次
-			return () => clearInterval(interval); // 卸载时清除定时器
-		}
-	} , [autoSwitch , value , updateNoteSettingItems]);
 	
 	// 用户手动切换模式（自动切换关闭）
-	const onChange = (e) => {
-		setValue(e.target.value);
-		updateNoteSettingItems('themeMode' , e.target.value);
+	const onChangeTheme = (value) => {
+		setTheme(value);
+		updateNoteSettingItems('themeMode' , value);
 		
-		// 关闭自动模式
-		setAutoSwitch(false);
-		// localStorage.setItem('autoSwitch', JSON.stringify(false));
-	};
-	
-	// 开启/关闭自动模式
-	const onToggleAuto = (checked) => {
-		//antd 会在 onChange 事件触发时自动传入checked
-		setAutoSwitch(checked);
-		// localStorage.setItem('autoSwitch', JSON.stringify(checked));
-		
-		if ( checked ) {
-			// 立即触发自动模式逻辑
-			const hours = new Date().getHours();
-			const newMode = (hours >= 20 || hours < 8) ? "note-dark-mode" : "note-light-mode";
-			setValue(newMode);
-			updateNoteSettingItems('themeMode' , newMode);
-		}
 	};
 	
 	return (<div>
-			{/* 主题模式选择 */ }
-			<Radio.Group
-				optionType = "button"
-				size = "large"
-				buttonStyle = "solid"
-				style = { ThemeRadioStyle }
-				onChange = { onChange }
-				value = { value }
-				options = { [
-					{
-						value : "note-light-mode" ,
-						label : "白天模式",
-					} ,
-					{
-						value : "note-dark-mode" ,
-						label : "黑夜模式",
-					},
-				] }
-			/>
-			
-			{/* 自动切换开关 */ }
-			{/*<div style={{ marginTop: "8px" }}>*/ }
-			{/*	<label>自动切换：</label>*/ }
-			{/*	<Switch*/ }
-			{/*		checked={autoSwitch}*/ }
-			{/*		onChange={onToggleAuto}*/ }
-			{/*	/>*/ }
-			{/*</div>*/ }
-		</div>);
-};
-
-const ChangeNoteCoverMode = () => {
+		{/* 主题模式选择 */ }
+		<p>{currentLanguage.settingThemeSwitchTitle}</p>
+		<ButtonRadio
+			options = { [
+				{
+					value : "note-light-mode" ,
+					label : `${ currentLanguage.dayMode }` ,
+				} ,
+				{
+					value : "note-dark-mode" ,
+					label : `${ currentLanguage.nightMode }` ,
+				} ,
+			] }
+			value = { theme }
+			onChange = { onChangeTheme }
+		/>
 	
-	return <>
-	</>;
+	</div>);
 };
 
 
@@ -110,9 +59,37 @@ const SettingModal = ({
 	settingItems ,
 	updateNoteSettingItems ,
 }) => {
-	const [activeItem , setActiveItem] = useState('主题');
+	const [currentLanguage , setCurrentLanguage] = useState(translations[settingItems.language]);
 	
-	const settingItemsText = ['主题' , '笔记' , '语言' , '时区' , '隐私' , '反馈'];
+	const [activeItem , setActiveItem] = useState('theme');
+	let settingItemsText = [
+		{
+			key : 'theme' ,
+			text : currentLanguage.settingTheme ,
+		} ,
+		{
+			key : 'note' ,
+			text : currentLanguage.settingNote ,
+		} ,
+		{
+			key : 'language' ,
+			text : currentLanguage.settingLanguage ,
+		} ,
+		{
+			key : 'privacy' ,
+			text : currentLanguage.privacy ,
+		} ,
+		{
+			key : 'feedback' ,
+			text : currentLanguage.feedback ,
+		} ,
+	];
+	
+	// 监听语言变化，更新 currentLanguage
+	useEffect(() => {
+		setCurrentLanguage(translations[settingItems.language]);
+	} , [settingItems.language]);
+	
 	
 	const handleOk = () => {
 		
@@ -144,37 +121,40 @@ const SettingModal = ({
 				<div className = "setting-sidebar">
 					{ settingItemsText.map((item , index) => {
 						return <div
-							className = { `setting-item ${ activeItem === item ? 'active-setting-item' : '' }` }
-							key = { `setting-${ index }-${ item }` }
+							className = { `setting-item ${ activeItem === item.key ? 'active-setting-item' : '' }` }
+							key = { `setting-${ index }-${ item.key }` }
 							onClick = { () => {
-								setActiveItem(item);
+								setActiveItem(item.key);
 							} }
-						>{ item }</div>;
+						>{ item.text }</div>;
 					}) }
 				
 				</div>
 				
 				<div className = "setting-panel">
-					{ activeItem === '主题' && <div className = "theme-mode-radios"><ThemeRadios
+					{ activeItem === 'theme' && <div className = "theme-mode-radios"><ThemeRadios
 						settingItems = { settingItems }
 						updateNoteSettingItems = { updateNoteSettingItems }
+						currentLanguage = { currentLanguage }
 					/>
 						{/*<p>晚上20点后自动开启黑夜模式 , 早上8点开启白天模式</p>*/ }
 					</div> }
-					{ activeItem === '笔记' && <NoteDisplaySetting
+					{ activeItem === 'note' && <NoteDisplaySetting
 						updateNoteSettingItems = { updateNoteSettingItems }
 						settingItems = { settingItems }
+						currentLanguage = { currentLanguage }
 					/> }
-					{ activeItem === '反馈' && <div>
-						亲爱的用户 :
-						<br />
-						如果您在使用笔记本软件的过程中有任何建议或发现了任何问题与 bug，欢迎随时反馈给我们。
-						<br />
-						我们会认真查看并不断优化，为您提供更好的体验。
-						<FeedbackContent />
+					{ activeItem === 'language' && <LanguageSelector
+						updateNoteSettingItems = { updateNoteSettingItems }
+						settingItems = { settingItems }
+						currentLanguage = { currentLanguage }
+					/> }
+					{ activeItem === 'privacy' && <PrivacyContent currentLanguage={currentLanguage}/> }
+					{ activeItem === 'feedback' && <div>
+						<p className = "feedback-dearUsers">{ currentLanguage.dearUser }</p>
+						<div className = "feedback-content">{ currentLanguage.feedbackText }</div>
+						<FeedbackContent currentLanguage = { currentLanguage } />
 					</div> }
-				
-				
 				</div>
 			
 			</div>
@@ -185,43 +165,48 @@ const SettingModal = ({
 const NoteDisplaySetting = ({
 	settingItems ,
 	updateNoteSettingItems ,
+	currentLanguage ,
 }) => {
 	const [listGapselected , setListGapSelected] = useState(settingItems.listModeGap);
 	const [cardColumnSelected , setCardColumnSelected] = useState(settingItems.cardModeColumn);
 	const [gridColumnSelected , setGridColumnSelected] = useState(settingItems.gridModeColumn);
 	const [notebookMode , setNotebookMode] = useState(settingItems.notebookMode);
 	
-	const listGapRadioChange=(value)=>{
-		setListGapSelected(value)
-		updateNoteSettingItems('listModeGap',value)
-	}
 	
-	const cardColumnRadioChange=(value)=>{
-		setCardColumnSelected(value)
-		updateNoteSettingItems('cardModeColumn',value)
-	}
+	const listGapRadioChange = (value) => {
+		setListGapSelected(value);
+		updateNoteSettingItems('listModeGap' , value);
+	};
 	
-	const gridColumnRadioChange=(value)=>{
-		setGridColumnSelected(value)
-		updateNoteSettingItems('gridModeColumn',value)
-	}
-	const handleChangeNotebookMode=(value)=>{
+	const cardColumnRadioChange = (value) => {
+		setCardColumnSelected(value);
+		updateNoteSettingItems('cardModeColumn' , value);
+	};
+	
+	const gridColumnRadioChange = (value) => {
+		setGridColumnSelected(value);
+		updateNoteSettingItems('gridModeColumn' , value);
+	};
+	const handleChangeNotebookMode = (value) => {
 		setNotebookMode(value);
-		updateNoteSettingItems('notebookMode',value)
-	}
+		updateNoteSettingItems('notebookMode' , value);
+	};
+	
+	
 	return <div>
 		<div className = "open-no-cover-mode">
-				{/*{ !settingItems.coverMode ? <span>开启</span> : <span>关闭</span> }*/}
-				<p>笔记本展示</p>
+			
+			
+			<p>{ currentLanguage.NotebookDisplay }</p>
 			<ButtonRadio
 				options = { [
 					{
-						label : "封面模式" ,
-						value : "cover-notebook",
+						label : `${ currentLanguage.coverMode }` ,
+						value : "cover-notebook" ,
 					} ,
 					{
-						label : "文字模式" ,
-						value : "plain-notebook",
+						label : `${ currentLanguage.textMode }` ,
+						value : "plain-notebook" ,
 					} ,
 				] }
 				value = { notebookMode }
@@ -231,22 +216,22 @@ const NoteDisplaySetting = ({
 		{/*<p>笔记布局配置</p>*/ }
 		<Divider />
 		
-		<p>列表模式间距</p>
+		<p>{ currentLanguage.listModeSpacing }</p>
 		<div>
 			<ButtonRadio
 				options = { [
 					{
-						label : "紧凑" ,
-						value : "condensed",
+						label : `${ currentLanguage.Condensed }` ,
+						value : "condensed" ,
 					} ,
 					{
-						label : "适中" ,
-						value : "comfy",
+						label : `${ currentLanguage.Comfy }` ,
+						value : "comfy" ,
 					} ,
 					{
-						label : "宽松" ,
-						value : "expanded",
-					},
+						label : `${ currentLanguage.Expanded }` ,
+						value : "expanded" ,
+					} ,
 				] }
 				value = { listGapselected }
 				onChange = { listGapRadioChange }
@@ -254,52 +239,52 @@ const NoteDisplaySetting = ({
 		</div>
 		<Divider />
 		
-		<p>卡片模式列数</p>
+		<p>{ currentLanguage.cardModeColumns }</p>
 		<div>
 			<ButtonRadio
 				options = { [
 					{
-						label : "2列" ,
-						value : "cardTwoColumn",
+						label : "2" ,
+						value : "cardTwoColumn" ,
 					} ,
 					{
-						label : "3列" ,
-						value : "cardThreeColumn",
+						label : "3" ,
+						value : "cardThreeColumn" ,
 					} ,
 					{
-						label : "4列" ,
-						value : "cardFourColumn",
+						label : "4" ,
+						value : "cardFourColumn" ,
 					} ,
-					{
-						label : "5列" ,
-						value : "cardFiveColumn",
-					} ,
+					// {
+					// 	label : "5" ,
+					// 	value : "cardFiveColumn",
+					// } ,
 				] }
 				value = { cardColumnSelected }
 				onChange = { cardColumnRadioChange }
 			/>
 		</div>
 		<Divider />
-		<p>宫格模式列数</p>
+		<p>{ currentLanguage.gridModeColumns }</p>
 		<div>
 			<ButtonRadio
 				options = { [
 					{
-						label : "2列" ,
-						value : "gridTwoColumn",
+						label : "2" ,
+						value : "gridTwoColumn" ,
 					} ,
 					{
-						label : "3列" ,
-						value : "gridThreeColumn",
+						label : "3" ,
+						value : "gridThreeColumn" ,
 					} ,
 					{
-						label : "4列" ,
-						value : "gridFourColumn",
+						label : "4" ,
+						value : "gridFourColumn" ,
 					} ,
-					{
-						label : "5列" ,
-						value : "gridFiveColumn",
-					} ,
+					// {
+					// 	label : "5" ,
+					// 	value : "gridFiveColumn",
+					// } ,
 				] }
 				value = { gridColumnSelected }
 				onChange = { gridColumnRadioChange }
@@ -313,20 +298,52 @@ const ButtonRadio = ({
 	value ,
 	onChange ,
 }) => {
-	return (<div className = "display-radio-group">
-		{ options.map((option) => (<label
+	return (<div className = "setting-radio-group">
+		{ options.map((option) => (<div
 			key = { option.value }
-			className = { `display-radio-btn ${ value === option.value ? "selected-display-radio" : "" }` }
+			className = { `setting-radio-button ${ value === option.value ? "selected-setting-radio" : "" }` }
 			onClick = { () => {
 				onChange(option.value);
 			} }
 		>
-			{ option.label }
-		</label>)) }
+			<span>{ option.label }</span>
+			<div className = "radio-button-circle"></div>
+		
+		</div>)) }
 	</div>);
 };
 
-const FeedbackContent = () => {
+const LanguageSelector = ({
+	settingItems ,
+	updateNoteSettingItems ,
+	currentLanguage ,
+}) => {
+	const [language , setLanguage] = useState(settingItems.language);
+	const changeLanguage = (value) => {
+		setLanguage(value);
+		updateNoteSettingItems('language' , value);
+	};
+	return <div>
+		<p>{ currentLanguage.selectLanguage }</p>
+		<ButtonRadio
+			options = { [
+				{
+					label : "中文" ,
+					value : "cn" ,
+				} ,
+				{
+					label : "English" ,
+					value : "en" ,
+				} ,
+			
+			] }
+			value = { language }
+			onChange = { changeLanguage }
+		/>
+	</div>;
+};
+
+const FeedbackContent = ({ currentLanguage }) => {
 	const [copySuccuess , setCopySuccess] = useState(false);
 	const email = 'liqunzhang3@gmail.com';
 	const handleCopyEmail = () => {
@@ -341,22 +358,27 @@ const FeedbackContent = () => {
 		});
 	};
 	return <div>
-		<p>反馈请发送到以下邮箱:</p>
-		<p>liqunzhang3@gmail.com</p>
+		<p className = "email-text">liqunzhang3@gmail.com</p>
 		{ copySuccuess ?
 		  <div className = "feedback-copy-button">
 			  <CopySuccessIcon />
-			  <span>已复制</span>
+			  <span>{ currentLanguage.copied }</span>
 		  </div> :
 		  <div
 			  onClick = { handleCopyEmail }
 			  className = "feedback-copy-button"
 		  >
 			  <CopyEmailIcon />
-			  <span>复制邮箱</span>
+			  <span>{ currentLanguage.copyText }</span>
 		  </div> }
 	</div>;
 };
+const PrivacyContent=({currentLanguage})=>{
+	return <div>
+		<p>{currentLanguage.privacyTitle}</p>
+		<div className='privacy-content'>{currentLanguage.privacyContent}</div>
+	</div>
+}
 const FeedbackIcon = () => {
 	return <svg
 		style = { { marginLeft : '16px' } }
@@ -417,6 +439,7 @@ const CopySuccessIcon = () => {
 		></path>
 	</svg>;
 };
+
 
 
 export { SettingModal };

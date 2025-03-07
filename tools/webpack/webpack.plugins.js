@@ -6,8 +6,8 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 
 module.exports = [
-  inDev() && new webpack.HotModuleReplacementPlugin(),
-  inDev() && new ReactRefreshWebpackPlugin(),
+  // inDev() && new webpack.HotModuleReplacementPlugin(),
+  // inDev() && new ReactRefreshWebpackPlugin(),
   new HtmlWebpackPlugin({
     template: 'src/index.html',
     favicon: 'assets/images/logo.png',

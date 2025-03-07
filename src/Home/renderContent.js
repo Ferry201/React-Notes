@@ -3,7 +3,6 @@ import { Component } from 'react';
 import { convertFromRaw } from 'draft-js';
 import './note.css';
 import Masonry from 'masonry-layout';
-import GetContentButton from '@src/Home/GetContentButton';
 import dayjs from 'dayjs';
 import {
 	message ,
@@ -13,6 +12,7 @@ import {
 	Drawer,
 } from 'antd';
 import RichTextEditor from '../RichTextEditor/RichTextEditor';
+import { translations } from "@src/Home/translations";
 
 
 const HighlightedKeyword = ({text, keyword, maxLength = 50 ,themeMode}) => {
@@ -78,27 +78,24 @@ const RenderContent = ({
 	const [listGap , setListGap] = useState('');
 	const [cardModeColumn , setCardModeColumn] = useState('');
 	const [gridModeColumn , setGridModeColumn] = useState('');
-	const [isDrawerVisible, setIsDrawerVisible] = useState(false);
+	const [isDrawerVisible , setIsDrawerVisible] = useState(false);
 	const [checkedNoteIdArray , setCheckedNoteIdAray] = useState([]);
 	
+	const [currentLanguage , setCurrentLanguage] = useState(translations[settingItems.language]);
 	
+	useEffect(() => {
+		setCurrentLanguage(translations[settingItems.language]);
+	} , [settingItems.language]);
 	
 	
 	const handleClickDrawerOutside = (event) => {
-		if (event.target.closest('.animated-div') === null) {
+		if ( event.target.closest('.top-operations-drawer') === null ) {
 			setIsDrawerVisible(false);
-			setCheckedNoteIdAray([])
+			setCheckedNoteIdAray([]);
 		}
 	};
-
-	useEffect(() => {
-		document.addEventListener('click', handleClickDrawerOutside);
-		return () => {
-			document.removeEventListener('click', handleClickDrawerOutside);
-		};
-	}, []);
 	
-	let notebooksArray=notebooks;
+	let notebooksArray = notebooks;
 	let notes = noteList;
 	let isShowFavoritesNotes = isShowFavorites;
 	if ( currentNotebook.id === 'favorites-notes-id' ) {
@@ -113,11 +110,14 @@ const RenderContent = ({
 		showRecycleNotes = true;
 	}
 	
-	
 	const placeholders = [
-		'输入笔记 . . .' ,
-		'记录你的闪光灵感✨' ,
-		'有什么心得吗？在这里记录下来吧',
+		// '输入笔记 . . .' ,
+		// '记录你的闪光灵感✨' ,
+		// '有什么心得吗？在这里记录下来吧',
+		currentLanguage?.inputNote,
+		currentLanguage?.recordYourInspiration,
+		currentLanguage?.anyThoughtsRecordHere,
+		
 	];
 	
 	useEffect(() => {
@@ -161,23 +161,23 @@ const RenderContent = ({
 			condensed : '6px' ,
 			expanded : '30px',
 		};
-		setListGap(gapMap[settingItems.listModeGap] || '')
+		setListGap(gapMap[settingItems.listModeGap] || '16px')
 		
 		const cardModeColumnMap={
 			cardTwoColumn:'repeat(2, minmax(0,1fr))',
 			cardThreeColumn:'repeat(3, minmax(0,1fr))',
 			cardFourColumn:'repeat(4, minmax(0,1fr))',
-			cardFiveColumn:'repeat(5, minmax(0,1fr))',
+			// cardFiveColumn:'repeat(5, minmax(0,1fr))',
 		}
-		setCardModeColumn(cardModeColumnMap[settingItems.cardModeColumn]||'')
+		setCardModeColumn(cardModeColumnMap[settingItems.cardModeColumn]||'repeat(2, minmax(0,1fr))')
 		
 		const gridModeColumnMap={
 			gridTwoColumn:'note-grid-mode-2-columns',
 			gridThreeColumn:'note-grid-mode-3-columns',
 			gridFourColumn:'note-grid-mode-4-columns',
-			gridFiveColumn:'note-grid-mode-5-columns',
+			// gridFiveColumn:'note-grid-mode-5-columns',
 		}
-		setGridModeColumn(gridModeColumnMap[settingItems.gridModeColumn]||'')
+		setGridModeColumn(gridModeColumnMap[settingItems.gridModeColumn]||'note-grid-mode-2-columns')
 	} , [settingItems]);
 	
 	
@@ -191,7 +191,7 @@ const RenderContent = ({
 			document.removeEventListener('mousedown' , handleClickOutside);
 			document.removeEventListener('keydown' , handleEscapeKey);
 		};
-	} , [currentNotebook , notes , isExpandNoteEditSection]);
+	} , [isExpandNoteEditSection]);
 	const handleClickOutside = (event) => {
 		// 如果点击的区域不在输入框范围内，收起输入框
 		if ( wrapperRef.current && !wrapperRef.current.contains(event.target) ) {
@@ -268,9 +268,9 @@ const RenderContent = ({
 		setIsDrawerVisible(false)
 	}
 	
-	
 	//通用部分
 	class NoteList extends Component {
+		
 		render () {
 			const {
 				id ,
@@ -296,7 +296,8 @@ const RenderContent = ({
 					   }
 				} }
 			>
-				<div className='common-note-item'>{ noteTitle && <span className = "note-item-title">
+				{/*<CompleteIcon/>*/}
+				<div className = "common-note-item">{ noteTitle && <span className = "note-item-title">
 					{ currentNotebook.id === 'searchResults-notes-id' ?
 					  <HighlightedKeyword
 						  text = { noteTitle }
@@ -336,7 +337,9 @@ const RenderContent = ({
 									handlePinNote = { () => {
 										onPinNote(id);
 									} }
+									currentLanguage={currentLanguage}
 								/> }
+								
 								
 								{/*<FavoriteIcon*/ }
 								{/*	isFavorited = { isFavorited }*/ }
@@ -344,25 +347,23 @@ const RenderContent = ({
 								{/*		onFavoriteNote(id);*/ }
 								{/*	} }*/ }
 								{/*/>*/ }
-								{/*移动到其他笔记*/ }
-								
 								
 								{ !showFavoritesOrSearchResults &&
 									<NotebooksPopover
 										id = { id }
 										notebooksArray = { notebooksArray }
 										currentNotebook = { currentNotebook }
-										handleMoveNote={handleMoveNote}
-										placement='rightBottom'
+										handleMoveNote = { handleMoveNote }
+										placement = "rightBottom"
+										currentLanguage={currentLanguage}
 									/> }
 								
-								
-								<CopyNoteIcon/>
 								
 								<DeleteConfirm
 									onDeleteNote = { () => {
 										onDeleteNote(id);
 									} }
+									currentLanguage={currentLanguage}
 								/>
 							</div>
 						}
@@ -375,16 +376,19 @@ const RenderContent = ({
 						handleChechedNote(id);
 					} }
 					isChecked={isChecked}
+					currentLanguage={currentLanguage}
 				/> }
 			</div>;
 		}
 	}
+	const pinnedText=currentLanguage?.pinned;
+	const otherText=currentLanguage?.other;
 	
 	class CardMode extends Component {
 		render () {
 			return <>
 				{ pinnedNotes.length > 0 && <>
-					{ !showFavoritesOrSearchResults && <p className = "note-list-sub-title">已置顶</p> }
+					{ !showFavoritesOrSearchResults && <p className = "note-list-sub-title">{pinnedText}</p> }
 					<div className = "note-card-mode" style={{gridTemplateColumns:cardModeColumn}}>
 						{ pinnedNotes.map(({
 							id ,
@@ -410,7 +414,7 @@ const RenderContent = ({
 				</> }
 				
 				{  !showFavoritesOrSearchResults && <>{ otherNotes.length > 0 && <>
-					{ pinnedNotes.length > 0 && <p className = "note-list-sub-title">其他</p> }
+					{ pinnedNotes.length > 0 && <p className = "note-list-sub-title">{otherText}</p> }
 					<div className = "note-card-mode" style={{gridTemplateColumns:cardModeColumn}}>
 						{ otherNotes.map(({
 							id ,
@@ -444,7 +448,7 @@ const RenderContent = ({
 		render () {
 			return <>
 				{ pinnedNotes.length > 0 && <>
-					{ !showFavoritesOrSearchResults && <p className = "note-list-sub-title">已置顶</p> }
+					{ !showFavoritesOrSearchResults && <p className = "note-list-sub-title">{pinnedText}</p> }
 					<div className = "note-ul-mode" style={{gap:listGap}}>
 						{ pinnedNotes.map(({
 							id ,
@@ -470,7 +474,7 @@ const RenderContent = ({
 				</> }
 				
 				{ !showFavoritesOrSearchResults && <>{ otherNotes.length > 0 && <>
-					{ pinnedNotes.length > 0 && <p className = "note-list-sub-title">其他</p> }
+					{ pinnedNotes.length > 0 && <p className = "note-list-sub-title">{otherText}</p> }
 					<div className = "note-ul-mode" style={{gap:listGap}}>
 						{ otherNotes.map(({
 							id ,
@@ -550,7 +554,7 @@ const RenderContent = ({
 		render () {
 			return (<>
 				{ pinnedNotes.length > 0 && (<>
-					{ !showFavoritesOrSearchResults && <p className = "note-list-sub-title">已置顶</p> }
+					{ !showFavoritesOrSearchResults && <p className = "note-list-sub-title">{pinnedText}</p> }
 					<div
 						className = { `note-grid-mode ${gridModeColumn}`}
 						ref = { this.gridRefPinned }
@@ -578,7 +582,7 @@ const RenderContent = ({
 					</div>
 				</>) }
 				{  !showFavoritesOrSearchResults && <>{ otherNotes.length > 0 && (<>
-					{ pinnedNotes.length > 0 && <p className = "note-list-sub-title">其他</p> }
+					{ pinnedNotes.length > 0 && <p className = "note-list-sub-title">{otherText}</p> }
 					
 					<div
 						className = { `note-grid-mode ${gridModeColumn}`}
@@ -620,17 +624,19 @@ const RenderContent = ({
 			handleMoveCheckedNote = { handleMoveCheckedNote }
 			handleDeleteCheckedNote = { handleDeleteCheckedNote }
 			clearCheckedNotes = { clearCheckedNotes }
+			handleClickDrawerOutside={handleClickDrawerOutside}
+			currentLanguage={currentLanguage}
 		/>
 		
 		{/*输入笔记区*/ }
 		{ currentNotebook.id === 'recycle-notes-id' && contents.length !== 0 &&
 			<div className = "recycleBin-mention">
-				<span>回收站的笔记会在15天后删除</span>
+				<span>{currentLanguage.emptyAfter15Days}</span>
 				<span
 					onClick = { () => {
 						openModal('clearRecycleConfirm');
 					} }
-				>清空回收站
+				>{currentLanguage.emptyRecycleButton}
 				</span>
 			</div> }
 		{ !showFavoritesOrSearchResults && <div className = "add-new-note-section">
@@ -651,23 +657,23 @@ const RenderContent = ({
 					/>
 				</div>
 				<div className = "edit-item-cancel-button">
-					<CancelEditButton handleCancel = { handleCancelEdit } tooltipText='取消编辑'/>
+					<CancelEditButton handleCancel = { handleCancelEdit } tooltipText={currentLanguage?.cancelEdit}/>
 				</div>
 			</div> : <input
 				  ref = { inputAddNoteRef }
 				  onClick = { handleExpandNoteEditSection }
 				  type = "text"
 				  className = { `add-note-input` }
-				  placeholder = "输入笔记 . . ."
+				  placeholder = {currentLanguage?.inputNote}
 			  /> }
 		</div> }
 		
 		{ contents.length === 0 ? (<div className = { `empty-container` }>
 			<EmptyIcon />
-			{ isShowFavoritesNotes ? <p>收藏夹空空如也</p> :
-			  showSearchResults ? <p>没有找到匹配的笔记</p> :
-			  showRecycleNotes ? <p>回收站空无一物</p> :
-			  <p>还没有笔记 , 点击上方输入框创建吧 !</p> }
+			{ isShowFavoritesNotes ? <p>{currentLanguage?.emptyFavorites}</p> :
+			  showSearchResults ? <p>{currentLanguage?.noSearchResults}</p> :
+			  showRecycleNotes ? <p>{currentLanguage?.emptyRecycle}</p> :
+			  <p>{currentLanguage?.createNoteTip}</p> }
 		</div>) : (<div className = "show-noteList-box">
 			{ ShowMode === 'list-mode' && <UlMode /> }
 			{ ShowMode === 'grid-mode' && <GridMode /> }
@@ -687,35 +693,55 @@ const OperateDrawer = ({
 	handleMoveCheckedNote,
 	handleDeleteCheckedNote,
 	clearCheckedNotes,
+	handleClickDrawerOutside,
+	currentLanguage={currentLanguage}
 }) => {
-	return <div className = { `animated-div ${ isDrawerVisible ? 'show' : '' }` }>
+	useEffect(() => {
+		if (isDrawerVisible) {
+			document.addEventListener('click', handleClickDrawerOutside);
+		} else {
+			document.removeEventListener('click', handleClickDrawerOutside);
+		}
+		return () => {
+			document.removeEventListener('click', handleClickDrawerOutside);
+		};
+	}, [isDrawerVisible]);
+	
+	return <div className = { `top-operations-drawer ${ isDrawerVisible ? 'show' : '' }` }>
 		
 		<span className='drawer-left'>
 			<CancelEditButton
 				handleCancel = { clearCheckedNotes }
-				tooltipText = "取消所有选中"
+				tooltipText = {currentLanguage?.uncheckAll}
 			/>
-			<span>选择了&nbsp;{ checkedNoteIdArray.length }&nbsp;个笔记</span>
+			<span>{currentLanguage.selectedText}&nbsp;{ checkedNoteIdArray.length }&nbsp;{ currentLanguage.noteText }</span>
 		</span>
 		<span className = "drawer-icon">
+			
 			<span
 				onClick = { () => {
 					handlePinCheckedNote(checkedNoteIdArray);
-					clearCheckedNotes()
+					clearCheckedNotes();
 				} }
-			><PinCheckedNoteIcon /></span>
+			><PinCheckedNoteIcon
+				currentLanguage={currentLanguage}/>
+			</span>
+			
 			<NotebooksPopover
 				id = { checkedNoteIdArray }
 				currentNotebook = { currentNotebook }
 				notebooksArray = { notebooksArray }
 				handleMoveNote = { handleMoveCheckedNote }
-				clearCheckedNotes={clearCheckedNotes}
-				placement='bottom'
+				clearCheckedNotes = { clearCheckedNotes }
+				placement = "bottom"
+				currentLanguage={currentLanguage}
 			/>
+			
 			<DeleteConfirm
 				onDeleteNote = { () => {
 					handleDeleteCheckedNote(checkedNoteIdArray);
 				} }
+				currentLanguage={currentLanguage}
 			/>
 		</span>
 	</div>;
@@ -728,6 +754,7 @@ const NotebooksPopover = ({
 	handleMoveNote ,
 	clearCheckedNotes,
 	placement,
+	currentLanguage,
 }) => {
 	
 	let filteredNotebooksID = [
@@ -753,8 +780,14 @@ const NotebooksPopover = ({
 			overlayClassName = "notebooks-popover"
 			// getPopupContainer = { (triggerNode) => triggerNode.parentElement }
 		>
-			<div><MoveNoteToOtherBook otherNotebooks = { otherNotebooks } /></div>
-		</Popover> : <div><MoveNoteToOtherBook otherNotebooks = { otherNotebooks } /></div> }
+			<div><MoveNoteToOtherBook
+				otherNotebooks = { otherNotebooks }
+				currentLanguage = { currentLanguage }
+			/></div>
+		</Popover> : <div><MoveNoteToOtherBook
+			otherNotebooks = { otherNotebooks }
+			currentLanguage = { currentLanguage }
+		/></div> }
 	</>
 }
 
@@ -826,7 +859,7 @@ const FormatTime = ({ notes,id }) => {
 	
 };
 
-const DeleteConfirm=({onDeleteNote})=>{
+const DeleteConfirm=({onDeleteNote,currentLanguage})=>{
 	return <>
 		<Popconfirm
 			destroyTooltipOnHide = { true }
@@ -840,7 +873,7 @@ const DeleteConfirm=({onDeleteNote})=>{
 			onConfirm = {onDeleteNote} 
 		>
 			<div>
-				<DeleteIcon />
+				<DeleteIcon	currentLanguage={currentLanguage}/>
 			</div>
 		</Popconfirm></>
 }
@@ -906,19 +939,23 @@ const EmptyIcon = () => {
 	</svg>;
 };
 
-class DeleteIcon extends Component {
-	render () {
-		return <>
-			<Tooltip title='删除' arrow={false} placement='bottom'>
-				<div className = "note-buttons-common">
-					<svg
-						t = "1734625609334"
-						className = "delete-note-icon"
-						viewBox = "0 0 1024 1024"
-						version = "1.1"
-						xmlns = "http://www.w3.org/2000/svg"
-						p-id = "84258"
-					>
+const DeleteIcon = ({ currentLanguage }) => {
+	return <>
+		<Tooltip
+			title = {currentLanguage.delete}
+			arrow = { false }
+			placement = "bottom"
+			color = "#a6aaad"
+		>
+			<div className = "note-buttons-common">
+				<svg
+					t = "1734625609334"
+					className = "delete-note-icon"
+					viewBox = "0 0 1024 1024"
+					version = "1.1"
+					xmlns = "http://www.w3.org/2000/svg"
+					p-id = "84258"
+				>
 						<path
 							d = "M725.333333 170.666667h213.333334v85.333333h-85.333334v640a42.666667 42.666667 0 0 1-42.666666 42.666667H213.333333a42.666667 42.666667 0 0 1-42.666666-42.666667V256H85.333333V170.666667h213.333334V85.333333h426.666666v85.333334zM384 384v341.333333h85.333333V384H384z m170.666667 0v341.333333h85.333333V384h-85.333333z"
 							p-id = "84259"
@@ -928,7 +965,29 @@ class DeleteIcon extends Component {
 				</div>
 			</Tooltip>
 		</>
-	}
+}
+const CompleteIcon=()=> {
+	return <svg
+		t = "1740339717028"
+		className = "icon"
+		viewBox = "0 0 1075 1024"
+		version = "1.1"
+		xmlns = "http://www.w3.org/2000/svg"
+		p-id = "297044"
+		width = "24"
+		height = "24"
+	>
+		<path
+			d = "M913.868343 194.714015A511.078144 511.078144 0 0 0 511.999744 0.000512C229.222285 0.000512 0 229.222797 0 512.000256s229.222285 511.999744 511.999744 511.999744 511.999744-229.222285 511.999744-511.999744c0-15.257592-0.6656-30.412785-1.996799-45.311977l-59.80157 21.759989a451.071774 451.071774 0 1 1-111.923144-270.591865l63.590368-23.142388z"
+			fill = "#515151"
+			p-id = "297045"
+		></path>
+		<path
+			d = "M451.788574 431.309096l160.66552 135.577533s8.857596 4.863998 19.96799 0l395.571002-360.95982s56.371172-13.158393 45.926377 52.223974c-38.195181 42.342379-427.110186 451.634974-427.110186 451.634974s-25.497587 15.769592-49.868775 0c-24.371188-26.623987-187.238306-221.593489-187.238307-221.593489s-4.454398-47.206376 42.086379-56.883172z"
+			fill = "#515151"
+			p-id = "297046"
+		></path>
+	</svg>;
 }
 
 class FavoriteIcon extends Component {
@@ -946,7 +1005,12 @@ class FavoriteIcon extends Component {
 			handleFavoriteNote ,
 		} = this.props;
 		return <>
-			<Tooltip title={this.state.isFavorite?'取消收藏':'收藏'} arrow={false} placement='bottom'>
+			<Tooltip
+				title = { this.state.isFavorite ? '取消收藏' : '收藏' }
+				arrow = { false }
+				placement = "bottom"
+				color = "#a6aaad"
+			>
 				<div
 					className = "note-buttons-common star-container"
 					onClick = { () => {
@@ -973,9 +1037,14 @@ class FavoriteIcon extends Component {
 		</>
 	}
 }
-const PinCheckedNoteIcon=()=>{
+const PinCheckedNoteIcon=({currentLanguage})=>{
 	return <>
-		<Tooltip title={'置顶'} arrow={false} placement='bottom'>
+		<Tooltip
+			title = {currentLanguage.pin}
+			arrow = { false }
+			placement = "bottom"
+			color = "#a6aaad"
+		>
 			<div
 				className = "note-buttons-common"
 			>
@@ -1001,10 +1070,16 @@ const PinCheckedNoteIcon=()=>{
 const PinNoteIcon = ({
 	isPinned ,
 	handlePinNote ,
+	currentLanguage,
 }) => {
 	const [pin , setPin] = useState(isPinned); // 本地状态，初始化为 isPinned
 	return <>
-		<Tooltip title={pin?'取消置顶':'置顶'} arrow={false} placement='bottom'>
+		<Tooltip
+			title = { pin ? `${currentLanguage.unpin}` : `${currentLanguage.pin}` }
+			arrow = { false }
+			placement = "bottom"
+			color = "#a6aaad"
+		>
 			<div
 				className = "note-buttons-common"
 				onClick = { () => {
@@ -1034,13 +1109,15 @@ const PinNoteIcon = ({
 const CheckNoteIcon = ({
 	onClick ,
 	isChecked,
+	currentLanguage,
 }) => {
 	return <>
 		
 		<Tooltip
-			title = {isChecked?'取消选择笔记':'选择笔记'}
+			title = {isChecked?`${currentLanguage.unselectNote}`:`${currentLanguage.selectNote}`}
 			placement = "bottom"
 			arrow = { false }
+			color='#a6aaad'
 		>
 			
 			<div
@@ -1066,46 +1143,12 @@ const CheckNoteIcon = ({
 	</>
 }
 
-const CopyNoteIcon=()=> {
-	return <>
-		<Tooltip
-			title = "复制笔记"
-			arrow = { false }
-			placement = "bottom"
-		>
-			<div
-				className = "note-buttons-common"
-			>
-				<svg
-					t = "1740147516964"
-					className = "icon"
-					viewBox = "0 0 1024 1024"
-					version = "1.1"
-					xmlns = "http://www.w3.org/2000/svg"
-					p-id = "280332"
-					width = "16"
-					height = "16"
-				>
-					<path
-						d = "M281.85 98.99v136.677l506.299 0.184V745.39H928.35V98.99z"
-						p-id = "280333"
-						fill = "#bfbfbf"
-					></path>
-					<path
-						d = "M98.05 330.59h597.5v597.5H98.05z"
-						p-id = "280334"
-						fill = "#bfbfbf"
-					></path>
-				</svg>
-			</div>
-		</Tooltip>
-	</>
-}
 
-const MoveNoteToOtherBook = ({ otherNotebooks }) => {
+const MoveNoteToOtherBook = ({ otherNotebooks ,currentLanguage}) => {
 	return <>
 		<Tooltip
-			title = "移动到其他笔记本"
+			color='#a6aaad'
+			title = {currentLanguage?.moveToOtherNotebook}
 			arrow = { false }
 			placement = "bottom"
 		>
@@ -1113,7 +1156,7 @@ const MoveNoteToOtherBook = ({ otherNotebooks }) => {
 				className = "note-buttons-common"
 				onClick = { () => {
 					if ( otherNotebooks.length === 0 ) {
-						message.warning('再创建一个笔记本才可以移动~');
+						message.warning(currentLanguage.createAnotherNotebookMessage,3);
 					}
 				} }
 			>
@@ -1144,6 +1187,7 @@ const CancelEditButton = ({ handleCancel ,tooltipText}) => {
 			placement = "bottom"
 			zIndex = "1"
 			arrow={false}
+			color='#a6aaad'
 		>
 			<div className='cancel-edit-button note-buttons-common'>
 				<svg

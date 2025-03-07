@@ -7,6 +7,7 @@ import RenderContent from '@src/Home/renderContent';
 import './note.css';
 import dayjs from "dayjs";
 import { EmojiArray } from "@src/Home/addNoteBook_Model";
+import { translations } from "@src/Home/translations";
 
 @reaxper
 class NoteManagePanel extends Reaxlass {
@@ -16,7 +17,7 @@ class NoteManagePanel extends Reaxlass {
 		
 		this.state = {
 			isSearch : false ,
-			isHover : false ,//DefaultExpandIcon hover时改变显示的svg
+			isHover : false ,
 			isModalVisible : false ,
 			noteFeaturesMenu : this.generateNoteFeaturesMenu() ,
 			isRenaming : false ,
@@ -30,6 +31,7 @@ class NoteManagePanel extends Reaxlass {
 	componentDidUpdate (prevProps) {
 		if ( prevProps.currentNotebook.id !== this.props.currentNotebook.id || prevProps.sorts !== this.props.sorts || prevProps.notebooks !== this.props.notebooks || prevProps.settingItems !== this.props.settingItems ) {
 			this.setState({
+				isRenaming : false,
 				noteFeaturesMenu : this.generateNoteFeaturesMenu() ,
 				title : this.props.currentNotebook.title ,
 			});
@@ -38,14 +40,15 @@ class NoteManagePanel extends Reaxlass {
 	
 	generateNoteFeaturesMenu = () => {
 		const otherSorts = this.props.sorts.filter(sort => sort.id !== this.props.currentNotebook.belongSortID);
+		const { settingItems } = this.props;
 		
 		return [
 			{
-				label : <div>重命名</div> ,
+				label : <div>{translations[settingItems.language]?.rename}</div> ,
 				key : 'rename' ,
 			} ,
 			{
-				label : <div>换封面</div> ,
+				label : <div>{translations[settingItems.language]?.changeCover}</div> ,
 				key : 'change-cover' ,
 				disabled : this.props.settingItems.notebookMode === 'cover-notebook' ? false : true ,
 			} ,
@@ -54,7 +57,7 @@ class NoteManagePanel extends Reaxlass {
 			// 	key : 'pinned-notebook' ,
 			// } ,
 			{
-				label : <div>移动到其他分类</div> ,
+				label : <div>{translations[settingItems.language]?.moveToOtherCategory}</div> ,
 				key : 'move-other-sort' ,
 				children : otherSorts.map(sort =>
 					({
@@ -64,17 +67,17 @@ class NoteManagePanel extends Reaxlass {
 				) ,
 				disabled : otherSorts.length === 0 ? true : false ,
 			} ,
-			{
-				label : <div>导出PDF</div> ,
-				key : 'export-pdf' ,
-			} ,
+			// {
+			// 	label : <div>导出PDF</div> ,
+			// 	key : 'export-pdf' ,
+			// } ,
 			{
 				key : 'notebook-detail' ,
-				label : <div>详情</div> ,
+				label : <div>{translations[settingItems.language]?.details}</div> ,
 				children : [
 					{
 						key : 'notebook-create-time' ,
-						label : <span>创建时间:{ dayjs(this.props.currentNotebook.createdTime).format('YYYY-MM-DD HH:mm') }</span> ,
+						label : <span>{translations[settingItems.language]?.createdTime}:{ dayjs(this.props.currentNotebook.createdTime).format('YYYY-MM-DD HH:mm') }</span> ,
 					} ,
 				] ,
 			} ,
@@ -83,7 +86,7 @@ class NoteManagePanel extends Reaxlass {
 			// 	key : 'share-notebook' ,
 			// } ,
 			{
-				label : <div className = "dropdown-delete-notebook-button">删除笔记本</div> ,
+				label : <div className = "dropdown-delete-notebook-button">{translations[settingItems.language]?.deleteNotebook}</div> ,
 				key : 'delete-notebook' ,
 			} ,
 		];
@@ -109,17 +112,19 @@ class NoteManagePanel extends Reaxlass {
 		}
 	};
 	handleBlur = (e) => {
-		if ( e.target.value ) {
+		if(!e.target.value){
+			this.setState({
+				title : this.props.currentNotebook.title ,
+				isRenaming : false ,
+			})
+		}else{
 			this.setState({
 				isRenaming : false ,
 				title : e.target.value ,
 			} , () => {
 				this.renameNotebookTitle(e);
 			});
-		} else {
-			message.warning('不能输入空标题');
 		}
-		
 	};
 	handleKeyDown = (e) => {
 		if ( e.key === 'Enter' ) {
@@ -173,6 +178,7 @@ class NoteManagePanel extends Reaxlass {
 						onClick = { () => {
 							toggleSiderCollapse();
 						} }
+						currentLanguage={translations[settingItems?.language]}
 					/> }
 					
 					{/*<div*/ }
@@ -226,7 +232,11 @@ class NoteManagePanel extends Reaxlass {
 							ref = { this.inputRenameRef }
 							className = "rename-notebook-title-input"
 							maxLength = "16"
-						/> : <span className = "notebook-title">{ this.state.title }({ notesAmount })</span> }
+						/> : <span className = "notebook-title">{
+							currentNotebook.id === 'searchResults-notes-id'?translations[settingItems.language]?.searchResults:
+							currentNotebook.id === 'recycle-notes-id'?translations[settingItems.language]?.trash:
+							this.state.title
+						}({ notesAmount })</span> }
 					</div>
 					
 					
@@ -268,7 +278,7 @@ class NoteManagePanel extends Reaxlass {
 				
 				{/* 切换显示模式 选择主题颜色*/ }
 				{ !editInFavoritesOrSearchPageOrRecycle && <div className = "top-tool-bar">
-					
+					{/*<ToDoIcon/>*/}
 					<ModeSelector
 						onSwitchNoteMode = { updateNotebookInfo }
 						showMode = { currentNotebook.showMode }
@@ -359,7 +369,7 @@ const ThemeColorPanel = ({
 		'image-background-sunset','image-background-blueSky','image-background-windmill' , 'image-background-dragonfly' , 'image-background-tower' , 'image-background-field' , 'image-background-mountain' ,
 	];
 	return (<div className = { settingItems.themeMode }>
-		<div className = "themecolor-popover-title">主题</div>
+		<div className = "themecolor-popover-title">{translations[settingItems.language]?.noteTheme}</div>
 		<div className = "theme-color-panel">
 			{ allThemeColors.map((item) => {
 				const isCurrentTheme = theme === item;
@@ -388,18 +398,18 @@ const ModeSelector = ({
 		{
 			key : 'modeOptions' ,
 			type : 'group' ,
-			label : '视图' ,
+			label : `${translations[settingItems.language]?.view}` ,
 			children : [
 				{
-					label : <div>列表视图</div> ,
+					label : <div>{translations[settingItems.language]?.listView}</div> ,
 					key : 'list-mode' ,
 				} ,
 				{
-					label : <div>卡片视图</div> ,
+					label : <div>{translations[settingItems.language]?.cardView}</div> ,
 					key : 'card-mode' ,
 				} ,
 				{
-					label : <div>宫格视图</div> ,
+					label : <div>{translations[settingItems.language]?.gridView}</div> ,
 					key : 'grid-mode' ,
 				} ,
 			] ,
@@ -430,120 +440,7 @@ const ModeSelector = ({
 };
 
 //主题颜色选择器
-const ThemeSelector = ({
-	selectTheme ,
-	theme ,
-}) => {
-	const themeOptions = [
-		{
-			key : 'themeOptions' ,
-			type : 'group' ,
-			label : '主题色系' ,
-			children : [
-				
-				{
-					label : <div>蓝色</div> ,
-					key : 'blue-theme' ,
-				} ,
-				{
-					label : <div>紫色</div> ,
-					key : 'purple-theme' ,
-				} ,
-				{
-					label : <div>红色</div> ,
-					key : 'red-theme' ,
-				} ,
-				{
-					label : <div>绿色</div> ,
-					key : 'green-theme' ,
-				} ,
-				{
-					label : <div>灰色</div> ,
-					key : 'gray-theme' ,
-				} ,
-				{
-					label : <div>橙色</div> ,
-					key : 'orange-theme' ,
-				} ,
-				{
-					label : <div>粉色</div> ,
-					key : 'pink-theme' ,
-				} ,
-				{
-					key : 'gradient-color-list' ,
-					label : <div>渐变背景</div> ,
-					children : [
-						{
-							label : <div>渐变1</div> ,
-							key : 'gradient-theme-blue-yellow' ,
-						} ,
-						{
-							label : <div>渐变2</div> ,
-							key : 'gradient-theme-blue-purple' ,
-						} ,
-						{
-							label : <div>渐变4</div> ,
-							key : 'gradient-theme-green-blue' ,
-						} ,
-					] ,
-				} ,
-				{
-					key : 'image-list' ,
-					label : <div>图片背景</div> ,
-					children : [
-						{
-							label : <div>wheat</div> ,
-							key : 'image-background-wheat' ,
-						} ,
-						{
-							label : <div>图片3</div> ,
-							key : 'image-background-windmill' ,
-						} ,
-						{
-							label : <div>图片4</div> ,
-							key : 'image-background-mountain' ,
-						} ,
-						{
-							label : <div>图片5</div> ,
-							key : 'image-background-beach' ,
-						} ,
-						{
-							label : <div>图片6</div> ,
-							key : 'image-background-tower' ,
-						} ,
-						{
-							label : <div>图片7</div> ,
-							key : 'image-background-pinksky' ,
-						} ,
-					
-					] ,
-				} ,
-			
-			] ,
-		} ,
-	
-	
-	];
-	return (<Dropdown
-		destroyPopupOnHide = { true }
-		placement = "bottom"
-		menu = { {
-			items : themeOptions ,
-			selectable : true ,
-			defaultSelectedKeys : [theme] ,
-			onClick : ({ key }) => {
-				selectTheme('currentTheme' , key);
-			} ,
-		} }
-		trigger = { ['click'] }
-	>
-		<a onClick = { (e) => e.preventDefault() }>
-			<Space>
-				<ColorPalette />
-			</Space>
-		</a>
-	</Dropdown>);
-};
+
 
 const CheckedBackgroundTheme=()=> {
 	return <svg
@@ -721,71 +618,49 @@ class DownOutLinedIcon extends Component {
 	}
 }
 
-class DefaultExpandIcon extends Component {
-	render () {
-		return <svg
-			className = "default-expand-icon expand-icon"
-			style = { {
-				width : '24px' ,
-				height : '24px' ,
-				verticalAlign : 'middle' ,
-				fill : ' #555' ,
-				overflow : 'hidden' ,
-			} }
-			viewBox = "0 0 1024 1024"
-			version = "1.1"
-			xmlns = "http://www.w3.org/2000/svg"
-			p-id = "5005"
-		>
-			<path
-				d = "M896 768c25.6 0 42.666667 17.066667 42.666667 42.666667s-17.066667 42.666667-42.666667 42.666666H128c-25.6 0-42.666667-17.066667-42.666667-42.666666s17.066667-42.666667 42.666667-42.666667h768z m0-298.666667c25.6 0 42.666667 17.066667 42.666667 42.666667s-17.066667 42.666667-42.666667 42.666667H128c-25.6 0-42.666667-17.066667-42.666667-42.666667s17.066667-42.666667 42.666667-42.666667h768z m0-298.666666c25.6 0 42.666667 17.066667 42.666667 42.666666s-17.066667 42.666667-42.666667 42.666667H128c-25.6 0-42.666667-17.066667-42.666667-42.666667s17.066667-42.666667 42.666667-42.666666h768z"
-				fill = "#555"
-				p-id = "5006"
-			></path>
-		</svg>;
-	}
-}
 
-class RightExpandIcon extends Component {
-	
-	render () {
-		return <div
-			className = "expand-icon"
-			onClick = { () => {
-				this.props.onclick();
-			} }
+const ToDoIcon = () => {
+	return <>
+		<Tooltip
+			title = "切换为待办模式"
+			placement = "bottom"
+			arrow = { false }
+			color = '#a6aaad'
 		>
-			<svg
-				className = "right-expand-icon"
-				style = { {
-					width : '20px' ,
-					height : '20px' ,
-					verticalAlign : 'middle' ,
-					fill : ' #555' ,
-					overflow : 'hidden' ,
-					cursor : 'pointer' ,
-				} }
-				viewBox = "0 0 1024 1024"
-				version = "1.1"
-				xmlns = "http://www.w3.org/2000/svg"
-				p-id = "14276"
-			>
-				<path
-					d = "M458.176 512l-384.704 384.64000001a48.704 48.704 0 0 0-1.024 68.8 48.704 48.704 0 0 0 68.8-0.96000001L558.656 547.264a49.92 49.92 0 0 0 11.136-17.408c0.896-2.112 0.89600001-4.48 1.472-6.71999999 0.768-3.648 1.984-7.296 1.98399999-11.13600001s-1.152-7.424-1.98399999-11.13600001c-0.576-2.176-0.576-4.608-1.472-6.71999999a49.28 49.28 0 0 0-11.136-17.408l-417.344-417.28a48.64 48.64 0 0 0-68.8-1.024 48.64 48.64 0 0 0 1.024 68.736L458.176 512zM850.24 512l-384.70400001 384.64a48.704 48.704 0 0 0-1.02399999 68.80000001 48.64 48.64 0 0 0 68.864-0.89600001l417.28-417.216a49.92 49.92 0 0 0 11.136-17.408c0.896-2.112 0.89600001-4.48 1.40800001-6.784 0.832-3.648 2.048-7.296 2.04799999-11.136s-1.216-7.424-2.048-11.072c-0.57600001-2.24-0.576-4.608-1.408-6.784a49.28 49.28 0 0 0-11.136-17.408l-417.28-417.21600001a48.64 48.64 0 0 0-68.864-1.08799998 48.704 48.704 0 0 0 0.96 68.79999999L850.24 512z"
-					p-id = "14277"
-				></path>
-			</svg>
-		</div>;
-	}
-}
+			<div className='todo-icon-box notelist-header-icon'>
+				<svg
+					t = "1740405666283"
+					className = "icon"
+					viewBox = "0 0 1024 1024"
+					version = "1.1"
+					xmlns = "http://www.w3.org/2000/svg"
+					p-id = "311337"
+					width = "22"
+					height = "22"
+				>
+					<path
+						d = "M354.56 663.36L459.2 759.2c11.2 9.6 24.96 14.4 38.72 14.4 15.2 0 30.4-5.92 41.92-17.44l170.88-187.2-0.32-0.16c9.76-12.64 11.52-30.4 3.2-45.12a40.304 40.304 0 0 0-34.72-20.32c-6.88 0-13.76 1.76-20.16 5.44l-4.16 3.68-0.48-0.48-153.12 169.28-89.76-74.72-0.8 0.64-10.08-8.96c-6.24-3.68-12.96-5.44-19.68-5.44-13.6 0-26.88 7.2-34.24 20-9.6 16.96-5.12 37.44 9.12 49.76l-0.96 0.8z"
+						fill = "#5E6166"
+						p-id = "311338"
+					></path>
+					<path
+						d = "M884.48 0H139.52C62.4 0 0 62.4 0 139.52v744.96C0 961.6 62.4 1024 139.52 1024h744.96c76.96 0 139.52-62.4 139.52-139.52V139.52C1024 62.4 961.44 0 884.48 0zM948 893.12c0 30.24-24.64 54.88-54.88 54.88H130.88C100.64 948 76 923.2 76 893.12V373.76h872v519.36z m0-595.52H76V131.04c0-30.24 24.64-54.88 54.88-54.88h762.08c30.4 0 54.88 24.64 54.88 54.88V297.6z"
+						fill = "#5E6166"
+						p-id = "311339"
+					></path>
+				</svg>
+			</div>
+		</Tooltip></>;
+};
 
 class LeftExpandIcon extends Component {
 	render () {
 		return <>
 			<Tooltip
-				title = "展开侧边栏"
+				title = {this.props.currentLanguage?.expandSidebar}
 				placement = "bottom"
 				arrow = { false }
+				color = '#a6aaad'
 			>
 				<div
 					className = "expand-icon"
