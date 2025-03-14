@@ -81,6 +81,7 @@ class NoteManagePanel extends Reaxlass {
 					} ,
 				] ,
 			} ,
+			//todo 复制笔记本
 			// {
 			// 	label : <div>分享</div> ,
 			// 	key : 'share-notebook' ,
@@ -143,6 +144,7 @@ class NoteManagePanel extends Reaxlass {
 			notesAmount ,
 			updateNotebookInfo ,
 			pinNote ,
+			completedTodo,
 			handlePinCheckedNote,
 			favoriteNote ,
 			isShowFavorites ,
@@ -157,6 +159,7 @@ class NoteManagePanel extends Reaxlass {
 			handleMoveCheckedNote,
 			isShowRecycleNotes ,
 			settingItems ,
+			handleSetDeadline,
 		} = this.props;
 		const {
 			isHover ,
@@ -278,7 +281,17 @@ class NoteManagePanel extends Reaxlass {
 				
 				{/* 切换显示模式 选择主题颜色*/ }
 				{ !editInFavoritesOrSearchPageOrRecycle && <div className = "top-tool-bar">
-					{/*<ToDoIcon/>*/}
+					{ currentNotebook.isTodoMode ?
+					  <NoteModeIcon
+						  onClick = { updateNotebookInfo }
+						  currentLanguage = { translations[settingItems.language] }
+					  /> :
+					  <ToDoIcon
+						  onClick = { updateNotebookInfo }
+						  currentLanguage = { translations[settingItems.language] }
+					  /> }
+					
+					
 					<ModeSelector
 						onSwitchNoteMode = { updateNotebookInfo }
 						showMode = { currentNotebook.showMode }
@@ -304,6 +317,7 @@ class NoteManagePanel extends Reaxlass {
 				ShowMode = { currentNotebook.showMode }
 				currentNotebook = { currentNotebook }
 				pinNote = { pinNote }
+				completedTodo={completedTodo}
 				handlePinCheckedNote={handlePinCheckedNote}
 				handleMoveCheckedNote={handleMoveCheckedNote}
 				favoriteNote = { favoriteNote }
@@ -316,6 +330,7 @@ class NoteManagePanel extends Reaxlass {
 				handleMoveNote = { handleMoveNote }
 				isShowRecycleNotes = { isShowRecycleNotes }
 				settingItems = { settingItems }
+				handleSetDeadline={handleSetDeadline}
 			/>
 		</div>;
 	}
@@ -439,9 +454,6 @@ const ModeSelector = ({
 	</Dropdown>);
 };
 
-//主题颜色选择器
-
-
 const CheckedBackgroundTheme=()=> {
 	return <svg
 		t = "1740179206294"
@@ -460,6 +472,37 @@ const CheckedBackgroundTheme=()=> {
 			p-id = "282695"
 		></path>
 	</svg>;
+}
+const NoteModeIcon=({onClick,currentLanguage})=> {
+	return <Tooltip
+		title = {currentLanguage?.switchToNoteModeText}
+		placement = "bottom"
+		arrow = { false }
+		color = '#a6aaad'>
+		<div
+			className = "notelist-header-icon todo-icon-box "
+			onClick = { () => {
+				onClick('isTodoMode' , false);
+			} }
+		>
+			<svg
+				t = "1741492777576"
+				className = "icon"
+				viewBox = "0 0 1024 1024"
+				version = "1.1"
+				xmlns = "http://www.w3.org/2000/svg"
+				p-id = "45167"
+				width = "20"
+				height = "20"
+			>
+				<path
+					d = "M862.336 0C951.616 0 1024 62.528 1024 139.648v744.704C1024 961.472 951.616 1024 862.336 1024H161.664C72.384 1024 0 961.472 0 884.352V139.648C0 62.528 72.384 0 161.664 0h700.672z m0 69.76H161.664c-42.816 0-78.144 28.864-80.64 65.792l-0.192 4.096v744.704c0 36.992 33.344 67.52 76.16 69.76l4.672 0.064h700.672c42.816 0 78.144-28.8 80.64-65.728l0.192-4.096V139.648c0-36.992-33.344-67.52-76.16-69.76l-4.672-0.064zM579.392 535.36c22.272 0 40.384 15.616 40.384 34.88 0 19.264-18.112 34.944-40.384 34.944H229.056c-22.336 0-40.448-15.68-40.448-34.944 0-19.264 18.112-34.88 40.448-34.88h350.336z m215.552-256c22.336 0 40.448 15.616 40.448 34.88 0 19.264-18.112 34.944-40.448 34.944H229.12c-22.336 0-40.448-15.68-40.448-34.944 0-19.264 18.112-34.88 40.448-34.88h565.888z"
+					fill = "#000000"
+					p-id = "45168"
+				></path>
+			</svg>
+		</div>
+	</Tooltip>
 }
 const CardModeIcon = () => {
 	return <>
@@ -619,15 +662,15 @@ class DownOutLinedIcon extends Component {
 }
 
 
-const ToDoIcon = () => {
+const ToDoIcon = ({onClick,currentLanguage}) => {
 	return <>
 		<Tooltip
-			title = "切换为待办模式"
+			title = {currentLanguage?.switchToToDoModeText}
 			placement = "bottom"
 			arrow = { false }
 			color = '#a6aaad'
 		>
-			<div className='todo-icon-box notelist-header-icon'>
+			<div className='todo-icon-box notelist-header-icon' onClick={()=>{onClick('isTodoMode',true)}}>
 				<svg
 					t = "1740405666283"
 					className = "icon"
@@ -635,8 +678,8 @@ const ToDoIcon = () => {
 					version = "1.1"
 					xmlns = "http://www.w3.org/2000/svg"
 					p-id = "311337"
-					width = "22"
-					height = "22"
+					width = "20"
+					height = "20"
 				>
 					<path
 						d = "M354.56 663.36L459.2 759.2c11.2 9.6 24.96 14.4 38.72 14.4 15.2 0 30.4-5.92 41.92-17.44l170.88-187.2-0.32-0.16c9.76-12.64 11.52-30.4 3.2-45.12a40.304 40.304 0 0 0-34.72-20.32c-6.88 0-13.76 1.76-20.16 5.44l-4.16 3.68-0.48-0.48-153.12 169.28-89.76-74.72-0.8 0.64-10.08-8.96c-6.24-3.68-12.96-5.44-19.68-5.44-13.6 0-26.88 7.2-34.24 20-9.6 16.96-5.12 37.44 9.12 49.76l-0.96 0.8z"

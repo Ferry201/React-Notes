@@ -138,7 +138,6 @@ const AddNewNoteModal = ({
 	
 	
 	const handleCancel = () => {
-		console.log('我关闭了');
 		onCloseModal();
 		GetNoteContent(EditorState.createWithContent(convertFromRaw(initialContent)) , initialTitle , onSave);
 	};
@@ -151,6 +150,7 @@ const AddNewNoteModal = ({
 			<Modal
 				open = { open }
 				onOk = { handleOk }
+				// centered={true}
 				style = { { top : 40 } }
 				onCancel = { handleCancel }
 				cancelText = "取消"
@@ -497,7 +497,7 @@ const RichTextEditor = ({
 	return (
 		<div
 			style = { {
-				height : '100%' ,
+				// maxHeight:'calc( 100vh - 230px )',
 				width : '100%' ,
 				boxSizing : 'border-box' ,
 			} }
@@ -725,7 +725,8 @@ const RichTextEditor = ({
 					fontSize : "16px" ,
 					borderBottomLeftRadius : '6px' ,
 					borderBottomRightRadius : '6px' ,
-					maxHeight : showAllOptions ? 'calc(100% - 110px)' : '100%' ,
+					maxHeight : showAllOptions ? 'calc(100vh - 230px)' : '100%' ,
+					minHeight : showAllOptions ? '20vh' : '0' ,
 					padding : '10px' ,
 					overflowY : 'scroll' ,
 					width : '100%' ,

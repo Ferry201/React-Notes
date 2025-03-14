@@ -13,6 +13,7 @@ import {
 } from 'antd';
 import RichTextEditor from '../RichTextEditor/RichTextEditor';
 import { translations } from "@src/Home/translations";
+import { DeadlinePicker } from './DeadlinePicker'
 
 
 const HighlightedKeyword = ({text, keyword, maxLength = 50 ,themeMode}) => {
@@ -57,6 +58,7 @@ const RenderContent = ({
 	ShowMode ,
 	currentNotebook ,
 	pinNote ,
+	completedTodo,
 	handlePinCheckedNote,
 	favoriteNote ,//收藏笔记
 	isShowFavorites ,//是否展示收藏夹笔记列表
@@ -69,6 +71,7 @@ const RenderContent = ({
 	handleMoveCheckedNote,
 	isShowRecycleNotes,
 	settingItems,
+	handleSetDeadline,
 }) => {
 	const inputAddNoteRef = React.useRef();
 	const wrapperRef = React.useRef();
@@ -79,7 +82,7 @@ const RenderContent = ({
 	const [cardModeColumn , setCardModeColumn] = useState('');
 	const [gridModeColumn , setGridModeColumn] = useState('');
 	const [isDrawerVisible , setIsDrawerVisible] = useState(false);
-	const [checkedNoteIdArray , setCheckedNoteIdAray] = useState([]);
+	const [checkedNoteIdArray , setCheckedNoteIdArray] = useState([]);
 	
 	const [currentLanguage , setCurrentLanguage] = useState(translations[settingItems.language]);
 	
@@ -91,7 +94,7 @@ const RenderContent = ({
 	const handleClickDrawerOutside = (event) => {
 		if ( event.target.closest('.top-operations-drawer') === null ) {
 			setIsDrawerVisible(false);
-			setCheckedNoteIdAray([]);
+			setCheckedNoteIdArray([]);
 		}
 	};
 	
@@ -110,17 +113,24 @@ const RenderContent = ({
 		showRecycleNotes = true;
 	}
 	
-	const placeholders = [
+	let placeholders = [
 		// '输入笔记 . . .' ,
 		// '记录你的闪光灵感✨' ,
 		// '有什么心得吗？在这里记录下来吧',
 		currentLanguage?.inputNote,
 		currentLanguage?.recordYourInspiration,
 		currentLanguage?.anyThoughtsRecordHere,
-		
 	];
 	
+	
 	useEffect(() => {
+		if(currentNotebook.isTodoMode){
+			placeholders=[
+				currentLanguage?.addTaskText,
+				currentLanguage?.listYourNextTask,
+				currentLanguage?.anyTodoText,
+			]
+		}
 		let currentIndex = 0;
 		
 		const intervalId = setInterval(() => {
@@ -131,7 +141,7 @@ const RenderContent = ({
 		} , 5000);
 		
 		return () => clearInterval(intervalId); // 清理定时器，防止内存泄漏
-	} , [placeholders]);
+	} , [placeholders,currentNotebook]);
 	
 	useEffect(() => {
 		let notDeletedNotes = notes.filter(note => note.isDeleted === false);
@@ -223,6 +233,7 @@ const RenderContent = ({
 	
 	const onPinNote = (id) => {
 		pinNote(id);
+		
 	};
 	
 	const onFavoriteNote = (id) => {
@@ -232,7 +243,11 @@ const RenderContent = ({
 	
 	let pinnedNotes;
 	let otherNotes;
-	if ( isShowFavoritesNotes ) {
+	if(currentNotebook.isTodoMode){
+		otherNotes = contents.filter((note) => note.isCompleted) // 已置顶的笔记
+		.sort((a , b) => b.completedTime - a.completedTime); // 按置顶时间降序排列，新置顶的排前面
+		pinnedNotes = contents.filter(note => !note.isCompleted);
+	}else if( isShowFavoritesNotes ) {
 		pinnedNotes = contents.sort((a , b) => b.favoritedTime - a.favoritedTime); // 按收藏时间降序排列，新收藏的排前面
 	} else if(showSearchResults){
 		pinnedNotes=contents;
@@ -251,10 +266,10 @@ const RenderContent = ({
 			if ( checkedNoteIdArray.length === 1 ) {
 				setIsDrawerVisible(false);
 			}
-			setCheckedNoteIdAray(checkedNoteIdArray.filter(checkedNoteId => checkedNoteId !== id));
+			setCheckedNoteIdArray(checkedNoteIdArray.filter(checkedNoteId => checkedNoteId !== id));
 			
 		} else {
-			setCheckedNoteIdAray([...checkedNoteIdArray , id]);
+			setCheckedNoteIdArray([...checkedNoteIdArray , id]);
 		}
 		
 		if ( checkedNoteIdArray.length === 0 && !isDrawerVisible ){
@@ -264,7 +279,7 @@ const RenderContent = ({
 	};
 	
 	const clearCheckedNotes=()=>{
-		setCheckedNoteIdAray([])
+		setCheckedNoteIdArray([])
 		setIsDrawerVisible(false)
 	}
 	
@@ -277,10 +292,12 @@ const RenderContent = ({
 				noteContent ,
 				noteTitle ,
 				isPinned ,
+				isCompleted,
 				isFavorited ,
 				itemClassName ,
 				titleClassName ,
 				notebook ,
+				deadlineDate
 			} = this.props;
 			let isChecked=checkedNoteIdArray.some(checkedNoteId => checkedNoteId === id);
 			
@@ -297,6 +314,18 @@ const RenderContent = ({
 				} }
 			>
 				{/*<CompleteIcon/>*/}
+				
+				{ currentNotebook.isTodoMode && <div className = "task-icon-box">
+					<CompleteTaskIcon
+						currentLanguage = { currentLanguage }
+						completedTodo = { (e) => {
+							e.stopPropagation();
+							completedTodo(id);
+						} }
+						isCompleted={isCompleted}
+					/>
+				</div> }
+				
 				<div className = "common-note-item">{ noteTitle && <span className = "note-item-title">
 					{ currentNotebook.id === 'searchResults-notes-id' ?
 					  <HighlightedKeyword
@@ -319,11 +348,19 @@ const RenderContent = ({
 					</span>
 					{/*note details : 时间 ,所属书籍,置顶 ,收藏 ,移动 , 删除 */ }
 					<div className = "note-details">
-						<FormatTime id = { id } notes={notes}/>
+						{ showFavoritesOrSearchResults &&<span className = "time-and-book">
+							{/*	<FormatTime*/}
+							{/*	id = { id }*/}
+							{/*	notes = { notes }*/}
+							{/*/>*/}
+							
+							<div
+								className = 'show-note-book-text'
+							>{ notebook }</div>
+						</span> }
 						
-						{ showFavoritesOrSearchResults && <div
-							className = { `show-note-book-text` }
-						>{ notebook }</div> }
+						{/*deadline*/}
+						{ deadlineDate&&currentNotebook.isTodoMode &&<span className='deadline-text'>{ `${ deadlineDate.year }-${deadlineDate.month}-${deadlineDate.date}` }到期</span> }
 						
 						{ currentNotebook.id !== 'recycle-notes-id' &&
 							<div
@@ -332,15 +369,21 @@ const RenderContent = ({
 									e.stopPropagation();
 								} }
 							>
-								{ !showFavoritesOrSearchResults && <PinNoteIcon
+								{/*置顶*/}
+								{ !showFavoritesOrSearchResults&&!currentNotebook.isTodoMode && <PinNoteIcon
 									isPinned = { isPinned }
 									handlePinNote = { () => {
 										onPinNote(id);
+										if(isPinned){
+											message.success('已取消置顶',1)
+										}else{
+											message.success('已置顶',1)
+										}
 									} }
 									currentLanguage={currentLanguage}
 								/> }
 								
-								
+								{/*收藏*/}
 								{/*<FavoriteIcon*/ }
 								{/*	isFavorited = { isFavorited }*/ }
 								{/*	handleFavoriteNote = { () => {*/ }
@@ -348,6 +391,8 @@ const RenderContent = ({
 								{/*	} }*/ }
 								{/*/>*/ }
 								
+								
+								{/*移动到其他笔记本*/}
 								{ !showFavoritesOrSearchResults &&
 									<NotebooksPopover
 										id = { id }
@@ -358,26 +403,47 @@ const RenderContent = ({
 										currentLanguage={currentLanguage}
 									/> }
 								
+								{/*截止日期选择*/ }
+								{ currentNotebook.isTodoMode && <DeadlinePopConfirm
+									currentNotebook={currentNotebook}
+									currentLanguage = { currentLanguage }
+									setDeadline={handleSetDeadline}
+									id = { id }
+									deadlineDate={deadlineDate}
+								/> }
 								
+								{/*更新记录*/}
+								<UpdateTimePopConfirm
+									currentLanguage = { currentLanguage }
+									id = { id }
+									notes = { notes }
+								/>
+								
+								{/*删除*/}
 								<DeleteConfirm
 									onDeleteNote = { () => {
 										onDeleteNote(id);
 									} }
 									currentLanguage={currentLanguage}
 								/>
+								
+								
+								
+								{/*多选*/}
+								{ !showFavoritesOrSearchResults && <CheckNoteIcon
+									onClick = { (e) => {
+										e.stopPropagation();
+										handleChechedNote(id);
+									} }
+									isChecked={isChecked}
+									currentLanguage={currentLanguage}
+								/> }
 							</div>
 						}
 					</div>
 				</div>
 				
-				{ !showFavoritesOrSearchResults && <CheckNoteIcon
-					onClick = { (e) => {
-						e.stopPropagation();
-						handleChechedNote(id);
-					} }
-					isChecked={isChecked}
-					currentLanguage={currentLanguage}
-				/> }
+				
 			</div>;
 		}
 	}
@@ -388,52 +454,62 @@ const RenderContent = ({
 		render () {
 			return <>
 				{ pinnedNotes.length > 0 && <>
-					{ !showFavoritesOrSearchResults && <p className = "note-list-sub-title">{pinnedText}</p> }
+					{ !showFavoritesOrSearchResults && !currentNotebook.isTodoMode && <p className = "note-list-sub-title">{pinnedText}</p> }
+					{ currentNotebook.isTodoMode && <p className = "note-list-sub-title">{currentLanguage.incompletedText}&nbsp;{pinnedNotes.length}</p> }
 					<div className = "note-card-mode" style={{gridTemplateColumns:cardModeColumn}}>
 						{ pinnedNotes.map(({
 							id ,
 							noteContent ,
 							noteTitle ,
 							isPinned ,
+							isCompleted,
 							isFavorited ,
 							notebook ,
+							deadlineDate,
 						}) => {
 							return <NoteList
 								id = { id }
 								noteContent = { noteContent }
 								noteTitle = { noteTitle }
 								isPinned = { isPinned }
+								isCompleted={isCompleted}
 								isFavorited = { isFavorited }
 								key = { id }
 								itemClassName = "note-card-mode-item"
 								titleClassName = "note-card-mode-content"
 								notebook = { notebook }
+								deadlineDate={deadlineDate}
 							/>;
 						}) }
 					</div>
 				</> }
 				
 				{  !showFavoritesOrSearchResults && <>{ otherNotes.length > 0 && <>
-					{ pinnedNotes.length > 0 && <p className = "note-list-sub-title">{otherText}</p> }
+					{ pinnedNotes.length > 0 && !currentNotebook.isTodoMode && <p className = "note-list-sub-title">{otherText}</p> }
+					{ currentNotebook.isTodoMode && <p className = "note-list-sub-title">{currentLanguage.completedText}&nbsp;{otherNotes.length}</p> }
 					<div className = "note-card-mode" style={{gridTemplateColumns:cardModeColumn}}>
 						{ otherNotes.map(({
 							id ,
 							noteContent ,
 							noteTitle ,
 							isPinned ,
+							isCompleted,
 							isFavorited ,
 							notebook ,
+							deadlineDate
 						}) => {
 							return <NoteList
 								id = { id }
 								noteContent = { noteContent }
 								noteTitle = { noteTitle }
 								isPinned = { isPinned }
+								isCompleted={isCompleted}
 								isFavorited = { isFavorited }
 								key = { id }
 								itemClassName = "note-card-mode-item"
 								titleClassName = "note-card-mode-content"
 								notebook = { notebook }
+								deadlineDate={deadlineDate}
 							/>;
 						}) }
 					</div>
@@ -448,52 +524,62 @@ const RenderContent = ({
 		render () {
 			return <>
 				{ pinnedNotes.length > 0 && <>
-					{ !showFavoritesOrSearchResults && <p className = "note-list-sub-title">{pinnedText}</p> }
+					{ !showFavoritesOrSearchResults && !currentNotebook.isTodoMode  && <p className = "note-list-sub-title">{pinnedText}</p> }
+					{ currentNotebook.isTodoMode && <p className = "note-list-sub-title">{currentLanguage.incompletedText}&nbsp;{pinnedNotes.length}</p> }
 					<div className = "note-ul-mode" style={{gap:listGap}}>
 						{ pinnedNotes.map(({
 							id ,
 							noteContent ,
 							noteTitle ,
 							isPinned ,
+							isCompleted,
 							isFavorited ,
 							notebook ,
+							deadlineDate
 						}) => {
 							return <NoteList
 								id = { id }
 								noteContent = { noteContent }
 								noteTitle = { noteTitle }
 								isPinned = { isPinned }
+								isCompleted={isCompleted}
 								isFavorited = { isFavorited }
 								key = { id }
 								itemClassName = "note-ul-mode-item"
 								titleClassName = "note-ul-mode-content"
 								notebook = { notebook }
+								deadlineDate={deadlineDate}
 							/>;
 						}) }
 					</div>
 				</> }
 				
 				{ !showFavoritesOrSearchResults && <>{ otherNotes.length > 0 && <>
-					{ pinnedNotes.length > 0 && <p className = "note-list-sub-title">{otherText}</p> }
+					{ pinnedNotes.length > 0 && !currentNotebook.isTodoMode && <p className = "note-list-sub-title">{otherText}</p> }
+					{ currentNotebook.isTodoMode && <p className = "note-list-sub-title">{currentLanguage.completedText}&nbsp;{otherNotes.length}</p> }
 					<div className = "note-ul-mode" style={{gap:listGap}}>
 						{ otherNotes.map(({
 							id ,
 							noteContent ,
 							noteTitle ,
 							isPinned ,
+							isCompleted,
 							isFavorited ,
 							notebook ,
+							deadlineDate
 						}) => {
 							return <NoteList
 								id = { id }
 								noteContent = { noteContent }
 								noteTitle = { noteTitle }
 								isPinned = { isPinned }
+								isCompleted={isCompleted}
 								isFavorited = { isFavorited }
 								key = { id }
 								itemClassName = "note-ul-mode-item"
 								titleClassName = "note-ul-mode-content"
 								notebook = { notebook }
+								deadlineDate={deadlineDate}
 							/>;
 						}) }
 					</div>
@@ -554,7 +640,8 @@ const RenderContent = ({
 		render () {
 			return (<>
 				{ pinnedNotes.length > 0 && (<>
-					{ !showFavoritesOrSearchResults && <p className = "note-list-sub-title">{pinnedText}</p> }
+					{ !showFavoritesOrSearchResults  && !currentNotebook.isTodoMode && <p className = "note-list-sub-title">{pinnedText}</p> }
+					{ currentNotebook.isTodoMode && <p className = "note-list-sub-title">{currentLanguage.incompletedText}&nbsp;{pinnedNotes.length}</p> }
 					<div
 						className = { `note-grid-mode ${gridModeColumn}`}
 						ref = { this.gridRefPinned }
@@ -564,25 +651,30 @@ const RenderContent = ({
 							noteContent ,
 							noteTitle ,
 							isPinned ,
+							isCompleted,
 							isFavorited ,
 							notebook ,
+							deadlineDate
 						}) => {
 							return <NoteList
 								id = { id }
 								noteContent = { noteContent }
 								noteTitle = { noteTitle }
 								isPinned = { isPinned }
+								isCompleted={isCompleted}
 								isFavorited = { isFavorited }
 								key = { id }
 								itemClassName = "note-grid-mode-item"
 								titleClassName = "note-grid-mode-content"
 								notebook = { notebook }
+								deadlineDate={deadlineDate}
 							/>;
 						}) }
 					</div>
 				</>) }
 				{  !showFavoritesOrSearchResults && <>{ otherNotes.length > 0 && (<>
-					{ pinnedNotes.length > 0 && <p className = "note-list-sub-title">{otherText}</p> }
+					{ pinnedNotes.length > 0 && !currentNotebook.isTodoMode && <p className = "note-list-sub-title">{otherText}</p> }
+					{ currentNotebook.isTodoMode && <p className = "note-list-sub-title">{currentLanguage.completedText}&nbsp;{otherNotes.length}</p> }
 					
 					<div
 						className = { `note-grid-mode ${gridModeColumn}`}
@@ -593,19 +685,23 @@ const RenderContent = ({
 							noteContent ,
 							noteTitle ,
 							isPinned ,
+							isCompleted,
 							isFavorited ,
 							notebook ,
+							deadlineDate
 						}) => {
 							return <NoteList
 								id = { id }
 								noteContent = { noteContent }
 								noteTitle = { noteTitle }
 								isPinned = { isPinned }
+								isCompleted={isCompleted}
 								isFavorited = { isFavorited }
 								key = { id }
 								itemClassName = "note-grid-mode-item"
 								titleClassName = "note-grid-mode-content"
 								notebook = { notebook }
+								deadlineDate={deadlineDate}
 							/>;
 						}) }
 					</div>
@@ -718,14 +814,15 @@ const OperateDrawer = ({
 		</span>
 		<span className = "drawer-icon">
 			
-			<span
+			{!currentNotebook.isTodoMode && <span
 				onClick = { () => {
 					handlePinCheckedNote(checkedNoteIdArray);
 					clearCheckedNotes();
 				} }
 			><PinCheckedNoteIcon
-				currentLanguage={currentLanguage}/>
-			</span>
+				currentLanguage = { currentLanguage }
+			/>
+			</span> }
 			
 			<NotebooksPopover
 				id = { checkedNoteIdArray }
@@ -745,6 +842,39 @@ const OperateDrawer = ({
 			/>
 		</span>
 	</div>;
+};
+
+const DeadlinePopConfirm = ({
+	currentNotebook ,
+	currentLanguage,
+	setDeadline,
+	id,
+	deadlineDate
+}) => {
+	const [todoDeadline,setTodoDeadline]=useState(deadlineDate)
+	const getDeadline=(date)=>{
+		setTodoDeadline(date)
+	}
+	return <>
+		<Popconfirm
+			icon={false}
+			destroyTooltipOnHide = { true }
+			placement = "right"
+			overlayClassName = {`deadline-popover ${currentNotebook.currentTheme}`}
+			title = {currentLanguage.setDeadline}
+			description = {<DeadlinePicker getDeadline={getDeadline} deadline={todoDeadline}/>}
+			okText = {currentLanguage.done}
+			cancelText = {currentLanguage.cancel}
+			onConfirm = {()=>{setDeadline(id,todoDeadline)}}
+		>
+			<div>
+				<DeadlineIcon
+					currentLanguage = { currentLanguage }
+				/>
+			</div>
+		</Popconfirm>
+		
+	</>;
 };
 
 const NotebooksPopover = ({
@@ -865,11 +995,11 @@ const DeleteConfirm=({onDeleteNote,currentLanguage})=>{
 			destroyTooltipOnHide = { true }
 			placement = "top"
 			overlayClassName = "note-delete-popConfirm"
-			title = "确定删除笔记吗?"
-			description = "删除后的笔记将放入回收站"
-			okText = "删除"
+			title = {currentLanguage.deleteNoteConfirmTitle}
+			description = {currentLanguage.deleteNoteConfirmContent}
+			okText = {currentLanguage.done}
 			okType = "danger"
-			cancelText = "取消"
+			cancelText = {currentLanguage.cancel}
 			onConfirm = {onDeleteNote} 
 		>
 			<div>
@@ -939,6 +1069,34 @@ const EmptyIcon = () => {
 	</svg>;
 };
 
+const CompleteTaskIcon=({currentLanguage,completedTodo,isCompleted})=>{
+	
+	return <Tooltip
+		// title = {currentLanguage.doneTheTask}
+		arrow = { false }
+		placement = "top"
+		color = "#a6aaad">
+		<div className = {`task-icon ${isCompleted?'completed-todo-icon':''}`} onClick={completedTodo}>
+			<span>
+				<svg
+					t = "1741490455908"
+					className = "icon"
+					viewBox = "0 0 1024 1024"
+					version = "1.1"
+					xmlns = "http://www.w3.org/2000/svg"
+					p-id = "15782"
+					width = "16"
+					height = "16"
+				>
+					<path
+						d = "M386.24 692.16l486.488-486.488a48 48 0 0 1 67.88 0l11.32 11.312a48 48 0 0 1 0 67.88L420.184 816.608a48 48 0 0 1-67.888 0L63.8 528.112a48 48 0 0 1 0-67.88l11.312-11.32a48 48 0 0 1 67.88 0L386.24 692.16z"
+						p-id = "15783"
+					></path>
+				</svg>
+			</span>
+		</div>
+	</Tooltip>
+}
 const DeleteIcon = ({ currentLanguage }) => {
 	return <>
 		<Tooltip
@@ -949,24 +1107,96 @@ const DeleteIcon = ({ currentLanguage }) => {
 		>
 			<div className = "note-buttons-common">
 				<svg
-					t = "1734625609334"
+					t = "1741482128531"
 					className = "delete-note-icon"
-					viewBox = "0 0 1024 1024"
+					viewBox = "0 0 1026 1024"
 					version = "1.1"
 					xmlns = "http://www.w3.org/2000/svg"
-					p-id = "84258"
+					p-id = "11770"
+					width = "200"
+					height = "200"
 				>
-						<path
-							d = "M725.333333 170.666667h213.333334v85.333333h-85.333334v640a42.666667 42.666667 0 0 1-42.666666 42.666667H213.333333a42.666667 42.666667 0 0 1-42.666666-42.666667V256H85.333333V170.666667h213.333334V85.333333h426.666666v85.333334zM384 384v341.333333h85.333333V384H384z m170.666667 0v341.333333h85.333333V384h-85.333333z"
-							p-id = "84259"
-							fill = "#bfbfbf"
-						></path>
-					</svg>
-				</div>
-			</Tooltip>
-		</>
+					<path
+						d = "M682.564755 826.508972c0 26.843256-17.042176 51.199671-36.571194 51.199671s-36.571193-21.942716-36.571193-51.199671V416.911606c0-26.843256 17.042176-51.199671 36.571193-51.199671s36.571193 21.942716 36.571194 51.199671z m-268.066848 0c0 26.843256-17.042176 51.199671-36.571194 51.199671s-36.571193-21.942716-36.571193-51.199671V416.911606c0-26.843256 17.042176-51.199671 36.571193-51.199671s36.571193 21.942716 36.571194 51.199671z m548.567902-655.721498H60.927608A60.927608 60.927608 0 0 0 60.927608 292.569548H146.284774v609.422368A120.758081 120.758081 0 0 0 268.213133 1023.993417h487.567151A120.758081 120.758081 0 0 0 877.708643 901.918773V292.569548h85.357166a60.927608 60.927608 0 1 0 0-121.782074z m-597.280732-73.142387h292.569548A48.859114 48.859114 0 0 0 658.281482 0H365.711935a48.785972 48.785972 0 0 0 0 97.571944z"
+						fill = "#bfbfbf"
+						p-id = "11771"
+					></path>
+				</svg>
+			</div>
+		</Tooltip>
+	</>
 }
-const CompleteIcon=()=> {
+
+const UpdateTimePopConfirm = ({
+	currentLanguage,
+	id,
+	notes
+}) => {
+	
+	return <>
+		<Popconfirm
+			icon={false}
+			destroyTooltipOnHide = { true }
+			placement = "top"
+			// overlayClassName = {`deadline-popover ${currentNotebook.currentTheme}`}
+			title = {currentLanguage.versionHistortText}
+			description = { <div className = "UpdateTimePop-description">
+				<div className = "UpdateTimePop-description-item">
+					<span>{ currentLanguage.createdNoteTime }&nbsp;:&nbsp;</span>
+					<FormatTime
+					id = { id }
+					notes = { notes }
+				/>
+				</div>
+				<div className = "UpdateTimePop-description-item">
+					<span>{ currentLanguage.LastModified }&nbsp;:&nbsp;</span>
+					<FormatTime
+					id = { id }
+					notes = { notes }
+				/>
+				</div>
+				
+			</div> }
+			okText = {currentLanguage.close}
+			showCancel={false}
+		>
+			<div>
+				<NoteVersionHistory
+					currentLanguage = { currentLanguage }
+				/>
+			</div>
+		</Popconfirm>
+	
+	</>;
+};
+const NoteVersionHistory=({currentLanguage})=> {
+	return <Tooltip
+		title = {currentLanguage.versionHistortText}
+		arrow = { false }
+		placement = "bottom"
+		color = "#a6aaad"
+	>
+		<div className = "note-buttons-common">
+			<svg
+				t = "1741743941496"
+				className = "icon"
+				viewBox = "0 0 1024 1024"
+				version = "1.1"
+				xmlns = "http://www.w3.org/2000/svg"
+				p-id = "138083"
+				width = "16"
+				height = "16"
+			>
+				<path
+					d = "M870.4 17.067H153.6c-37.547 0-68.267 30.72-68.267 68.266v853.334c0 37.546 30.72 68.266 68.267 68.266h523.708a136.533 136.533 0 0 0 96.546-39.987l124.825-124.825a136.533 136.533 0 0 0 39.988-96.547V85.334c0-37.547-30.72-68.267-68.267-68.267z m-324.267 768H273.067a34.133 34.133 0 0 1 0-68.267h273.066a34.133 34.133 0 0 1 0 68.267z m204.8-238.934H273.067a34.133 34.133 0 0 1 0-68.266h477.866a34.133 34.133 0 0 1 0 68.266z m0-238.933H273.067a34.133 34.133 0 0 1 0-68.267h477.866a34.133 34.133 0 0 1 0 68.267z"
+					fill = "#bfbfbf"
+					p-id = "138084"
+				></path>
+			</svg>
+		</div>
+	</Tooltip>
+}
+const CompleteIcon = () => {
 	return <svg
 		t = "1740339717028"
 		className = "icon"
@@ -1189,9 +1419,11 @@ const CancelEditButton = ({ handleCancel ,tooltipText}) => {
 			arrow={false}
 			color='#a6aaad'
 		>
-			<div className='cancel-edit-button note-buttons-common'>
+			<div
+				className = "cancel-edit-button note-buttons-common"
+				onClick = { handleCancel }
+			>
 				<svg
-					onClick = { handleCancel }
 					t = "1736085320917"
 					className = "cancel-icon"
 					viewBox = "0 0 1024 1024"
@@ -1209,5 +1441,32 @@ const CancelEditButton = ({ handleCancel ,tooltipText}) => {
 		</Tooltip>
 	</>;
 };
+const DeadlineIcon=({currentLanguage})=> {
+	return <Tooltip
+		title = {currentLanguage.setDeadline}
+		placement = "bottom"
+		zIndex = "1"
+		arrow={false}
+		color='#a6aaad'>
+		<div className = "note-buttons-common">
+			<svg
+				t = "1741505667436"
+				className = "deadline-icon"
+				viewBox = "0 0 1024 1024"
+				version = "1.1"
+				xmlns = "http://www.w3.org/2000/svg"
+				p-id = "81316"
+				width = "16"
+				height = "16"
+			>
+				<path
+					d = "M960 128h-192V64h-128v64H384V64H256v64H64v192h896V128zM64 384v499.2A79.36 79.36 0 0 0 145.28 960h733.44A79.36 79.36 0 0 0 960 883.2V384z m512 448H512V614.4l-39.04 46.72-49.28-40.96L512 512h64z"
+					fill = "#bfbfbf"
+					p-id = "81317"
+				></path>
+			</svg>
+		</div>
+	</Tooltip>
+}
 
 export default RenderContent;

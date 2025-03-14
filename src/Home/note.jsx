@@ -1,5 +1,5 @@
 import './note.css';
-import React , { Component ,useState,useRef,useEffect} from 'react';
+import React , { Component , useState , useRef , useEffect } from 'react';
 import 'rc-tabs/assets/index.css';
 import {
 	message ,
@@ -18,13 +18,14 @@ import { NoteBookModal } from "@src/Home/addNoteBook_Model";
 import { InputNewSortModal } from "@src/Home/inputNewSort_Modal";
 import { SettingModal } from './setting_Modal';
 import { convertFromRaw } from "draft-js";
+
 const { confirm } = Modal;
 import { translations } from "@src/Home/translations";
 import { defaults } from "lodash/object";
-import { RecoverDeletedNoteConfirm } from './recoverDeletedNoteConfirm'
+import { RecoverDeletedNoteConfirm } from './recoverDeletedNoteConfirm';
 
 const defaultNotebook = {
-	title : '我的笔记本' ,
+	title : 'My Notebook' ,
 	cover : coverDefault ,
 	emoji : '📘' ,
 	id : 'default-notebook-id' ,
@@ -32,6 +33,7 @@ const defaultNotebook = {
 	showMode : 'list-mode' ,//当前笔记显示模式
 	currentTheme : 'blue-theme' ,//列表主题,类名
 	belongSortID : 'default-sort-id' ,
+	isTodoMode : 'false',
 };
 
 class NotesApp extends Component {
@@ -57,7 +59,7 @@ class NotesApp extends Component {
 			showRecycleNotes : false ,
 			currentSortId : null ,
 			settingItems : {} ,
-			belongNotebook : null,
+			belongNotebook : null ,
 		};
 	}
 	
@@ -68,7 +70,7 @@ class NotesApp extends Component {
 			currentNotebook ,
 			activeModal ,
 			searchKeyword ,
-			allSorts,
+			allSorts ,
 		} = this.state;
 		
 		const getFilteredNotes = () => {
@@ -105,18 +107,30 @@ class NotesApp extends Component {
 			this.setState({ notesAmount : fileredNotes.length });
 		}
 		
+		if ( noteListData && noteListData !== prevState.noteListData ) {
+			let currentTime = dayjs().valueOf();
+			//todo 15
+			let gapTime = 2 * 24 * 60 * 60 * 1000;
+			let deletedNotes = noteListData.filter(note => note.isDeleted === true);
+			deletedNotes.forEach(note => {
+				if ( currentTime - Number(note.deletedTime) > gapTime ) {
+					this.handleCompletelyDelete(note.id);
+				}
+			});
+		}
+		
 		let allNotebooks = [...noteBookData];
 		allNotebooks = allNotebooks.filter(notebook => notebook.id !== 'favorites-notes-id' && notebook.id !== 'searchResults-notes-id' && notebook.id !== 'recycle-notes-id' ,
 		);
 		
 		if ( activeModal === 'deleteSortConfirm' && allSorts.length === 1 ) {
-			message.error(translations[this.state.settingItems.language].atLeastOneSort,3);
+			message.error(translations[this.state.settingItems.language].atLeastOneSort , 3);
 			this.setState({
 				activeModal : null ,
 			});
 		}
 		if ( activeModal === 'deleteConfirm' && allNotebooks.length === 1 ) {
-			message.error(translations[this.state.settingItems.language].atLeastOneNotebook,3);
+			message.error(translations[this.state.settingItems.language].atLeastOneNotebook , 3);
 			this.setState({
 				activeModal : null ,
 			});
@@ -135,7 +149,7 @@ class NotesApp extends Component {
 			document.body.className = this.state.settingItems.themeMode;
 		}
 		
-		if( this.state.settingItems&&prevState.settingItems&&prevState.settingItems.language!==this.state.settingItems.language){
+		if ( this.state.settingItems && prevState.settingItems && prevState.settingItems.language !== this.state.settingItems.language ) {
 			const defaultSort = this.state.allSorts.find(sort => sort.id === 'default-sort-id');
 			
 			if ( defaultSort?.title === '默认分类' || defaultSort?.title === 'Default Category' ) {
@@ -143,15 +157,25 @@ class NotesApp extends Component {
 					this.handlerenameSort(translations[this.state.settingItems.language].defaultCategory);
 				});
 			}
-			
-			
-			
-			
+			if ( noteBookData ) {
+				let defaultBook = noteBookData.find(book => book.id === 'default-notebook-id');
+				
+				if ( defaultBook?.title === '我的笔记本' || defaultBook?.title === 'My Notebook' ) {
+					this.updatedDefaultBookTitle(defaultBook.id);
+					if ( currentNotebook.id === defaultBook.id ) {
+						this.updateNotebookInfo('title' , translations[this.state.settingItems.language].myBook);
+					}
+				}
+			}
 		}
 	}
 	
 	
 	componentDidMount () {
+		const {
+			noteListData ,
+			currentNotebook ,
+		} = this.state;
 		document.body.className = this.state.settingItems.themeMode;
 		const storedNoteData = JSON.parse(localStorage.getItem('note-info-array')) || [];
 		const currentNotes = storedNoteData.filter(note => note.notebookID === this.state.currentNotebook.id);
@@ -160,11 +184,11 @@ class NotesApp extends Component {
 			notesAmount : currentNotes.length ,
 		});
 		
-		if ( this.state.currentNotebook.id === 'favorites-notes-id' ) {
+		if ( currentNotebook.id === 'favorites-notes-id' ) {
 			const favoritedNotes = storedNoteData.filter(note => note.isFavorited === true);
 			this.setState({ notesAmount : favoritedNotes.length });
 		}
-		if ( this.state.currentNotebook.id === 'searchResults-notes-id' ) {
+		if ( currentNotebook.id === 'searchResults-notes-id' ) {
 			let notDeletedNotes = this.state.noteListData.filter(note => note.isDeleted === false);
 			let allMatchedNotes = notDeletedNotes.filter((note) => {
 				const plainText = convertFromRaw(note.noteContent).getPlainText();
@@ -214,11 +238,11 @@ class NotesApp extends Component {
 				gridModeColumn : 'gridTwoColumn' ,
 			};
 			this.setState({ settingItems : defaultSetting } , () => {
-				localStorage.setItem('setting-items', JSON.stringify(defaultSetting));
+				localStorage.setItem('setting-items' , JSON.stringify(defaultSetting));
 			});
 		} else {
-				const parsedSetting = JSON.parse(storedSetting);
-				this.setState({ settingItems: parsedSetting });
+			const parsedSetting = JSON.parse(storedSetting);
+			this.setState({ settingItems : parsedSetting });
 		}
 		
 		
@@ -229,6 +253,23 @@ class NotesApp extends Component {
 		}
 	}
 	
+	//更改默认笔记本翻译
+	updatedDefaultBookTitle = (id) => {
+		const { noteBookData } = this.state;
+		let newNotebookData = [...noteBookData];
+		newNotebookData = newNotebookData.map(book => {
+			if ( book.id === id ) {
+				return {
+					...book ,
+					title : translations[this.state.settingItems.language].myBook,
+				};
+			}
+			return book;
+		});
+		this.setState({ noteBookData : newNotebookData } , () => {
+			localStorage.setItem('notebook-array' , JSON.stringify(newNotebookData));
+		});
+	};
 	
 	//保存note
 	handleSaveNote = (noteTitle , rawContentState , saveTime) => {
@@ -253,6 +294,9 @@ class NotesApp extends Component {
 			favoritedTime : null ,
 			isDeleted : false ,
 			deletedTime : null ,
+			isCompleted : false ,
+			completedTime : null,
+			deadlineDate:null,
 		};
 		
 		let editInFavoritesOrSearchPage = currentNotebook.id === 'favorites-notes-id' || currentNotebook.id === 'searchResults-notes-id';
@@ -293,6 +337,8 @@ class NotesApp extends Component {
 				pinnedTime : oldNote.pinnedTime ,
 				isFavorited : oldNote.isFavorited ,
 				favoritedTime : oldNote.favoritedTime ,
+				isCompleted:oldNote.isCompleted,
+				completedTime:oldNote.completedTime,
 				// isDeleted : oldNote.isDeleted ,
 				// deletedTime : oldNote.deletedTime,
 			});
@@ -327,6 +373,42 @@ class NotesApp extends Component {
 		}
 	};
 	
+	//trash Completely delete
+	handleCompletelyDelete = (id) => {
+		const {
+			noteListData ,
+		} = this.state;
+		let updatedList = [...noteListData];
+		updatedList = updatedList.filter(note => note.id !== id);
+		
+		this.setState({
+			noteListData : updatedList ,
+		} , () => {
+			localStorage.setItem('note-info-array' , JSON.stringify(updatedList));
+		});
+	};
+	
+	//set deadline
+	handleSetDeadline = (id , date) => {
+		const {
+			noteListData ,
+		} = this.state;
+		let updatedNoteList = [...noteListData];
+		updatedNoteList = updatedNoteList.map(note => {
+			if ( note.id === id ) {
+				return {
+					...note ,
+					deadlineDate : date,
+				};
+			}
+			return note;
+		});
+		this.setState({
+			noteListData : updatedNoteList ,
+		} , () => {
+			localStorage.setItem('note-info-array' , JSON.stringify(updatedNoteList));
+		});
+	}
 	//删除note
 	handleDeleteNote = (id) => {
 		const {
@@ -371,7 +453,7 @@ class NotesApp extends Component {
 	};
 	
 	//删除选中笔记
-	handleDeleteCheckedNote=(checkedIdArray)=>{
+	handleDeleteCheckedNote = (checkedIdArray) => {
 		const {
 			noteListData ,
 		} = this.state;
@@ -395,7 +477,7 @@ class NotesApp extends Component {
 		} , () => {
 			localStorage.setItem('note-info-array' , JSON.stringify(updatedList));
 		});
-	}
+	};
 	
 	//置顶单个note
 	handlePinNote = (id) => {
@@ -420,25 +502,48 @@ class NotesApp extends Component {
 		});
 	};
 	//置顶选中的多个笔记
-	handlePinCheckedNote=(checkedIdArray)=>{
+	handlePinCheckedNote = (checkedIdArray) => {
 		const {
 			noteListData ,
 		} = this.state;
 		let updatedNoteList = [...noteListData];
-		updatedNoteList=updatedNoteList.map(note=>{
-			if(checkedIdArray.includes(note.id)){
+		updatedNoteList = updatedNoteList.map(note => {
+			if ( checkedIdArray.includes(note.id) ) {
 				return {
-					...note,
+					...note ,
 					isPinned : !note.isPinned ,
 					pinnedTime : !note.isPinned ? dayjs().valueOf() : null ,
-				}
+				};
 			}
-			return note
-		})
+			return note;
+		});
 		
-		this.setState({noteListData:updatedNoteList},()=>{
+		this.setState({ noteListData : updatedNoteList } , () => {
 			localStorage.setItem('note-info-array' , JSON.stringify(updatedNoteList));
-		})
+		});
+	};
+	
+	//标记待办为已完成
+	handleCompletedTodo=(id)=>{
+		const {
+			noteListData ,
+		} = this.state;
+		let updatedNoteList = [...noteListData];
+		updatedNoteList = updatedNoteList.map(note => {
+			if ( note.id === id ) {
+				return {
+					...note ,
+					isCompleted : !note.isCompleted ,
+					completedTime : !note.isCompleted ? dayjs().valueOf() : null ,
+				};
+			}
+			return note;
+		});
+		this.setState({
+			noteListData : updatedNoteList ,
+		} , () => {
+			localStorage.setItem('note-info-array' , JSON.stringify(updatedNoteList));
+		});
 	}
 	//收藏note
 	handleFavoriteNote = (id) => {
@@ -600,12 +705,12 @@ class NotesApp extends Component {
 			noteBookData ,
 			currentNotebook ,
 			noteListData ,
-			settingItems,
+			settingItems ,
 		} = this.state;
 		//todo
 		let updatedNotebooks = [...noteBookData];
 		let updatedNoteList = [...noteListData];
-		let newSettingItems={...settingItems};
+		let newSettingItems = { ...settingItems };
 		let filteredNotebooksID = [
 			currentNotebook.id ,
 			'favorites-notes-id' ,
@@ -622,8 +727,8 @@ class NotesApp extends Component {
 		}
 		//删掉该笔记本中所有笔记
 		// updatedNoteList = updatedNoteList.filter((note) => note.notebookID !== currentNotebook.id);
-		let deletedNoteIdArray=updatedNoteList.filter(note=>note.notebookID===currentNotebook.id).map(note=>note.id)
-		this.handleDeleteCheckedNote(deletedNoteIdArray)
+		let deletedNoteIdArray = updatedNoteList.filter(note => note.notebookID === currentNotebook.id).map(note => note.id);
+		this.handleDeleteCheckedNote(deletedNoteIdArray);
 		
 		
 		this.setState({
@@ -847,7 +952,7 @@ class NotesApp extends Component {
 		newNoteList = newNoteList.filter(note => note.isDeleted === false);
 		this.setState({
 			noteListData : newNoteList ,
-		} , () => { 
+		} , () => {
 			localStorage.setItem('note-info-array' , JSON.stringify(newNoteList));
 		});
 	};
@@ -861,13 +966,14 @@ class NotesApp extends Component {
 			localStorage.setItem('all-sorts' , JSON.stringify(newSorts));
 		});
 	};
+	
 	//移动分类
-	handleMoveSort = (index, direction) => {
-		const newSorts = [... this.state.allSorts];
+	handleMoveSort = (index , direction) => {
+		const newSorts = [...this.state.allSorts];
 		const targetIndex = index + direction;
-		if (targetIndex >= 0 && targetIndex < newSorts.length) {
+		if ( targetIndex >= 0 && targetIndex < newSorts.length ) {
 			// 交换位置
-			[newSorts[index], newSorts[targetIndex]] = [newSorts[targetIndex], newSorts[index]];
+			[newSorts[index] , newSorts[targetIndex]] = [newSorts[targetIndex] , newSorts[index]];
 			
 			this.setState({ allSorts : newSorts } , () => {
 				localStorage.setItem('all-sorts' , JSON.stringify(newSorts));
@@ -919,13 +1025,13 @@ class NotesApp extends Component {
 		const {
 			allSorts ,
 			noteBookData ,
-			noteListData,
-			settingItems,
+			noteListData ,
+			settingItems ,
 		} = this.state;
 		let newSorts = [...allSorts];
 		let newNotebooks = [...noteBookData];
 		let newNoteLists = [...noteListData];
-		let newSettingItems={...settingItems}
+		let newSettingItems = { ...settingItems };
 		newSorts = newSorts.filter(sort => sort.id !== id);
 		let updatedNotebooks = newNotebooks.filter(notebook => notebook.belongSortID !== id);
 		let deletedNotebooks = newNotebooks.filter(notebook => notebook.belongSortID === id);
@@ -1015,7 +1121,7 @@ class NotesApp extends Component {
 				currentSortId = { this.state.currentSortId }
 				handleClickCollapse = { this.handleClickCollapse }
 				settingItems = { this.state.settingItems }
-				handleMoveSort={this.handleMoveSort}
+				handleMoveSort = { this.handleMoveSort }
 			/>
 			<NoteManagePanel
 				settingItems = { this.state.settingItems }
@@ -1023,7 +1129,7 @@ class NotesApp extends Component {
 				notebooks = { this.state.noteBookData }
 				onChangeNote = { this.handleChangeNote }
 				onDeleteNote = { this.handleDeleteNote }
-				handleDeleteCheckedNote={this.handleDeleteCheckedNote}
+				handleDeleteCheckedNote = { this.handleDeleteCheckedNote }
 				onToggleSidebar = { this.toggleSidebar }
 				sidebarIsVisible = { this.state.isSidebarVisible }
 				currentNotebook = { this.state.currentNotebook }
@@ -1031,7 +1137,8 @@ class NotesApp extends Component {
 				openModal = { this.handleOpenModal }
 				notesAmount = { this.state.notesAmount }
 				pinNote = { this.handlePinNote }
-				handlePinCheckedNote={this.handlePinCheckedNote}
+				completedTodo={this.handleCompletedTodo}
+				handlePinCheckedNote = { this.handlePinCheckedNote }
 				favoriteNote = { this.handleFavoriteNote }
 				isShowFavorites = { this.state.showFavoritedNotes }
 				onSave = { this.handleSaveNote }
@@ -1039,9 +1146,10 @@ class NotesApp extends Component {
 				searchKeyword = { this.state.searchKeyword }
 				isShowSearchResults = { this.state.showSearchResults }
 				handleMoveNote = { this.handleMoveNote }
-				handleMoveCheckedNote={this.handleMoveCheckedNote}
+				handleMoveCheckedNote = { this.handleMoveCheckedNote }
 				isShowRecycleNotes = { this.state.showRecycleNotes }
 				sorts = { this.state.allSorts }
+				handleSetDeadline={this.handleSetDeadline}
 			/>
 			
 			
@@ -1067,17 +1175,18 @@ class NotesApp extends Component {
 				onOk = { ({
 					title ,
 					cover ,
-					emoji,
+					emoji ,
 				}) => {
 					const newNoteBook = {
 						title ,
 						cover ,
-						emoji,
+						emoji ,
 						id : uuidv4() ,
 						createdTime : dayjs().valueOf() ,
 						showMode : 'list-mode' ,
 						currentTheme : this.getRandomTheme() ,
 						belongSortID : this.state.currentSortId ,
+						isTodoMode:false,
 					};
 					this.addNoteBook(newNoteBook);
 				} }
@@ -1089,7 +1198,7 @@ class NotesApp extends Component {
 			{/*修改笔记本封面 Modal*/ }
 			{ this.state.activeModal === 'changeCover' && (<NoteBookModal
 				showTitleInput = { false }
-				plainMode={false}
+				plainMode = { false }
 				onOk = { (cover) => {
 					this.updateNotebookInfo('cover' , cover);
 				} }
@@ -1097,7 +1206,6 @@ class NotesApp extends Component {
 				open = { this.state.isModalOpen }
 				settingItems = { this.state.settingItems }
 			/>) }
-			
 			
 			
 			{/*设置Modal*/ }
@@ -1120,54 +1228,56 @@ class NotesApp extends Component {
 			
 			{/*  删除分类确认框*/ }
 			{ this.state.activeModal === 'deleteSortConfirm' && this.state.allSorts.length !== 1 ? (useConfirmDialog(
-				`${translations[this.state.settingItems.language].deleteSortConfirm}` ,
-				`${translations[this.state.settingItems.language].deleteSortConfirmDetail}` ,
+				`${ translations[this.state.settingItems.language].deleteSortConfirm }` ,
+				`${ translations[this.state.settingItems.language].deleteSortConfirmDetail }` ,
 				this.state.isModalOpen ,
 				() => {
 					this.handleDeleteSort(this.state.currentSortId);
 					this.handleCloseModal();
 				} ,
 				this.handleCloseModal ,
-				'danger',
-				`${translations[this.state.settingItems.language].done}`,
-				`${translations[this.state.settingItems.language].cancel}`
+				'danger' ,
+				`${ translations[this.state.settingItems.language].done }` ,
+				`${ translations[this.state.settingItems.language].cancel }`,
 			)) : null }
 			
 			{/*  删除笔记本确认框*/ }
 			{ this.state.activeModal === 'deleteConfirm' && allNotebooks.length !== 1 ? (useConfirmDialog(
-					(<div>{translations[this.state.settingItems.language].deleteNotebookConfirm} <span className = "delete-confirm-title">{ this.state.currentNotebook.title }</span>? </div>) ,
-					(<div>{translations[this.state.settingItems.language].deleteBookConfirmDetail}</div>) ,
+					(<div>{ translations[this.state.settingItems.language].deleteNotebookConfirm }
+						<span className = "delete-confirm-title">{ this.state.currentNotebook.title }</span>
+						? </div>) ,
+					(<div>{ translations[this.state.settingItems.language].deleteBookConfirmDetail }</div>) ,
 					this.state.isModalOpen ,
 					() => {
 						this.deleteNotebook();
 						this.handleCloseModal();
 					} ,
 					this.handleCloseModal ,
-					"danger",
-					`${translations[this.state.settingItems.language].done}`,
-					`${translations[this.state.settingItems.language].cancel}`
+					"danger" ,
+					`${ translations[this.state.settingItems.language].done }` ,
+					`${ translations[this.state.settingItems.language].cancel }`,
 				)
 			) : null }
 			
 			{/*  恢复删除笔记确认框*/ }
-			{ this.state.activeModal ==='recoverConfirm' &&
+			{ this.state.activeModal === 'recoverConfirm' &&
 				<RecoverDeletedNoteConfirm
 					onCancel = { this.handleCloseModal }
 					open = { this.state.isModalOpen }
 					noteListData = { this.state.noteListData }
 					noteBookData = { this.state.noteBookData }
-					currentID={this.state.currentID}
-					settingItems={this.state.settingItems}
-					allSorts={this.state.allSorts}
-					recoverDeletedNote={this.handleRecoverDeletedNote}
-					moveAndRecoverDeletedNote={this.moveAndRecoverDeletedNote}
+					currentID = { this.state.currentID }
+					settingItems = { this.state.settingItems }
+					allSorts = { this.state.allSorts }
+					recoverDeletedNote = { this.handleRecoverDeletedNote }
+					moveAndRecoverDeletedNote = { this.moveAndRecoverDeletedNote }
 				/> }
 			
 			
 			{/*  清空回收站确认框*/ }
 			{ this.state.activeModal === 'clearRecycleConfirm' && useConfirmDialog(
 				`${ translations[this.state.settingItems.language].clearTheCycle }` ,
-				`${ translations[this.state.settingItems.language].clearCycleDetail}` ,
+				`${ translations[this.state.settingItems.language].clearCycleDetail }` ,
 				this.state.isModalOpen ,
 				() => {
 					this.handleClearRecycleBin();
@@ -1175,8 +1285,8 @@ class NotesApp extends Component {
 				} ,
 				this.handleCloseModal ,
 				'danger' ,
-				`${translations[this.state.settingItems.language].done}`,
-				`${translations[this.state.settingItems.language].cancel}`
+				`${ translations[this.state.settingItems.language].done }` ,
+				`${ translations[this.state.settingItems.language].cancel }`,
 			) }
 		
 		
@@ -1185,7 +1295,7 @@ class NotesApp extends Component {
 }
 
 
-const useConfirmDialog = (title , content , open , clickOk , clickCancel , okType,okText,cancelText) => {
+const useConfirmDialog = (title , content , open , clickOk , clickCancel , okType , okText , cancelText) => {
 	confirm({
 		icon : <ExclamationCircleFilled /> ,
 		title : title ,
@@ -1194,7 +1304,7 @@ const useConfirmDialog = (title , content , open , clickOk , clickCancel , okTyp
 		okType : okType || "primary" ,
 		cancelText : cancelText ,
 		open : open ,
-		destroyOnClose:true,
+		destroyOnClose : true ,
 		onOk () {
 			clickOk();
 		} ,
@@ -1203,7 +1313,6 @@ const useConfirmDialog = (title , content , open , clickOk , clickCancel , okTyp
 		} ,
 	});
 };
-
 
 
 const DropDownIcon = () => {
