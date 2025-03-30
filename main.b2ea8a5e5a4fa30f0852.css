@@ -1205,6 +1205,7 @@ body {
 	flex-flow: row nowrap;
 }
 .note-list-sub-title {
+	user-select: none;
 	font-size: 14px;
 	margin: 8px 0 8px 0;
 	color: var(--primary-text-color);
@@ -1402,7 +1403,11 @@ body {
 }
 
 .note-details:not(:has(.deadline-text)){
-	justify-content: flex-end;
+	/*justify-content: flex-end;*/
+}
+
+.note-details:has(.show-note-book-text){
+	justify-content: space-between;
 }
 
 .note-time {
@@ -1425,11 +1430,11 @@ body {
 }
 
 .show-noteList-box:has(.note-grid-mode) .note-operation-buttons:has(.pin-note-button) {
-	width: 100%;
+	width: 70%;
 }
 
 .show-noteList-box:has(.note-card-mode) .note-operation-buttons:has(.pin-note-button) {
-	width: 100%;
+	width: 70%;
 }
 
 .show-noteList-box:has(.note-grid-mode) .note-operation-buttons:not(:has(.pin-note-button)) {
@@ -1527,8 +1532,8 @@ body {
 	visibility: hidden;
 	background: transparent;
 	border-radius: 100%;
-	height: 32px;
-	width: 32px;
+	/*height: 32px;*/
+	/*width: 32px;*/
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -1555,7 +1560,17 @@ body {
 
 .show-noteList-box .deadline-text {
 	color: #999c9f;
-	font-size: 12px;
+	font-size: 14px;
+}
+
+.show-noteList-box .deadline-text.blue {
+	color: #699fd7;
+	font-size: 14px;
+}
+
+.show-noteList-box .deadline-text.red {
+	color: #f14b6c;
+	font-size: 14px;
 }
 
 .show-noteList-box .checked-note {
@@ -2086,7 +2101,7 @@ body {
 }
 
 .edit-note-modal .ant-modal .ant-modal-body {
-	max-height: calc(100vh - 114px);
+	max-height: calc(100vh - 180px);
 	/*height: calc(100vh - 114px);*/
 }
 
@@ -2959,7 +2974,7 @@ body {
 
 .top-operations-drawer {
 	position: absolute;
-	top: -50px; /* 初始位置在页面外 */
+	top: -52px; /* 初始位置在页面外 */
 	left: 50%;
 	transform: translateX(-50%);
 	width: 100%;
@@ -3007,6 +3022,16 @@ body {
 }
 
 .top-operations-drawer.show .note-buttons-common {
+	width: 40px;
+	height: 40px;
+	margin-right: 20px;
+	display: flex; /* 显示div */
+	justify-content: center;
+	align-items: center;
+	border-radius: 100%;
+	cursor: pointer;
+}
+.top-operations-drawer .note-buttons-common {
 	width: 40px;
 	height: 40px;
 	margin-right: 20px;
@@ -3288,7 +3313,7 @@ body {
 	border: 1px solid  var(--siderbar-icon-hover-bg);
 }
 
-.calender-grid .date-box.today-date{
+.calender-grid .date-box.current-date-box.today-date{
 	border: 1px solid var(--siderbar-font-color);
 }
 
@@ -3323,6 +3348,25 @@ body {
 	
 	/*flex-flow: row nowrap;*/
 	flex-flow: column wrap;
+}
+
+.delete-deadline{
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0px 4px;
+	border: 1px solid #575859;
+	border-radius: 4px;
+	/*width: fit-content;*/
+	margin-top: 6px;
+	cursor: pointer;
+	user-select: none;
+	color: var(--siderbar-font-color);
+}
+
+.delete-deadline:hover{
+	border: 1px solid red;
+	color: red;
 }
 
 body, html {
