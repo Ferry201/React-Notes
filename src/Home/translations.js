@@ -144,7 +144,10 @@ export const translations = {
 		close:'Close',
 		createdNoteTime:'First Created At',
 		LastModified:'Last Modified At',
-		
+		LastSyncedTime:'Last Synced At',
+		Pinned:'Pinned',
+		Unpinned:'Unpinned',
+		deleteDeadline:'Delete the deadline',
 	} ,
 	
 	cn : {
@@ -291,5 +294,9 @@ export const translations = {
 		close:'关闭',
 		createdNoteTime:'首次创建时间',
 		LastModified:'上次更新时间',
+		LastSyncedTime:'上次同步时间',
+		Unpinned:'已取消置顶',
+		Pinned:'已置顶',
+		deleteDeadline:'删除截止日期',
 	} ,
 };

@@ -17,10 +17,10 @@ const InputNewSortModal = ({
 	closeModal ,
 	open ,
 	onOk ,
-	settingItems
+	settingItems,
 }) => {
 	const [sortTitle , setSortTitle] = useState("");
-	const inputSortRef=useRef(null);
+	const inputSortRef = useRef(null);
 	const [currentLanguage , setCurrentLanguage] = useState(translations[settingItems.language]);
 	
 	useEffect(() => {
@@ -34,14 +34,14 @@ const InputNewSortModal = ({
 	};
 	
 	const handleOk = () => {
-		if(sortTitle===""){
-			message.warning(`${currentLanguage.PleaseEnterCategoryName}`,2)
+		if ( sortTitle === "" ) {
+			message.warning(`${ currentLanguage.PleaseEnterCategoryName }` , 2);
 		}
-		if(sortTitle!==""){
+		if ( sortTitle !== "" ) {
 			onOk({
 				title : sortTitle ,
-				id : uuidv4(),
-				isCollapse:false
+				id : uuidv4() ,
+				isCollapse : false,
 			});
 			handleCancel();
 			// message.success(`已添加${sortTitle}分类`,1)
@@ -56,31 +56,32 @@ const InputNewSortModal = ({
 	};
 	return (<>
 		<Modal
-			title={currentLanguage.PleaseEnterCategoryName}
+			title = { currentLanguage.PleaseEnterCategoryName }
 			open = { open }
 			// centered
+			style = { { top : 200 } }
 			onOk = { handleOk }
 			onCancel = { handleCancel }
-			cancelText = {currentLanguage.cancel}
-			okText = {currentLanguage.done}
+			cancelText = { currentLanguage.cancel }
+			okText = { currentLanguage.done }
 			closable = { false }
 			width = { 300 }
 			destroyOnClose = { true }
 			keyboard = { true }
-			wrapClassName={` input-sort-modal`}
-			afterOpenChange={handleAfterOpen}
+			wrapClassName = { ` input-sort-modal` }
+			afterOpenChange = { handleAfterOpen }
 			// footer={null}
 		>
 			<div>
 				
 				<input
-					ref={inputSortRef}
+					ref = { inputSortRef }
 					type = "text"
-					placeholder ={currentLanguage.enter}
+					placeholder = { currentLanguage.enter }
 					className = "input-new-sort"
 					value = { sortTitle }
 					onChange = { handleInputTitle }
-					maxLength={12}
+					maxLength = { 12 }
 				/>
 			
 			</div>

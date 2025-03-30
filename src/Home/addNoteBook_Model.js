@@ -155,6 +155,7 @@ const NoteBookModal = ({
 				open = { open }
 				// centered
 				onOk = { handleOk }
+				style={{top:200}}
 				onCancel = { handleCancel }
 				cancelText = {currentLanguage.cancel}
 				okText = {currentLanguage.done}

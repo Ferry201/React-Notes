@@ -160,6 +160,7 @@ class NoteManagePanel extends Reaxlass {
 			isShowRecycleNotes ,
 			settingItems ,
 			handleSetDeadline,
+			handleDeleteDeadline
 		} = this.props;
 		const {
 			isHover ,
@@ -331,6 +332,7 @@ class NoteManagePanel extends Reaxlass {
 				isShowRecycleNotes = { isShowRecycleNotes }
 				settingItems = { settingItems }
 				handleSetDeadline={handleSetDeadline}
+				handleDeleteDeadline={handleDeleteDeadline}
 			/>
 		</div>;
 	}

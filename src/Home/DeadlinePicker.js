@@ -32,6 +32,8 @@ function getCalendarData(year, month) {
 const DeadlinePicker = ({
 	getDeadline ,
 	deadline,
+	currentLanguage,
+	deleteDeadline,
 }) => {
 	const [year , setYear] = useState(new Date().getFullYear());
 	const [month , setMonth] = useState(new Date().getMonth());
@@ -104,7 +106,7 @@ const DeadlinePicker = ({
 						onClick = { () => {
 							setTodoDeadline({
 								year : year ,
-								month : month ,
+								month : month,
 								date : day ,
 							})
 						} }
@@ -113,7 +115,9 @@ const DeadlinePicker = ({
 					</div>;
 				}) }
 			</div>
-			
+			{ selectDate&&<div className = "delete-deadline" onClick={deleteDeadline}>
+				{ currentLanguage?.deleteDeadline }
+			</div> }
 		
 		</div>
 	);

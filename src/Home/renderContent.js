@@ -72,6 +72,7 @@ const RenderContent = ({
 	isShowRecycleNotes,
 	settingItems,
 	handleSetDeadline,
+	handleDeleteDeadline,
 }) => {
 	const inputAddNoteRef = React.useRef();
 	const wrapperRef = React.useRef();
@@ -348,19 +349,9 @@ const RenderContent = ({
 					</span>
 					{/*note details : 时间 ,所属书籍,置顶 ,收藏 ,移动 , 删除 */ }
 					<div className = "note-details">
-						{ showFavoritesOrSearchResults &&<span className = "time-and-book">
-							{/*	<FormatTime*/}
-							{/*	id = { id }*/}
-							{/*	notes = { notes }*/}
-							{/*/>*/}
-							
-							<div
-								className = 'show-note-book-text'
-							>{ notebook }</div>
-						</span> }
-						
-						{/*deadline*/}
-						{ deadlineDate&&currentNotebook.isTodoMode &&<span className='deadline-text'>{ `${ deadlineDate.year }-${deadlineDate.month}-${deadlineDate.date}` }到期</span> }
+						{ showFavoritesOrSearchResults && <div
+							className = "show-note-book-text"
+						>{ notebook }</div> }
 						
 						{ currentNotebook.id !== 'recycle-notes-id' &&
 							<div
@@ -375,9 +366,9 @@ const RenderContent = ({
 									handlePinNote = { () => {
 										onPinNote(id);
 										if(isPinned){
-											message.success('已取消置顶',1)
+											message.success(currentLanguage?.Unpinned,1)
 										}else{
-											message.success('已置顶',1)
+											message.success(currentLanguage?.Pinned,1)
 										}
 									} }
 									currentLanguage={currentLanguage}
@@ -391,6 +382,15 @@ const RenderContent = ({
 								{/*	} }*/ }
 								{/*/>*/ }
 								
+								{/*截止日期选择*/ }
+								{ currentNotebook.isTodoMode && <DeadlinePopConfirm
+									currentNotebook={currentNotebook}
+									currentLanguage = { currentLanguage }
+									setDeadline={handleSetDeadline}
+									deleteDeadline={handleDeleteDeadline}
+									id = { id }
+									deadlineDate={deadlineDate}
+								/> }
 								
 								{/*移动到其他笔记本*/}
 								{ !showFavoritesOrSearchResults &&
@@ -403,14 +403,7 @@ const RenderContent = ({
 										currentLanguage={currentLanguage}
 									/> }
 								
-								{/*截止日期选择*/ }
-								{ currentNotebook.isTodoMode && <DeadlinePopConfirm
-									currentNotebook={currentNotebook}
-									currentLanguage = { currentLanguage }
-									setDeadline={handleSetDeadline}
-									id = { id }
-									deadlineDate={deadlineDate}
-								/> }
+							
 								
 								{/*更新记录*/}
 								<UpdateTimePopConfirm
@@ -420,30 +413,40 @@ const RenderContent = ({
 								/>
 								
 								{/*删除*/}
-								<DeleteConfirm
+								{!showFavoritesOrSearchResults && <DeleteConfirm
 									onDeleteNote = { () => {
 										onDeleteNote(id);
 									} }
-									currentLanguage={currentLanguage}
-								/>
-								
-								
-								
-								{/*多选*/}
-								{ !showFavoritesOrSearchResults && <CheckNoteIcon
-									onClick = { (e) => {
-										e.stopPropagation();
-										handleChechedNote(id);
-									} }
-									isChecked={isChecked}
-									currentLanguage={currentLanguage}
+									currentLanguage = { currentLanguage }
 								/> }
+								
+								
+								
+								
 							</div>
 						}
+						
+						{/*{ !currentNotebook.isTodoMode&&<span className = "time-and-book">*/}
+						{/*	<FormatTime*/}
+						{/*		id = { id }*/}
+						{/*		notes = { notes }*/}
+						{/*	/>*/}
+						{/*</span> }*/}
+						
+						{/*deadline*/}
+						{ deadlineDate&&currentNotebook.isTodoMode &&<DeadlineText deadlineDate={deadlineDate}/> }
 					</div>
 				</div>
 				
-				
+				{/*多选*/}
+				{ !showFavoritesOrSearchResults && <CheckNoteIcon
+					onClick = { (e) => {
+						e.stopPropagation();
+						handleChechedNote(id);
+					} }
+					isChecked={isChecked}
+					currentLanguage={currentLanguage}
+				/> }
 			</div>;
 		}
 	}
@@ -849,7 +852,8 @@ const DeadlinePopConfirm = ({
 	currentLanguage,
 	setDeadline,
 	id,
-	deadlineDate
+	deadlineDate,
+	deleteDeadline
 }) => {
 	const [todoDeadline,setTodoDeadline]=useState(deadlineDate)
 	const getDeadline=(date)=>{
@@ -857,12 +861,13 @@ const DeadlinePopConfirm = ({
 	}
 	return <>
 		<Popconfirm
+			arrow={false}
 			icon={false}
 			destroyTooltipOnHide = { true }
 			placement = "right"
 			overlayClassName = {`deadline-popover ${currentNotebook.currentTheme}`}
 			title = {currentLanguage.setDeadline}
-			description = {<DeadlinePicker getDeadline={getDeadline} deadline={todoDeadline}/>}
+			description = {<DeadlinePicker getDeadline={getDeadline} deadline={todoDeadline} currentLanguage={currentLanguage} deleteDeadline={()=>{deleteDeadline(id)}}/>}
 			okText = {currentLanguage.done}
 			cancelText = {currentLanguage.cancel}
 			onConfirm = {()=>{setDeadline(id,todoDeadline)}}
@@ -897,6 +902,7 @@ const NotebooksPopover = ({
 	
 	return <>
 		{ otherNotebooks.length !== 0 && id.length !== 0 ? <Popover
+			arrow={false}
 			zIndex = { 100 }
 			destroyTooltipOnHide = { true }
 			content = { <MoveNoteContent
@@ -992,6 +998,7 @@ const FormatTime = ({ notes,id }) => {
 const DeleteConfirm=({onDeleteNote,currentLanguage})=>{
 	return <>
 		<Popconfirm
+			arrow={false}
 			destroyTooltipOnHide = { true }
 			placement = "top"
 			overlayClassName = "note-delete-popConfirm"
@@ -1127,38 +1134,73 @@ const DeleteIcon = ({ currentLanguage }) => {
 	</>
 }
 
+const DeadlineText = ({ deadlineDate }) => {
+	const [isToday , setIsToday] = useState(false);
+	const [isExpired , setIsExpired] = useState(false);
+	const today = new Date();
+	useEffect(() => {
+		if ( today.getFullYear() === deadlineDate.year && today.getMonth() === deadlineDate.month && today.getDate() === deadlineDate.date ) {
+			setIsToday(true);
+		}
+		
+		if ( today.getFullYear() > deadlineDate.year ) {
+			setIsExpired(true);
+		}else if ( today.getFullYear() === deadlineDate.year ) {
+			if(today.getMonth() > deadlineDate.month){
+				setIsExpired(true)
+			}else if(today.getMonth() === deadlineDate.month){
+				if(today.getDate() > deadlineDate.date){
+					setIsExpired(true)
+				}
+			}
+		}
+		
+	} , []);
+	return <span className = { `deadline-text ${ isToday && 'blue' } ${isExpired && 'red'}` }>{ `${ deadlineDate.year }-${ deadlineDate.month + 1  }-${ deadlineDate.date }` }到期</span>;
+};
+
 const UpdateTimePopConfirm = ({
-	currentLanguage,
-	id,
-	notes
+	currentLanguage ,
+	id ,
+	notes,
 }) => {
 	
 	return <>
 		<Popconfirm
+			arrow = { false}
 			icon={false}
 			destroyTooltipOnHide = { true }
-			placement = "top"
+			placement = "rightBottom"
 			// overlayClassName = {`deadline-popover ${currentNotebook.currentTheme}`}
 			title = {currentLanguage.versionHistortText}
 			description = { <div className = "UpdateTimePop-description">
+				
 				<div className = "UpdateTimePop-description-item">
 					<span>{ currentLanguage.createdNoteTime }&nbsp;:&nbsp;</span>
 					<FormatTime
-					id = { id }
-					notes = { notes }
-				/>
+						id = { id }
+						notes = { notes }
+					/>
 				</div>
+				
 				<div className = "UpdateTimePop-description-item">
 					<span>{ currentLanguage.LastModified }&nbsp;:&nbsp;</span>
 					<FormatTime
-					id = { id }
-					notes = { notes }
-				/>
+						id = { id }
+						notes = { notes }
+					/>
 				</div>
 				
+				<div className = "UpdateTimePop-description-item">
+					<span>{ currentLanguage.LastSyncedTime }&nbsp;:&nbsp;</span>
+					<FormatTime
+						id = { id }
+						notes = { notes }
+					/>
+				</div>
 			</div> }
-			okText = {currentLanguage.close}
-			showCancel={false}
+			okText = { currentLanguage.close }
+			showCancel = { false }
 		>
 			<div>
 				<NoteVersionHistory

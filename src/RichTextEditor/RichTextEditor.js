@@ -135,35 +135,42 @@ const AddNewNoteModal = ({
 	settingItems,
 	keyword,
 }) => {
-	
+	const [title,setTitle]=useState(initialTitle);
+	const [content,setContent]=useState(initialContent);
 	
 	const handleCancel = () => {
 		onCloseModal();
-		GetNoteContent(EditorState.createWithContent(convertFromRaw(initialContent)) , initialTitle , onSave);
+		GetNoteContent(content,title, onSave);
 	};
 	
 	const handleOk = () => {
 		
 	};
+	const getTitle=(title)=>{
+		setTitle(title)
+	}
+	const getContent=(content)=>{
+		setContent(content)
+	}
 	return <div>
 		
 			<Modal
 				open = { open }
 				onOk = { handleOk }
 				// centered={true}
-				style = { { top : 40 } }
+				style = { { top : 100 } }
 				onCancel = { handleCancel }
 				cancelText = "取消"
 				okText = "创建"
-				width = { 800 }
+				width = { `74vh` }
 				height = { 300 }
 				destroyOnClose = { true }
 				keyboard = { true }
 				wrapClassName = {`edit-note-modal ${ settingItems.themeMode==='note-dark-mode'?'night-theme':currentNotebook.currentTheme }`}
 				closable = { false }
-				maskClosable={true}
+				// maskClosable={false}
 				footer={null}
-				// afterOpenChange={()=>{GetNoteContent(initialContent , initialTitle , onSave);}}
+				
 			>
 				<RichTextEditor
 					onSave = { onSave }
@@ -174,6 +181,8 @@ const AddNewNoteModal = ({
 					currentNotebook={currentNotebook}
 					keyword={keyword}
 					settingItems={settingItems}
+					getContent={getContent}
+					getTitle={getTitle}
 				/>
 			</Modal>
 		
@@ -193,7 +202,9 @@ const RichTextEditor = ({
 	changeNoteEdit,
 	keyword,
 	currentNotebook,
-	settingItems
+	settingItems,
+	getContent,
+	getTitle,
 }) => {
 	const editorRef = useRef(null);
 	const [noteTitle , setNoteTitle] = useState('');
@@ -217,6 +228,19 @@ const RichTextEditor = ({
 	} , [initialTitle,initialContent]);
 	const [textAlignment , setTextAlignment] = useState('left');//对齐
 	
+	
+	
+	useEffect(()=>{
+		if(showAllOptions){
+			if(noteTitle!==initialTitle){
+				getTitle(noteTitle)
+			}
+			if(editorState!==initialContent){
+				getContent(editorState)
+			}
+		}
+		
+	},[noteTitle,editorState])
 	
 	const keywordDecorator = (keyword) => {
 		return new CompositeDecorator([
@@ -725,7 +749,7 @@ const RichTextEditor = ({
 					fontSize : "16px" ,
 					borderBottomLeftRadius : '6px' ,
 					borderBottomRightRadius : '6px' ,
-					maxHeight : showAllOptions ? 'calc(100vh - 230px)' : '100%' ,
+					maxHeight : showAllOptions ? 'calc(100vh - 300px)' : '100%' ,
 					minHeight : showAllOptions ? '20vh' : '0' ,
 					padding : '10px' ,
 					overflowY : 'scroll' ,

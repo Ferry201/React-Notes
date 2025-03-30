@@ -110,7 +110,7 @@ class NotesApp extends Component {
 		if ( noteListData && noteListData !== prevState.noteListData ) {
 			let currentTime = dayjs().valueOf();
 			//todo 15
-			let gapTime = 2 * 24 * 60 * 60 * 1000;
+			let gapTime = 15 * 24 * 60 * 60 * 1000;
 			let deletedNotes = noteListData.filter(note => note.isDeleted === true);
 			deletedNotes.forEach(note => {
 				if ( currentTime - Number(note.deletedTime) > gapTime ) {
@@ -399,6 +399,27 @@ class NotesApp extends Component {
 				return {
 					...note ,
 					deadlineDate : date,
+				};
+			}
+			return note;
+		});
+		this.setState({
+			noteListData : updatedNoteList ,
+		} , () => {
+			localStorage.setItem('note-info-array' , JSON.stringify(updatedNoteList));
+		});
+	}
+	//set deadline
+	handleDeleteDeadline = (id) => {
+		const {
+			noteListData ,
+		} = this.state;
+		let updatedNoteList = [...noteListData];
+		updatedNoteList = updatedNoteList.map(note => {
+			if ( note.id === id ) {
+				return {
+					...note ,
+					deadlineDate : null,
 				};
 			}
 			return note;
@@ -1150,6 +1171,7 @@ class NotesApp extends Component {
 				isShowRecycleNotes = { this.state.showRecycleNotes }
 				sorts = { this.state.allSorts }
 				handleSetDeadline={this.handleSetDeadline}
+				handleDeleteDeadline={this.handleDeleteDeadline}
 			/>
 			
 			
