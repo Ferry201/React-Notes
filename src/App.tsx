@@ -13,7 +13,7 @@ export const App = () => {
 	
 	// return <NotesApp />;
 	return <>
-	<Router>
+	<Router basename="/React-Notes">
 		<div>
 			<Routes>
 				<Route path='/'  element={<ForestNoteWebsitePage/>} ></Route>

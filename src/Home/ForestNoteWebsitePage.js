@@ -8,16 +8,36 @@ const ForestNoteWebsitePage=()=>{
 	const handleGetStarted = () => {
 		navigate('/ForestNote'); // 点击按钮时跳转
 	};
-	return <div className='forestNote-app-site-page'>
+	return <div className = 'forestNote-app-site-page'>
 		
-		<div className="header-nav">
+		<header className = "topbar">
 			<div className="site-name">ForestNote</div>
-		</div>
+			<nav>
+					
+					<span className='nav-item'>
+						<a href = "#home">Home</a>
+					</span>
+					<span className='nav-item'>
+						<a href = "#features">Features</a>
+					</span>
+					<span className='nav-item'>
+						<a href = "#pricing">Pricing</a>
+					</span>
+					<span className='nav-item'>
+						<a href = "#contact">Contact Us</a>
+					</span>
+			</nav>
+		</header>
 		
-		<div className="main-section"></div>
+		<section id = "home" className='section'>🏡 Home Content
+		<div onClick={handleGetStarted}>start</div>
+		</section>
+		<section id = "features" className='section'>🚀 Features Content</section>
+		<section id = "pricing" className='section'>💰 Pricing Content</section>
+		<section id = "contact" className='section'>📩 Contact Us Content</section>
 		
-		<div onClick={handleGetStarted}>started</div>
+		
 	</div>
 }
 
-export {ForestNoteWebsitePage}
+export { ForestNoteWebsitePage }
