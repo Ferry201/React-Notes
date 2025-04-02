@@ -3385,6 +3385,37 @@ body {
 	margin: 0 auto;
 }
 
+.forestNote-app-site-page .topbar{
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	position: fixed;
+	top: 0;
+	z-index: 10;
+	background: white;
+}
+
+.forestNote-app-site-page .topbar .site-name{
+	font-size: 24px;
+	font-weight: bold;
+}
+
+.forestNote-app-site-page .topbar .nav-item a{
+	font-size: 18px;
+	text-decoration: none;
+	margin-right: 30px;
+}
+
+html {
+	scroll-behavior: smooth;
+}
+.forestNote-app-site-page .section {
+	height: 80vh; /* 让每个部分占满屏幕 */
+	padding: 40px;
+	margin-top: 30px;
+	border-bottom: 2px solid #ccc;
+}
+
 body, html {
 	height: 100%;
 	margin: 0;
