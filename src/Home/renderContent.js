@@ -245,8 +245,8 @@ const RenderContent = ({
 	let pinnedNotes;
 	let otherNotes;
 	if(currentNotebook.isTodoMode){
-		otherNotes = contents.filter((note) => note.isCompleted) // 已置顶的笔记
-		.sort((a , b) => b.completedTime - a.completedTime); // 按置顶时间降序排列，新置顶的排前面
+		otherNotes = contents.filter((note) => note.isCompleted) // 已完成的笔记
+		.sort((a , b) => b.completedTime - a.completedTime); // 按完成时间降序排列，新完成的排前面
 		pinnedNotes = contents.filter(note => !note.isCompleted);
 	}else if( isShowFavoritesNotes ) {
 		pinnedNotes = contents.sort((a , b) => b.favoritedTime - a.favoritedTime); // 按收藏时间降序排列，新收藏的排前面
@@ -360,21 +360,21 @@ const RenderContent = ({
 									e.stopPropagation();
 								} }
 							>
-								{/*置顶*/}
-								{ !showFavoritesOrSearchResults&&!currentNotebook.isTodoMode && <PinNoteIcon
+								{/*置顶*/ }
+								{ !showFavoritesOrSearchResults && !currentNotebook.isTodoMode && <PinNoteIcon
 									isPinned = { isPinned }
 									handlePinNote = { () => {
 										onPinNote(id);
-										if(isPinned){
-											message.success(currentLanguage?.Unpinned,1)
-										}else{
-											message.success(currentLanguage?.Pinned,1)
+										if ( isPinned ) {
+											message.success(currentLanguage?.Unpinned , 1);
+										} else {
+											message.success(currentLanguage?.Pinned , 1);
 										}
 									} }
-									currentLanguage={currentLanguage}
+									currentLanguage = { currentLanguage }
 								/> }
 								
-								{/*收藏*/}
+								{/*收藏*/ }
 								{/*<FavoriteIcon*/ }
 								{/*	isFavorited = { isFavorited }*/ }
 								{/*	handleFavoriteNote = { () => {*/ }
@@ -384,15 +384,15 @@ const RenderContent = ({
 								
 								{/*截止日期选择*/ }
 								{ currentNotebook.isTodoMode && <DeadlinePopConfirm
-									currentNotebook={currentNotebook}
+									currentNotebook = { currentNotebook }
 									currentLanguage = { currentLanguage }
-									setDeadline={handleSetDeadline}
-									deleteDeadline={handleDeleteDeadline}
+									setDeadline = { handleSetDeadline }
+									deleteDeadline = { handleDeleteDeadline }
 									id = { id }
-									deadlineDate={deadlineDate}
+									deadlineDate = { deadlineDate }
 								/> }
 								
-								{/*移动到其他笔记本*/}
+								{/*移动到其他笔记本*/ }
 								{ !showFavoritesOrSearchResults &&
 									<NotebooksPopover
 										id = { id }
@@ -400,56 +400,56 @@ const RenderContent = ({
 										currentNotebook = { currentNotebook }
 										handleMoveNote = { handleMoveNote }
 										placement = "rightBottom"
-										currentLanguage={currentLanguage}
+										currentLanguage = { currentLanguage }
 									/> }
 								
-							
+								{/*<TagNoteIcon currentLanguage = { currentLanguage }/>*/}
 								
-								{/*更新记录*/}
-								<UpdateTimePopConfirm
+								{/*更新记录*/ }
+								<UpdateTimePopover
 									currentLanguage = { currentLanguage }
 									id = { id }
 									notes = { notes }
 								/>
 								
-								{/*删除*/}
-								{!showFavoritesOrSearchResults && <DeleteConfirm
+								
+								{/*删除*/ }
+								<DeleteConfirm
 									onDeleteNote = { () => {
 										onDeleteNote(id);
 									} }
 									currentLanguage = { currentLanguage }
-								/> }
-								
-								
-								
-								
+								/>
+							
+							
 							</div>
 						}
 						
-						{/*{ !currentNotebook.isTodoMode&&<span className = "time-and-book">*/}
-						{/*	<FormatTime*/}
-						{/*		id = { id }*/}
-						{/*		notes = { notes }*/}
-						{/*	/>*/}
-						{/*</span> }*/}
+						{/*{ !currentNotebook.isTodoMode&&<span className = "time-and-book">*/ }
+						{/*	<FormatTime*/ }
+						{/*		id = { id }*/ }
+						{/*		notes = { notes }*/ }
+						{/*	/>*/ }
+						{/*</span> }*/ }
 						
-						{/*deadline*/}
-						{ deadlineDate&&currentNotebook.isTodoMode &&<DeadlineText deadlineDate={deadlineDate}/> }
+						{/*deadline*/ }
+						{ deadlineDate && currentNotebook.isTodoMode && <DeadlineText deadlineDate = { deadlineDate } /> }
 					</div>
 				</div>
 				
-				{/*多选*/}
+				{/*多选*/ }
 				{ !showFavoritesOrSearchResults && <CheckNoteIcon
 					onClick = { (e) => {
 						e.stopPropagation();
 						handleChechedNote(id);
 					} }
-					isChecked={isChecked}
-					currentLanguage={currentLanguage}
+					isChecked = { isChecked }
+					currentLanguage = { currentLanguage }
 				/> }
 			</div>;
 		}
 	}
+	
 	const pinnedText=currentLanguage?.pinned;
 	const otherText=currentLanguage?.other;
 	
@@ -951,6 +951,49 @@ const MoveNoteContent = ({
 	</div>
 }
 
+const FormatUpdateTime=({notes,id})=>{
+	const [timeIDArray , setTimeIDArray] = useState([]);
+	
+	useEffect(() => {
+		const fetchTimeArray = () => {
+			
+			let initialTimeArray = notes.map(({
+				id ,
+				updateNoteTime ,
+			}) => ({
+				id ,
+				updateNoteTime ,
+				relativeTime : convertTimestampsToRelativeTimes(updateNoteTime) ,
+			}));
+			setTimeIDArray(initialTimeArray);
+		};
+		
+		fetchTimeArray();
+		
+		const timer = setInterval(() => {
+			
+			setTimeIDArray(prevTimeIDArray => {
+				return prevTimeIDArray.map(item => {
+					
+					const newRelativeTime = convertTimestampsToRelativeTimes(item.updateNoteTime);
+					if ( item.relativeTime === newRelativeTime ) return item; // 不变时直接返回
+					return {
+						...item ,
+						relativeTime : newRelativeTime ,
+					};
+				});
+			});
+			
+		} , 3000);
+		
+		return () => {
+			clearInterval(timer);
+		};
+	} , []);
+	
+	return (<div className = "note-time">{ timeIDArray.find(item => item.id === id)?.relativeTime }</div>);
+}
+
 const FormatTime = ({ notes,id }) => {
 	const [timeIDArray , setTimeIDArray] = useState([]);
 	
@@ -1104,10 +1147,41 @@ const CompleteTaskIcon=({currentLanguage,completedTodo,isCompleted})=>{
 		</div>
 	</Tooltip>
 }
+
+const TagNoteIcon=({currentLanguage})=>{
+	return <>
+		<Tooltip
+			title = { currentLanguage.addTag }
+			arrow = { false }
+			placement = "bottom"
+			color = "#a6aaad"
+		>
+			<div className = "note-buttons-common">
+				<svg
+					t = "1743509540814"
+					className = "icon"
+					viewBox = "0 0 1024 1024"
+					version = "1.1"
+					xmlns = "http://www.w3.org/2000/svg"
+					p-id = "20418"
+					width = "14"
+					height = "14"
+				>
+					<path
+						d = "M930.909091 13.963636c-9.309091-9.309091-23.272727-13.963636-37.236364-13.963636H130.327273C116.363636 0 102.4 4.654545 93.090909 13.963636 83.781818 18.618182 69.818182 27.927273 69.818182 41.890909V1024l363.054545-176.872727c23.272727-13.963636 51.2-18.618182 79.127273-18.618182 27.927273 0 51.2 4.654545 79.127273 18.618182L954.181818 1024V41.890909c0-13.963636-13.963636-23.272727-23.272727-27.927273z m-237.381818 242.036364h-372.363637c-18.618182 0-32.581818-13.963636-32.581818-37.236364s9.309091-32.581818 27.927273-32.581818h372.363636c18.618182 0 32.581818 13.963636 32.581818 32.581818 4.654545 23.272727-9.309091 37.236364-27.927272 37.236364z"
+						fill = "#bfbfbf"
+						p-id = "20419"
+					></path>
+				</svg>
+			</div>
+		</Tooltip>
+	
+	</>
+}
 const DeleteIcon = ({ currentLanguage }) => {
 	return <>
 		<Tooltip
-			title = {currentLanguage.delete}
+			title = { currentLanguage.delete }
 			arrow = { false }
 			placement = "bottom"
 			color = "#a6aaad"
@@ -1159,24 +1233,21 @@ const DeadlineText = ({ deadlineDate }) => {
 	return <span className = { `deadline-text ${ isToday && 'blue' } ${isExpired && 'red'}` }>{ `${ deadlineDate.year }-${ deadlineDate.month + 1  }-${ deadlineDate.date }` }到期</span>;
 };
 
-const UpdateTimePopConfirm = ({
+const UpdateTimePopover = ({
 	currentLanguage ,
 	id ,
 	notes,
 }) => {
 	
 	return <>
-		<Popconfirm
-			arrow = { false}
-			icon={false}
+		<Popover
+			arrow={false}
+			zIndex = { 100 }
 			destroyTooltipOnHide = { true }
-			placement = "rightBottom"
-			// overlayClassName = {`deadline-popover ${currentNotebook.currentTheme}`}
-			title = {currentLanguage.versionHistortText}
-			description = { <div className = "UpdateTimePop-description">
+			content = { <div className = "UpdateTimePop-description">
 				
 				<div className = "UpdateTimePop-description-item">
-					<span>{ currentLanguage.createdNoteTime }&nbsp;:&nbsp;</span>
+					<span className='time-tip-text'>{ currentLanguage.createdNoteTime }&nbsp;:&nbsp;</span>
 					<FormatTime
 						id = { id }
 						notes = { notes }
@@ -1184,31 +1255,30 @@ const UpdateTimePopConfirm = ({
 				</div>
 				
 				<div className = "UpdateTimePop-description-item">
-					<span>{ currentLanguage.LastModified }&nbsp;:&nbsp;</span>
-					<FormatTime
+					<span className='time-tip-text'>{ currentLanguage.LastModified }&nbsp;:&nbsp;</span>
+					<FormatUpdateTime
 						id = { id }
 						notes = { notes }
 					/>
 				</div>
 				
 				<div className = "UpdateTimePop-description-item">
-					<span>{ currentLanguage.LastSyncedTime }&nbsp;:&nbsp;</span>
-					<FormatTime
+					<span className='time-tip-text'>{ currentLanguage.LastSyncedTime }&nbsp;:&nbsp;</span>
+					<FormatUpdateTime
 						id = { id }
 						notes = { notes }
 					/>
 				</div>
 			</div> }
-			okText = { currentLanguage.close }
-			showCancel = { false }
+			placement = "rightBottom"
+			trigger = "click"
 		>
 			<div>
 				<NoteVersionHistory
 					currentLanguage = { currentLanguage }
 				/>
 			</div>
-		</Popconfirm>
-	
+		</Popover>
 	</>;
 };
 const NoteVersionHistory=({currentLanguage})=> {

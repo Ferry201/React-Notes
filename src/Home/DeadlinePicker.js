@@ -35,12 +35,14 @@ const DeadlinePicker = ({
 	currentLanguage,
 	deleteDeadline,
 }) => {
-	const [year , setYear] = useState(new Date().getFullYear());
-	const [month , setMonth] = useState(new Date().getMonth());
-	const [selectDate , setSelectDate] = useState(deadline);
+	
 	const todayDate = new Date().getDate();
 	const todayOfMonth = new Date().getMonth();
 	const todayOfYear = new Date().getFullYear();
+	
+	const [year , setYear] = useState(new Date().getFullYear());
+	const [month , setMonth] = useState(new Date().getMonth());
+	const [selectDate , setSelectDate] = useState(deadline);	
 	
 	
 	// 获取日历数据

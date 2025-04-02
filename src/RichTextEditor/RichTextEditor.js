@@ -116,7 +116,7 @@ const ColorPicker = ({ColorStyleMap, onSelectColor ,colorType,currentLanguage}) 
 			className = "eraser-icon"
 			onClick = { removeColor }
 		><EraserIcon />
-			<span className = "eraser-text">{currentLanguage.remove_color}</span>
+			<span className = "eraser-text">{currentLanguage?.remove_color}</span>
 		</div>
 	</div>);
 };
@@ -178,6 +178,7 @@ const AddNewNoteModal = ({
 					initialContent = { initialContent }
 					onCancel = { onCancel }
 					showAllOptions = { true }
+					richtextInModal={true}
 					currentNotebook={currentNotebook}
 					keyword={keyword}
 					settingItems={settingItems}
@@ -197,6 +198,7 @@ const RichTextEditor = ({
 	initialContent ,
 	onCancel ,
 	showAllOptions = undefined ,
+	richtextInModal=false,
 	openModal ,
 	cancelExpandNoteEditSection,
 	changeNoteEdit,
@@ -207,7 +209,7 @@ const RichTextEditor = ({
 	getTitle,
 }) => {
 	const editorRef = useRef(null);
-	const [noteTitle , setNoteTitle] = useState('');
+	const [noteTitle , setNoteTitle] = useState(initialTitle||'');
 	const [editorState , setEditorState] = useState(initialContent ? EditorState.createWithContent(convertFromRaw(initialContent)) : EditorState.createEmpty());
 	
 	const [currentLanguage , setCurrentLanguage] = useState(translations[settingItems.language]);
@@ -231,7 +233,7 @@ const RichTextEditor = ({
 	
 	
 	useEffect(()=>{
-		if(showAllOptions){
+		if(richtextInModal&&showAllOptions){
 			if(noteTitle!==initialTitle){
 				getTitle(noteTitle)
 			}
@@ -435,7 +437,7 @@ const RichTextEditor = ({
 	
 	const selectBackgroundColorContent = (
 		<div>
-			<div className = "color-popover-title">{currentLanguage.font_background_color_picker}</div>
+			<div className = "color-popover-title">{currentLanguage?.font_background_color_picker}</div>
 			<ColorPicker
 				onSelectColor = { onBackgroundColorChange }
 				ColorStyleMap = { backgroundColorStyleMap }
@@ -447,7 +449,7 @@ const RichTextEditor = ({
 	
 	const selectColorContent = (
 		<div>
-			<div className = "color-popover-title">{currentLanguage.font_color_picker}</div>
+			<div className = "color-popover-title">{currentLanguage?.font_color_picker}</div>
 			<ColorPicker
 				onSelectColor = { onFontColorChange }
 				ColorStyleMap = { fontColorStyleMap }
@@ -493,7 +495,7 @@ const RichTextEditor = ({
 			key:'header-five'
 		},
 		{
-			text:`${currentLanguage.NormalParagraph}`,
+			text:`${currentLanguage?.NormalParagraph}`,
 			key:'unstyled'
 		},
 	]
@@ -526,93 +528,116 @@ const RichTextEditor = ({
 				boxSizing : 'border-box' ,
 			} }
 		>
+			
+			{/*笔记标题输入区*/ }
+			<div className = "note-title-section">
+				{ (currentNotebook?.id === "searchResults-notes-id" && keyword && noteTitle) &&
+					<div className = "highlight-note-title">
+						<HighlightedTitle
+							title = { noteTitle }
+							keyword = { keyword }
+						/>
+					</div>}
+				<input
+					type = "text"
+					className = "note-item-title-input"
+					placeholder = {currentLanguage?.noteTitle}
+					maxLength={16}
+					value={noteTitle}
+					onChange = { (e) => {
+						setNoteTitle(e.target.value);
+					} }
+				/>
+			</div>
+			
+			
 			{ showAllOptions && <div>
-				<div className = "modal-top-bar">
-					<Tooltip
-						title = {currentLanguage.exit_without_saving_changes}
-						color='#a6aaad'
-						arrow = { false }
-					>
-						<div
-							className = "cancel-edit-icon"
-							onClick = { onCancel }
-						><CancelEditIcon />
-						</div>
-					</Tooltip>
-					
-					<Tooltip
-						title = { currentLanguage.save }
-						color = "#a6aaad"
-						arrow = { false }
-					>
-						<div
-							onClick = { () => {
-								GetNoteContent(editorState , noteTitle , onSave);
-							} }
-						><SaveIcon /></div>
-					</Tooltip>
-						
-				</div>
+				{/*<div className = "modal-top-bar">*/}
+				{/*	<Tooltip*/}
+				{/*		title = {currentLanguage?.exit_without_saving_changes}*/}
+				{/*		color='#a6aaad'*/}
+				{/*		arrow = { false }*/}
+				{/*	>*/}
+				{/*		<div*/}
+				{/*			className = "cancel-edit-icon"*/}
+				{/*			onClick = { onCancel }*/}
+				{/*		><CancelEditIcon />*/}
+				{/*		</div>*/}
+				{/*	</Tooltip>*/}
+				{/*	*/}
+				{/*	<Tooltip*/}
+				{/*		title = { currentLanguage?.save }*/}
+				{/*		color = "#a6aaad"*/}
+				{/*		arrow = { false }*/}
+				{/*	>*/}
+				{/*		<div*/}
+				{/*			onClick = { () => {*/}
+				{/*				GetNoteContent(editorState , noteTitle , onSave);*/}
+				{/*			} }*/}
+				{/*		><SaveIcon /></div>*/}
+				{/*	</Tooltip>*/}
+				{/*		*/}
+				{/*</div>*/}
 				
 				<div className = "rich-text-options">
 					<Tooltip
-						title = {currentLanguage.undo}
+						title = {currentLanguage?.undo}
 						color = "#a6aaad"
 						arrow = { false }
 					>
 						<button onClick = { onUndo }><FaUndo /></button>
 					</Tooltip>
 					<Tooltip
-						title = {currentLanguage.redo}
+						title = {currentLanguage?.redo}
 						color = "#a6aaad"
 						arrow = { false }
 					>
 						<button onClick = { onRedo }><FaRedo /></button>
 					</Tooltip>
 					<Tooltip
-						title = {currentLanguage.bold}
+						title = {currentLanguage?.bold}
 						color = "#a6aaad"
 						arrow = { false }
 					>
 						<button onClick = { onBoldClick }><FaBold /></button>
 					</Tooltip>
 					<Tooltip
-						title = {currentLanguage.italic}
+						title = {currentLanguage?.italic}
 						color = "#a6aaad"
 						arrow = { false }
 					>
 						<button onClick = { onItalicClick }><FaItalic /></button>
 					</Tooltip>
 					<Tooltip
-						title = {currentLanguage.underline}
+						title = {currentLanguage?.underline}
 						color = "#a6aaad"
 						arrow = { false }
 					>
 						<button onClick = { onUnderlineClick }><FaUnderline /></button>
 					</Tooltip>
 					<Tooltip
-						title = {currentLanguage.strikethrough}
+						title = {currentLanguage?.strikethrough}
 						color = "#a6aaad"
 						arrow = { false }
 					>
 						<button onClick = { onStrikethroughClick }><FaStrikethrough /></button>
 					</Tooltip>
 					<Tooltip
-						title = {currentLanguage.align_left}
+						title = {currentLanguage?.align_left}
 						color = "#a6aaad"
 						arrow = { false }
 					>
 						<button onClick = { onAlignLeft }><FaAlignLeft /></button>
 					</Tooltip>
 					<Tooltip
-						title = {currentLanguage.align_center}
+						title = {currentLanguage?.align_center}
 						color = "#a6aaad"
 						arrow = { false }
 					>
 						<button onClick = { onAlignCenter }><FaAlignCenter /></button>
 					</Tooltip>
 					<Tooltip
-						title = {currentLanguage.align_right}
+						title = {currentLanguage?.align_right}
 						color = "#a6aaad"
 						arrow = { false }
 					>
@@ -621,7 +646,7 @@ const RichTextEditor = ({
 					
 					
 					<Tooltip
-						title = {currentLanguage.add_image}
+						title = {currentLanguage?.add_image}
 						color = "#a6aaad"
 						arrow = { false }
 					>
@@ -640,21 +665,21 @@ const RichTextEditor = ({
 					
 					
 					<Tooltip
-						title = {currentLanguage.ordered_list}
+						title = {currentLanguage?.ordered_list}
 						color = "#a6aaad"
 						arrow = { false }
 					>
 						<button onClick = { onOrderedList }><FaListOl /></button>
 					</Tooltip>
 					<Tooltip
-						title ={currentLanguage.unordered_list}
+						title ={currentLanguage?.unordered_list}
 						color = "#a6aaad"
 						arrow = { false }
 					>
 						<button onClick = { onUnorderedList }><FaListUl /></button>
 					</Tooltip>
 					<Tooltip
-						title = {currentLanguage.quote}
+						title = {currentLanguage?.quote}
 						color = "#a6aaad"
 						arrow = { false }
 					>
@@ -668,7 +693,7 @@ const RichTextEditor = ({
 						overlayClassName = "font-size-popover"
 					>
 						<Tooltip
-							title = {currentLanguage.font_size}
+							title = {currentLanguage?.font_size}
 							color = "#a6aaad"
 							arrow = { false }
 						>
@@ -684,7 +709,7 @@ const RichTextEditor = ({
 						overlayClassName = "font-size-popover"
 					>
 						<Tooltip
-							title = {currentLanguage.heading}
+							title = {currentLanguage?.heading}
 							color = "#a6aaad"
 							arrow = { false }
 						>
@@ -720,26 +745,7 @@ const RichTextEditor = ({
 				</div>
 			</div> }
 			
-			{/*笔记标题输入区*/ }
-			<div className = "note-title-section">
-				{ (currentNotebook?.id === "searchResults-notes-id" && keyword && noteTitle) &&
-					<div className = "highlight-note-title">
-						<HighlightedTitle
-							title = { noteTitle }
-							 keyword = { keyword }
-					 />
-				 </div>}
-				 <input
-					 type = "text"
-					 className = "note-item-title-input"
-					 placeholder = {currentLanguage?.noteTitle}
-					 maxLength={16}
-					 value={noteTitle}
-					 onChange = { (e) => {
-						 setNoteTitle(e.target.value);
-					 } }
-				 />
-			</div>
+			
 			
 			<div
 				style = { {
@@ -774,7 +780,7 @@ const RichTextEditor = ({
 					blockStyleFn={myBlockStyleFn}
 					handleKeyCommand = { handleKeyCommand }
 					onChange = { setEditorState }
-					placeholder = {currentLanguage.inputNote}
+					placeholder = {currentLanguage?.inputNote}
 					className = "rich-text-input"
 					textAlignment = { textAlignment }
 				/>
@@ -899,7 +905,7 @@ const UndoIcon = ({currentLanguage}) => {
 		
 		<Tooltip
 			color='#a6aaad'
-			title = {currentLanguage.undo}
+			title = {currentLanguage?.undo}
 			placement = "bottom"
 			zIndex = "1"
 			arrow = { false }
@@ -928,7 +934,7 @@ const RedoIcon = ({currentLanguage}) => {
 	return <>
 		<Tooltip
 			color='#a6aaad'
-			title = {currentLanguage.redo}
+			title = {currentLanguage?.redo}
 			placement = "bottom"
 			zIndex = "1"
 			arrow = { false }
@@ -962,7 +968,7 @@ const AddNewNotebtn=({onClick,currentLanguage})=>{
 		return <div>
 			<Tooltip
 				color='#a6aaad'
-				title = {currentLanguage.add_note}
+				title = {currentLanguage?.add_note}
 				placement = "bottom"
 				zIndex = "1"
 				arrow={false}

@@ -125,7 +125,10 @@ export class NoteSidebar extends Component {
 				} }
 			>
 				<div className = "notebook-amount">
-					<span className = { `expand-sort-notebook-icon ${ isCollapse ? 'fold-sort-icon' : "" }` }><ExpandSortNotebookIcon /></span>
+					<span className = { `expand-sort-notebook-icon ${ isCollapse ? 'fold-sort-icon' : "" }` }>
+						{/*<ExpandSortNotebookIcon />*/}
+						<SidebarNotebookIcon />
+					</span>
 					{ this.state.isRenameSort && this.props.currentSortId === id ? <input
 						defaultValue = { title }
 						onBlur = { this.handleBlurRenameInput }
@@ -134,7 +137,9 @@ export class NoteSidebar extends Component {
 						maxLength='16'
 						className = "rename-sort-input"                    
 					/> :
-						  <span>{ title }({ notebooksInSort.length })</span>
+						  <span>{ title }
+							  {/*({ notebooksInSort.length })*/}
+						  </span>
 					   }
 				</div>
 				
@@ -219,34 +224,51 @@ export class NoteSidebar extends Component {
 					{/*sidebar主要功能菜单列表*/ }
 					
 					<div className = "sidebar-top-bar">
-						<SidebarMenu
-							clickFavorites = { this.props.clickFavorites }
-							clickRecycle = { this.props.clickRecycleBin }
-							openModal = { this.props.openModal }
-							currentLanguage={this.state.currentLanguage}
-						/>
+						{/*<SidebarMenu*/ }
+						{/*	clickFavorites = { this.props.clickFavorites }*/ }
+						{/*	clickRecycle = { this.props.clickRecycleBin }*/ }
+						{/*	openModal = { this.props.openModal }*/ }
+						{/*	currentLanguage = { this.state.currentLanguage }*/ }
+						{/*/>*/ }
 						
-						<span className = "notebooks-list-text">{this.state.currentLanguage?.notebookList}</span>
-						
-						<span className='collapse-sidebar-and-add-new-sort'>
-							<Tooltip
-							title = {this.state.currentLanguage?.collapseSidebar}
-							placement = "bottom"
+						<Tooltip
+							title = { this.state.currentLanguage.setting }
+							placement = "right"
 							arrow = { false }
-							color='#a6aaad'
+							color = "#a6aaad"
 						>
 							<span
-								className = "topbar-icon collapse-sidebar-icon"
 								onClick = { () => {
-									toggleSiderCollapse()
+									this.props.openModal('settingModal');
 								} }
-							><DrawerIcon /></span>
+								className = "topbar-icon "
+							>
+								<SettingIcon />
+							</span>
 						</Tooltip>
+						
+						
+						{/*<span className = "notebooks-list-text">{ this.state.currentLanguage?.notebookList }</span>*/ }
+						
+						<span className = "collapse-sidebar-and-add-new-sort">
 							<Tooltip
-								title = {this.state.currentLanguage?.addCategory}
+								title = { this.state.currentLanguage?.collapseSidebar }
 								placement = "bottom"
 								arrow = { false }
-								color='#a6aaad'
+								color = "#a6aaad"
+							>
+								<span
+									className = "topbar-icon collapse-sidebar-icon"
+									onClick = { () => {
+										toggleSiderCollapse();
+									} }
+								><DrawerIcon /></span>
+							</Tooltip>
+							<Tooltip
+								title = { this.state.currentLanguage?.addCategory }
+								placement = "bottom"
+								arrow = { false }
+								color = "#a6aaad"
 							>
 								<span
 									className = "topbar-icon add-new-sort-icon"
@@ -271,13 +293,14 @@ export class NoteSidebar extends Component {
 							ref = { this.searchInputRef }
 							className = "search-input"
 							// className = {`search-input ${ this.state.activeItem==='搜索'?'active-search-input':''}`}
-							placeholder = {this.state.currentLanguage?.searchNote}
+							placeholder = { this.state.currentLanguage?.searchNote }
 							value = { this.state.searchKeyword }
 							onChange = { (e) => {
 								this.handleSearchKeyword(e.target.value);
 							} }
 						/>
 					</div>
+					
 					
 					<div className = "sidebar-content-panel">
 						{/*<div className = "avatar-username-email">*/ }
@@ -293,36 +316,93 @@ export class NoteSidebar extends Component {
 						
 						{/*笔记本列表*/ }
 						<div className = "all-sorts-notebook">
-							{ this.props.sorts.map((sort,index) => {
+							{ this.props.sorts.map((sort , index) => {
 								const notebooksInSort = notebooks.filter(
 									notebook => notebook.belongSortID === sort.id ,
 								);
 								return <div key = { sort.id }>
 									{/*分类标题*/ }
 									<NotebookSortAndOperates
-										index={index}
+										index = { index }
 										title = { sort.title }
 										id = { sort.id }
 										isCollapse = { sort.isCollapse }
 										notebooksInSort = { notebooksInSort }
-										currentLanguage={this.state.currentLanguage}
+										currentLanguage = { this.state.currentLanguage }
 									/>
 									{/*笔记本列表*/ }
-									{ !sort.isCollapse && (this.props.settingItems.notebookMode==='cover-notebook'?<VisualNotebookList
+									{ !sort.isCollapse && (this.props.settingItems.notebookMode === 'cover-notebook' ? <VisualNotebookList
 										notebooks = { notebooksInSort }
 										selectedNotebookId = { this.props.selectedNotebookId }
 										handleToggleNoteBook = { this.props.handleToggleNoteBook }
-									/>:<PlainNotebookList
-										notebooks = { notebooksInSort }
-										selectedNotebookId = { this.props.selectedNotebookId }
-										handleToggleNoteBook = { this.props.handleToggleNoteBook }/>) }
+									/> : <PlainNotebookList
+										                       notebooks = { notebooksInSort }
+										                       selectedNotebookId = { this.props.selectedNotebookId }
+										                       handleToggleNoteBook = { this.props.handleToggleNoteBook }
+									                       />) }
 								
 								</div>;
 							}) }
+							
+							
+							<div className = "menu-item archive-notebook-menu ">
+								<ArchiveIcon />
+								<span>{ this.state.currentLanguage?.sidebarArchivedText }</span>
+							</div>
+							
+							
+							{/*<div className = "menu-item archive-notebook-menu ">*/}
+							{/*	<SidebarTagIcon />*/}
+							{/*	<span>{ this.state.currentLanguage?.sidebarTagsText }</span>*/}
+							{/*</div>*/}
+							
+							
+							
+							<div
+								className = "menu-item archive-notebook-menu "
+								onClick = { () => {
+									this.props.clickRecycleBin();
+								} }
+							>
+								<RecycleIcon />
+								<span>{ this.state.currentLanguage?.trash }</span>
+							</div>
 						</div>
 					
 					
 					</div>
+					
+					
+					{/*<div className = "menu-item archive-notebook-menu ">*/ }
+					{/*	<SidebarTagIcon />*/ }
+					{/*	<span>{ this.state.currentLanguage?.sidebarTagsText }</span>*/ }
+					{/*</div>*/ }
+					{/*<div>*/ }
+					{/*	<svg*/ }
+					{/*		t = "1743510039069"*/ }
+					{/*		className = "icon"*/ }
+					{/*		viewBox = "0 0 1024 1024"*/ }
+					{/*		version = "1.1"*/ }
+					{/*		xmlns = "http://www.w3.org/2000/svg"*/ }
+					{/*		p-id = "20672"*/ }
+					{/*		width = "16"*/ }
+					{/*		height = "16"*/ }
+					{/*	>*/ }
+					{/*		<path*/ }
+					{/*			d = "M896 960l-384-192-384 192V192c0-70.4 57.6-128 128-128h512c70.4 0 128 57.6 128 128v768z m-384-268.8l320 160V192c0-32-32-64-64-64H256c-32 0-64 32-64 64v665.6l320-166.4z"*/ }
+					{/*			fill = "#8a8a8a"*/ }
+					{/*			p-id = "20673"*/ }
+					{/*		></path>*/ }
+					{/*	</svg>*/ }
+					{/*</div>*/ }
+					
+					
+					{/*<div className = "menu-item archive-notebook-menu ">*/ }
+					{/*	<SidebarNotebookIcon />*/ }
+					{/*	<span>{ this.state.currentLanguage?.sidebarNotebookText }</span>*/ }
+					{/*</div>*/ }
+				
+				
 				</div>
 			</ResizableBox>
 		</div>;
@@ -339,14 +419,14 @@ const PlainNotebookList = ({
 			const isSelected = selectedNotebookId === book.id;
 			return <div
 				key = { `plain-${ book.title }-${ index }` }
-				className = { `plain-note-book-item ${isSelected?'isSelected':''}` }
+				className = { `plain-note-book-item ${ isSelected ? 'isSelected' : '' }` }
 				onClick = { () => {
 					handleToggleNoteBook(book);
 				} }
 			>
 				<span className = "plain-notebook-icon">
-					{/*<PlainNotebookIcon />*/}
-					{book.emoji}
+					{/*<PlainNotebookIcon />*/ }
+					{ book.emoji }
 				</span>
 				{ book.title }</div>;
 		}) }
@@ -445,6 +525,8 @@ const SidebarMenu = ({
 };
 
 
+
+
 const ListSortOptions = ({
 	handleClickDeleteSort ,
 	id,
@@ -537,6 +619,45 @@ const ListSortOptions = ({
 };
 
 
+const ArchiveIcon=()=> {
+	return <svg
+		t = "1743415882197"
+		className = "icon"
+		viewBox = "0 0 1024 1024"
+		version = "1.1"
+		xmlns = "http://www.w3.org/2000/svg"
+		p-id = "2340"
+		width = "16"
+		height = "16"
+	>
+		<path
+			d = "M997.236364 458.705455L892.741818 98.676364a92.788364 92.788364 0 0 0-88.203636-63.767273L220.16 34.676364c-40.029091 0-75.636364 25.6-88.901818 65.396363L26.996364 458.007273c-17.221818 17.454545-26.763636 40.494545-26.763637 65.163636L0 895.767273c0 51.432727 41.658182 93.090909 93.090909 93.090909l837.585455 0.465454c51.2 0 93.090909-41.658182 93.090909-93.090909l0.232727-372.363636c0-25.367273-10.24-48.407273-26.763636-65.163636zM220.16 127.767273l583.912727-1.396364 88.203637 304.407273h-124.043637c-24.901818 0-48.174545 9.774545-65.861818 27.229091-17.687273 17.454545-27.461818 40.727273-27.461818 65.629091v92.392727l-326.981818-0.232727 0.698182-91.694546c0.232727-25.134545-9.309091-48.64-26.996364-66.327273a92.974545 92.974545 0 0 0-66.094546-27.461818H131.723636l88.436364-302.545454z m710.516364 768.465454L93.090909 895.767273l0.232727-372.363637h162.443637l-0.698182 91.694546c-0.232727 25.134545 9.309091 48.64 26.996364 66.327273 17.687273 17.687273 40.96 27.461818 66.094545 27.461818l326.749091 0.465454c24.901818 0 48.174545-9.774545 65.861818-27.229091 17.687273-17.454545 27.229091-40.96 27.229091-65.861818V523.636364h162.909091l-0.232727 372.596363z"
+			fill = "#707070"
+			p-id = "2341"
+		></path>
+	</svg>;
+}
+const RecycleIcon=()=> {
+	return <svg
+		t = "1743491655150"
+		className = "icon"
+		viewBox = "0 0 1024 1024"
+		version = "1.1"
+		xmlns = "http://www.w3.org/2000/svg"
+		p-id = "39882"
+		width = "16"
+		height = "16"
+	>
+		<path
+			d = "M170.666667 159.3361h682.666666c25.493776 0 45.322268 20.536653 45.322269 45.322268v774.019364c0 25.493776-20.536653 45.322268-45.322269 45.322268H170.666667c-25.493776 0-45.322268-20.536653-45.322269-45.322268V204.658368c0-25.493776 20.536653-45.322268 45.322269-45.322268z m637.344398 774.019363V250.688797H215.988935v682.666666h592.02213z"
+			p-id = "39883"
+		></path>
+		<path
+			d = "M967.347165 159.3361c24.785615 0 45.322268 20.536653 45.322268 45.322268s-18.412172 43.905947-41.781466 45.322268H56.652835c-25.493776 0-45.322268-20.536653-45.322268-45.322268s18.412172-43.905947 41.781466-45.322268H967.347165zM693.997234 0c25.493776 0 45.322268 20.536653 45.322268 45.322268s-18.412172 43.905947-41.781466 45.322269H330.002766c-25.493776 0-45.322268-20.536653-45.322268-45.322269s18.412172-43.197787 41.781466-45.322268H693.997234z"
+			p-id = "39884"
+		></path>
+	</svg>
+}
 const DrawerIcon = () => {
 	return <>
 		
@@ -566,8 +687,8 @@ const DrawerIcon = () => {
 				p-id = "251112"
 			></path>
 		</svg>
-	</>
-}
+	</>;
+};
 const EditingIcon = () => {
 	return <svg
 		t = "1739872645433"
@@ -597,24 +718,7 @@ const EditingIcon = () => {
 		></path>
 	</svg>
 }
-const PlainNotebookIcon = () => {
-	return <svg
-		t = "1739822289353"
-		className = "icon"
-		viewBox = "0 0 1024 1024"
-		version = "1.1"
-		xmlns = "http://www.w3.org/2000/svg"
-		p-id = "27642"
-		width = "16"
-		height = "16"
-	>
-		<path
-			d = "M814.92195555-0.63715555a139.81013333 139.81013333 0 0 1 139.81013334 139.81013333v745.65404444a139.81013333 139.81013333 0 0 1-139.81013334 139.81013333H209.07804445a139.81013333 139.81013333 0 0 1-139.81013334-139.81013333V139.17297778a139.81013333 139.81013333 0 0 1 139.81013334-139.81013333h605.8439111z m0 69.90506666H209.07804445a69.90506667 69.90506667 0 0 0-69.78855823 65.80396942L139.17297778 139.17297778v745.65404444a69.90506667 69.90506667 0 0 0 65.80396942 69.78855823L209.07804445 954.73208889h605.8439111a69.90506667 69.90506667 0 0 0 69.78855823-65.80396942L884.82702222 884.82702222V139.17297778a69.90506667 69.90506667 0 0 0-65.80396942-69.78855823L814.92195555 69.26791111zM570.25422222 535.30168889a34.95253333 34.95253333 0 0 1 0 69.90506666h-302.92195555a34.95253333 34.95253333 0 0 1 0-69.90506666h302.92195555z m186.41351111-256.31857778a34.95253333 34.95253333 0 0 1 0 69.90506667h-489.33546666a34.95253333 34.95253333 0 0 1 0-69.90506667h489.33546666z"
-			fill = "#131415"
-			p-id = "27643"
-		></path>
-	</svg>;
-};
+
 const ExpandSortNotebookIcon = () => {
 	return <svg
 		t = "1739339998541"
@@ -639,6 +743,7 @@ const ExpandSortNotebookIcon = () => {
 		></path>
 	</svg>;
 };
+
 const AddNewSortIcon = () => {
 	return <svg
 		t = "1739988955426"
@@ -761,48 +866,73 @@ class RecycleBinIcon extends Component {
 class SearchIcon extends Component {
 	render () {
 		return <svg
-			t = "1739340216124"
+			t = "1743503560733"
 			className = "icon"
 			viewBox = "0 0 1024 1024"
 			version = "1.1"
 			xmlns = "http://www.w3.org/2000/svg"
-			p-id = "13904"
+			p-id = "40996"
 			width = "16"
 			height = "16"
 		>
 			<path
-				d = "M469.333333 0C209.066667 0 0 209.066667 0 469.333333s209.066667 469.333333 469.333333 469.333334 469.333333-209.066667 469.333334-469.333334S729.6 0 469.333333 0z m0 853.333333c-213.333333 0-384-170.666667-384-384s170.666667-384 384-384 384 170.666667 384 384-170.666667 384-384 384z"
-				fill = "#303133"
-				p-id = "13905"
+				d = "M974.2536 1021.92a48 48 0 0 1-33.92-13.92L730.5736 797.44a48 48 0 0 1 68-67.68L1008.1736 940a48 48 0 0 1-34.08 81.92z"
+				fill = "#515151"
+				p-id = "40997"
 			></path>
 			<path
-				d = "M738.133333 742.4c17.066667-17.066667 42.666667-17.066667 59.733334 0l209.066666 200.533333c17.066667 17.066667 17.066667 42.666667 0 59.733334-17.066667 17.066667-42.666667 17.066667-59.733333 0l-209.066667-200.533334c-17.066667-17.066667-17.066667-42.666667 0-59.733333z"
-				fill = "#303133"
-				p-id = "13906"
+				d = "M465.6136 96A369.6 369.6 0 1 1 96.1736 465.44 369.92 369.92 0 0 1 465.6136 96m0-96a465.6 465.6 0 1 0 465.6 465.44A465.6 465.6 0 0 0 465.6136 0z"
+				fill = "#515151"
+				p-id = "40998"
 			></path>
-		</svg>;
+		</svg>
 	}
 }
 
-const EditAccountIcon = () => {
+
+
+const SidebarTagIcon=()=> {
 	return <svg
-		t = "1738731407821"
+		t = "1743509492052"
 		className = "icon"
 		viewBox = "0 0 1024 1024"
 		version = "1.1"
 		xmlns = "http://www.w3.org/2000/svg"
-		p-id = "2380"
+		p-id = "20116"
 		width = "16"
 		height = "16"
 	>
 		<path
-			d = "M34.133333 1024v-111.479467h955.733334V1024H34.133333z m220.501334-185.821867H34.133333V615.2192L502.784 128.341333l206.6432 208.896 52.155733-52.6336L554.325333 75.093333l51.131734-53.248a73.1136 73.1136 0 0 1 104.0384 0l103.970133 105.130667c28.672 29.013333 28.672 76.049067 0 105.0624l-558.6944 606.139733z"
-			fill = "#8a8a8a"
-			p-id = "2381"
+			d = "M819.740462 1007.663443l-305.918811-180.317543-309.331585 180.597279a114.244004 114.244004 0 0 1-55.947113 15.665191 91.753264 91.753264 0 0 1-46.380156-12.364312A106.299514 106.299514 0 0 1 52.425814 915.238813v-783.259575A129.685407 129.685407 0 0 1 179.257918 0.055947h666.721739a121.908758 121.908758 0 0 1 87.053708 37.036989 136.063378 136.063378 0 0 1 38.715401 96.340927v782.028739a107.306562 107.306562 0 0 1-50.352401 96.452822 91.753264 91.753264 0 0 1-45.596897 12.084576 111.055018 111.055018 0 0 1-56.059006-16.336557z m43.023329-72.731246a25.903513 25.903513 0 0 0 12.97973 4.531716 7.273125 7.273125 0 0 0 3.636563-0.78326 27.973556 27.973556 0 0 0 8.056384-23.385893V132.650604a50.911872 50.911872 0 0 0-14.434355-36.253729 38.267825 38.267825 0 0 0-27.022456-12.084576H179.257918a45.317161 45.317161 0 0 0-42.519806 47.610992v783.259575c0 12.811889 3.748457 20.756379 7.664755 22.994263a20.476643 20.476643 0 0 0 17.959023-3.524668l351.683549-205.046167zM289.361835 323.989728a41.792493 41.792493 0 0 1 0-83.529038H734.980586a41.792493 41.792493 0 0 1 0 83.529038z"
+			fill = "#bfbfbf"
+			p-id = "20117"
 		></path>
-	</svg>;
-};
+	</svg>
+}
 
+const SidebarNotebookIcon=()=> {
+	return <svg
+		t = "1743511883425"
+		className = "icon"
+		viewBox = "0 0 1024 1024"
+		version = "1.1"
+		xmlns = "http://www.w3.org/2000/svg"
+		p-id = "33414"
+		width = "16"
+		height = "16"
+	>
+		<path
+			d = "M754.72592555 2.27555555a194.18074112 194.18074112 0 0 1 194.18074112 194.18074112v631.08740666a194.18074112 194.18074112 0 0 1-194.18074112 194.18074112H245.0014811a194.18074112 194.18074112 0 0 1-194.18073998-194.18074112V196.45629667a194.18074112 194.18074112 0 0 1 194.18073998-194.18074112h509.72444445z m0 84.95407446H245.0014811a109.22666667 109.22666667 0 0 0-109.10530332 104.08087666L135.77481443 196.45629667v631.08740666a109.22666667 109.22666667 0 0 0 104.0808778 109.10530446L245.0014811 936.77036999h509.72444445a109.22666667 109.22666667 0 0 0 109.10530446-104.08087666L863.95259221 827.54370333V196.45629667a109.22666667 109.22666667 0 0 0-104.08087666-109.10530446L754.72592555 87.22963001z"
+			fill = "#000000"
+			p-id = "33415"
+		></path>
+		<path
+			d = "M948.90666667 366.36444445v291.2711111H706.18074112a145.63555555 145.63555555 0 1 1 0-291.2711111h242.72592555z m-84.95407446 206.31703665v-121.3629622H706.18074112a60.6814811 60.6814811 0 0 0-60.5601189 56.70077553L645.49925888 512a60.6814811 60.6814811 0 0 0 56.70077667 60.5601189L706.18074112 572.6814811h157.77185109z"
+			fill = "#000000"
+			p-id = "33416"
+		></path>
+	</svg>
+}
 
 const AvatarIcon = () => {
 	return <svg

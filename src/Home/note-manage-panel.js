@@ -67,10 +67,10 @@ class NoteManagePanel extends Reaxlass {
 				) ,
 				disabled : otherSorts.length === 0 ? true : false ,
 			} ,
-			// {
-			// 	label : <div>导出PDF</div> ,
-			// 	key : 'export-pdf' ,
-			// } ,
+			{
+				label : <div>{translations[settingItems.language]?.archiveThisBook}</div> ,
+				key : 'archive-notebook' ,
+			} ,
 			{
 				key : 'notebook-detail' ,
 				label : <div>{translations[settingItems.language]?.details}</div> ,
@@ -240,7 +240,9 @@ class NoteManagePanel extends Reaxlass {
 							currentNotebook.id === 'searchResults-notes-id'?translations[settingItems.language]?.searchResults:
 							currentNotebook.id === 'recycle-notes-id'?translations[settingItems.language]?.trash:
 							this.state.title
-						}({ notesAmount })</span> }
+						}
+						{/*({ notesAmount })*/}
+						</span> }
 					</div>
 					
 					
@@ -282,6 +284,7 @@ class NoteManagePanel extends Reaxlass {
 				
 				{/* 切换显示模式 选择主题颜色*/ }
 				{ !editInFavoritesOrSearchPageOrRecycle && <div className = "top-tool-bar">
+					
 					{ currentNotebook.isTodoMode ?
 					  <NoteModeIcon
 						  onClick = { updateNotebookInfo }

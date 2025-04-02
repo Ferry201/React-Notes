@@ -41,7 +41,7 @@ export const translations = {
 		changeCover : 'Change Cover' ,
 		moveToOtherCategory : 'Move to Another Category' ,
 		details : 'Details' ,
-		searchNote : 'Search Note' ,
+		searchNote : 'Search' ,
 		addNotebook : 'Add Notebook' ,
 		inputTitle : 'Input Title' ,
 		chooseEmoji : 'Choose Emoji' ,
@@ -148,6 +148,12 @@ export const translations = {
 		Pinned:'Pinned',
 		Unpinned:'Unpinned',
 		deleteDeadline:'Delete the deadline',
+		addTag:'Add Tag',
+		sidebarTagsText:'Tags',
+		sidebarArchivedText:'Archived',
+		sidebarNotebookText:'All Notebooks',
+		archiveThisBook:'Archive this Notebook',
+		setting:'Setting'
 	} ,
 	
 	cn : {
@@ -192,7 +198,7 @@ export const translations = {
 		changeCover : '换封面' ,
 		moveToOtherCategory : '移动到其他分类' ,
 		details : '详情' ,
-		searchNote : '搜索笔记' ,
+		searchNote : '搜索' ,
 		addNotebook : '添加笔记本' ,
 		inputTitle : '输入标题' ,
 		chooseEmoji : '选择emoji' ,
@@ -298,5 +304,11 @@ export const translations = {
 		Unpinned:'已取消置顶',
 		Pinned:'已置顶',
 		deleteDeadline:'删除截止日期',
+		addTag:'添加标签',
+		sidebarTagsText:'标签',
+		sidebarArchivedText:'归档',
+		sidebarNotebookText:'所有笔记本',
+		archiveThisBook:'归档此笔记本',
+		setting:'设置'
 	} ,
 };

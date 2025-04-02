@@ -33,7 +33,7 @@ const defaultNotebook = {
 	showMode : 'list-mode' ,//当前笔记显示模式
 	currentTheme : 'blue-theme' ,//列表主题,类名
 	belongSortID : 'default-sort-id' ,
-	isTodoMode : 'false',
+	isTodoMode : false,
 };
 
 class NotesApp extends Component {
@@ -232,7 +232,7 @@ class NotesApp extends Component {
 				themeMode : 'note-light-mode' ,
 				autoSwitch : false ,
 				notebookMode : 'cover-notebook' ,
-				language : 'en' ,
+				language : 'cn' ,
 				listModeGap : 'comfy' ,
 				cardModeColumn : 'cardThreeColumn' ,
 				gridModeColumn : 'gridTwoColumn' ,
@@ -297,6 +297,7 @@ class NotesApp extends Component {
 			isCompleted : false ,
 			completedTime : null,
 			deadlineDate:null,
+			updateNoteTime:saveTime
 		};
 		
 		let editInFavoritesOrSearchPage = currentNotebook.id === 'favorites-notes-id' || currentNotebook.id === 'searchResults-notes-id';
@@ -330,18 +331,40 @@ class NotesApp extends Component {
 				this.handleCloseModal();
 				return;
 			}
-			noteInfoArray = noteInfoArray.filter((note) => note.id !== currentID);
-			noteInfoArray.unshift({
-				...newNoteInfo ,
-				isPinned : oldNote.isPinned ,
-				pinnedTime : oldNote.pinnedTime ,
-				isFavorited : oldNote.isFavorited ,
-				favoritedTime : oldNote.favoritedTime ,
-				isCompleted:oldNote.isCompleted,
-				completedTime:oldNote.completedTime,
-				// isDeleted : oldNote.isDeleted ,
-				// deletedTime : oldNote.deletedTime,
+			// noteInfoArray = noteInfoArray.filter((note) => note.id !== currentID);
+			// noteInfoArray.unshift({
+			// 	...newNoteInfo ,
+			// 	isPinned : oldNote.isPinned ,
+			// 	pinnedTime : oldNote.pinnedTime ,
+			// 	isFavorited : oldNote.isFavorited ,
+			// 	favoritedTime : oldNote.favoritedTime ,
+			// 	isCompleted:oldNote.isCompleted,
+			// 	completedTime:oldNote.completedTime,
+			// 	deadlineDate:oldNote.deadlineDate,
+			// 	saveTime:oldNote.saveTime,
+			// 	updateNoteTime:dayjs().valueOf()
+			// 	// isDeleted : oldNote.isDeleted ,
+			// 	// deletedTime : oldNote.deletedTime,
+			// });
+			noteInfoArray = noteInfoArray.map(note => {
+				if ( note.id === currentID ) {
+					
+					return {
+						...newNoteInfo ,
+						isPinned : oldNote.isPinned ,
+						pinnedTime : oldNote.pinnedTime ,
+						isFavorited : oldNote.isFavorited ,
+						favoritedTime : oldNote.favoritedTime ,
+						isCompleted : oldNote.isCompleted ,
+						completedTime : oldNote.completedTime ,
+						deadlineDate : oldNote.deadlineDate ,
+						saveTime : oldNote.saveTime ,
+						updateNoteTime : dayjs().valueOf() ,
+					};
+				}
+				return note;
 			});
+			
 		}
 		
 		const currentNotes = noteInfoArray.filter(note => note.notebookID === currentNotebook.id);
@@ -409,7 +432,7 @@ class NotesApp extends Component {
 			localStorage.setItem('note-info-array' , JSON.stringify(updatedNoteList));
 		});
 	}
-	//set deadline
+	//delete deadline
 	handleDeleteDeadline = (id) => {
 		const {
 			noteListData ,
@@ -1124,7 +1147,7 @@ class NotesApp extends Component {
 		allNotebooks = allNotebooks.filter(notebook => notebook.id !== 'favorites-notes-id' && notebook.id !== 'searchResults-notes-id' && notebook.id !== 'recycle-notes-id');
 		
 		return <div className = "container">
-			
+			{/*侧边栏*/}
 			<NoteSidebar
 				noteBookArray = { this.state.noteBookData }
 				handleToggleNoteBook = { this.handleToggleNoteBook }
@@ -1144,6 +1167,7 @@ class NotesApp extends Component {
 				settingItems = { this.state.settingItems }
 				handleMoveSort = { this.handleMoveSort }
 			/>
+			{/*笔记操作区*/}
 			<NoteManagePanel
 				settingItems = { this.state.settingItems }
 				noteList = { this.state.noteListData }
@@ -1174,6 +1198,17 @@ class NotesApp extends Component {
 				handleDeleteDeadline={this.handleDeleteDeadline}
 			/>
 			
+			{/*<RichTextEditor*/}
+			{/*	showAllOptions = { true }	*/}
+			{/*	open = { this.state.isModalOpen }*/}
+			{/*	onCloseModal = { this.handleCloseModal }*/}
+			{/*	onCancel = { this.handleCloseModal }*/}
+			{/*	onSave = { this.handleSaveNote }*/}
+			{/*	initialTitle = { this.state.currentNoteTitle }*/}
+			{/*	initialContent = { this.state.currentContent }*/}
+			{/*	currentNotebook = { this.state.currentNotebook }*/}
+			{/*	settingItems = { this.state.settingItems }*/}
+			{/*	keyword = { this.state.searchKeyword }/>*/}
 			
 			{/*添加新笔记note*/ }
 			{ this.state.activeModal === 'addNewNote' && <AddNewNoteModal
