@@ -3380,37 +3380,122 @@ body {
 }
 
 .forestNote-app-site-page{
-	max-width: 60vw;
+	width: 100%;
 	margin: 0 auto;
+	height: 100%;
+	box-sizing: border-box;
+	overflow: auto;
 }
 
 .forestNote-app-site-page .topbar{
+	width: 100%;
+	height: 50px;
+	box-shadow: 0px -5px 15px 1px rgba(0,0,0,0.2);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	/*position: fixed;*/
+	top: 0;
+	position: absolute;
+	z-index: 10;
+	/*background: white;*/
+}
+
+.forestNote-app-site-page .topbar .top-nav-container .brand{
+	
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	
+}
+
+.forestNote-app-site-page .topbar .top-nav-container{
+	width: 60vw;
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	position: fixed;
-	top: 0;
-	z-index: 10;
-	background: white;
+	/*background: white;*/
+	user-select: none;
 }
 
-.forestNote-app-site-page .topbar .site-name{
+.forestNote-app-site-page .topbar .brand-name{
 	font-size: 24px;
 	font-weight: bold;
+	cursor: pointer;
 }
 
 .forestNote-app-site-page .topbar .nav-item a{
 	font-size: 18px;
 	text-decoration: none;
-	margin-right: 30px;
+	margin-right: 40px;
+	color: #374146;
 }
+.forestNote-app-site-page .slogan{
+	margin-top: 14vh;
+	padding-top: 30px;
+	font-size: 72px; /* 大字体 */
+	font-weight: bold;
+	color: #2e7d32; /* 深绿色，呼应“Forest”主题 */
+	color: #464947; /* 深绿色，呼应“Forest”主题 */
+	margin-bottom: 20px;
+	text-align: center;
+	white-space: nowrap;
+}
+
+.forestNote-app-site-page .slogan-explanation{
+	margin: 20px;
+	padding-top: 30px;
+	font-size: 30px; 
+	font-weight: bold;
+	color: #5b615c; 
+	margin-bottom: 20px;
+	text-align: center;
+}
+
+.forestNote-app-site-page .home-section-footer-start-button{
+	margin: 20px;
+	margin-top: 26vh;
+	font-size: 30px; 
+	font-weight: bold;
+	color: #f6f7f5;
+	text-align: center;
+	width: 100%;
+	display: flex;
+	justify-content: center;
+}
+
+.forestNote-app-site-page .get-started-button{
+	padding:20px 40px;
+	border: 2px solid green;
+	background: green;
+	/*background: linear-gradient(135deg, #a8e6cf 30%, #36af72 70%);*/
+	width: fit-content;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.forestNote-app-site-page .get-started-button:hover{
+	transform: translateY(-4px);
+	box-shadow:  8px 8px #464947;
+}
+
+.forestNote-app-site-page .brand-logo{
+	width: 36px;
+	height: 36px;
+	margin-right: 20px;
+	cursor: pointer;
+}
+
 
 html {
 	scroll-behavior: smooth;
 }
 .forestNote-app-site-page .section {
 	height: 80vh; /* 让每个部分占满屏幕 */
-	padding: 40px;
-	margin-top: 30px;
+	/*padding: 40px;*/
 	border-bottom: 2px solid #ccc;
+	margin: 0 auto;
+	max-width: 60vw;
+	margin-top: 90px;
 }

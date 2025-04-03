@@ -6,8 +6,10 @@
 	"scripts": {
 		"start": "cross-env NODE_ENV=development webpack serve --config tools/webpack/webpack.config.dev.js",
 		"build": "cross-env NODE_ENV=production webpack --config tools/webpack/webpack.config.prod.js",
+		"homepage": "https://ferry201.github.io/React-Notes/",
 		"serve": "cross-env NODE_ENV=production webpack --config tools/webpack/webpack.config.prod.js && cross-env serve dist/"
 	},
+
 	"devDependencies": {
 		"@babel/core": "^7.24.6",
 		"@babel/plugin-proposal-decorators": "^7.25.9",
