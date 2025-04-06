@@ -235,7 +235,7 @@ class NoteManagePanel extends Reaxlass {
 							onKeyDown = { this.handleKeyDown }
 							ref = { this.inputRenameRef }
 							className = "rename-notebook-title-input"
-							maxLength = "16"
+							maxLength = "20"
 						/> : <span className = "notebook-title">{
 							currentNotebook.id === 'searchResults-notes-id'?translations[settingItems.language]?.searchResults:
 							currentNotebook.id === 'recycle-notes-id'?translations[settingItems.language]?.trash:

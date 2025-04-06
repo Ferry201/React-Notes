@@ -197,7 +197,7 @@ const NoteBookModal = ({
 									onChange = { handleInputTitle }
 									placeholder = {currentLanguage.enter}
 									allowClear
-									maxLength = "16"
+									maxLength = "20"
 								/></div>
 						</div>) }
 						

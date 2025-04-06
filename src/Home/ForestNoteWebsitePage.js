@@ -15,6 +15,11 @@ import readingNoteImg from './img-collection/site-swiper-slide-readingNote-img.p
 import meetingNoteImg from './img-collection/site-swiper-slide-meetingNote-img.png'
 import memoImg from './img-collection/site-swiper-slide-memo-img.png'
 
+import categoryOneImg from './img-collection/site-feature-category-image-one.jpg'
+import categoryTwoImg from './img-collection/site-feature-category-image-two.png'
+import AddImageImg from './img-collection/site-feature-addImage-img.png'
+import richtextImg from './img-collection/site-feature-richtext-img.png'
+
 // 引入 Swiper 样式
 import 'swiper/css';
 import 'swiper/css/navigation';
@@ -98,7 +103,7 @@ const ForestNoteWebsitePage=()=>{
 	};
 	
 	return <div className = 'forestNote-app-site-page'>
-		
+		<div style={{height:"50px",width:'100%',position:"absolute",top:"0"}}></div>
 		<header className = "topbar">
 			<div className='top-nav-container'>
 				<div className='brand'>
@@ -157,12 +162,100 @@ const ForestNoteWebsitePage=()=>{
 			</div>
 			
 			<ImageSwiper/>
+			
+			{/*<div className='home-divide-container'>*/}
+			{/*	<div className="sub-slogan">*/}
+			{/*		/!*ForestNote is perfect for all note-takers.*!/*/}
+			{/*		ForestNote is designed for every note-taker out there!*/}
+			{/*	</div>*/}
+			{/*</div>*/}
 		</section>
 		
 		
-		
-		<section id = "features" className='section'> Features Content</section>
-		<section id = "help" className='section'> Q&A</section>
+		<section
+			id = "features"
+			className = "section features-content"
+		>
+			{/*分类管理*/}
+			<div className='feature-content-item category-information'>
+				<div className='feature-img-container'>
+						<img
+							src = { categoryOneImg }
+							alt = ""
+						/>
+						<img
+							className='img-two'
+							src = { categoryTwoImg }
+							alt = ""
+						/>
+				</div>
+				<div className='information-text'>
+					<p className = "features-content-item-title">
+						Organize with Ease
+					</p>
+					<div className = "feature-content-item-details">
+						Create categories to group your notebooks. Inside each category, manage multiple notebooks effortlessly — perfect for keeping work, study, reading, or personal notes neatly separated.
+					</div>
+				</div>
+			</div>
+			{/*支持图片功能*/}
+			<div className = "feature-content-item addImage-information">
+				<div className = "information-text">
+					<p className = "features-content-item-title">
+						Add Images, Keep Moments
+					</p>
+					<div className = "feature-content-item-details">
+						A single image can hold a hundred details. Insert photos to preserve work, travels, or fleeting inspiration with clarity and warmth.Add pictures to capture what's hard to put into words.
+					</div>
+				</div>
+				<div className = "feature-img-container">
+					<img
+						className='add-image-feature-display'
+						src = { AddImageImg }
+						alt = ""
+					/>
+					
+				</div>
+			</div>
+			{/*支持富文本编辑*/ }
+			<div className = "feature-content-item richtext-information">
+				<div className = "feature-img-container">
+					<img
+						src = { richtextImg }
+						alt = ""
+					/>
+				
+				</div>
+				
+				<div className='information-text'>
+					<p className = "features-content-item-title">
+						Write Freely with Rich Text
+					</p>
+					<div className = "feature-content-item-details">
+						Bold, italic, — your words, styled your way.
+						Add titles, highlight key ideas, and structure your thoughts with clean, numbered lists. Make every note as clear as your thinking.
+					
+					</div>
+				</div>
+			</div>
+			{/*20种主题以及,文字模式和封面模式切换,24封面*/ }
+			
+			{/*隐私安全*/}
+			<div className='feature-content-item'>
+				<div className = "feature-content-item-details">
+					<p className = "features-content-item-title">
+						We Respect Your Privacy
+					</p>
+					<div className = "feature-content-item-details">
+						No tracking. No selling.
+						<br />
+						At ForestNote, we highly value your privacy. Our only goal is to give you a safe place to write, store, and remember.
+					</div>
+				</div>
+				<PrivacyIcon/>
+			</div>
+		</section>
+		<section id = "help" className='section'>Help Q&A</section>
 		<section id = "about" className='section'> About</section>
 		<section id = "contact" className='section'> Contact Us Content</section>
 		
@@ -170,4 +263,28 @@ const ForestNoteWebsitePage=()=>{
 	</div>
 }
 
+
+const PrivacyIcon=()=> {
+	return <svg
+		t = "1743942688533"
+		className = "icon"
+		viewBox = "0 0 1024 1024"
+		version = "1.1"
+		xmlns = "http://www.w3.org/2000/svg"
+		p-id = "32844"
+		width = "328"
+		height = "328"
+	>
+		<path
+			d = "M160 0h704c88.32 0 160 71.68 160 160v704c0 88.32-71.68 160-160 160H160c-88.32 0-160-71.68-160-160V160c0-88.32 71.68-160 160-160z"
+			fill = "#00CC66"
+			p-id = "32845"
+		></path>
+		<path
+			d = "M654.784 205.024A364.32 364.32 0 0 0 512 176c-49.44 0-97.44 9.856-142.816 29.024L224 266.496v185.28c0 46.08 7.904 91.456 23.52 134.656v0.48a429.248 429.248 0 0 0 66.464 120l0.256 0.256 0.256 0.224a424.928 424.928 0 0 0 101.76 94.784A366.4 366.4 0 0 0 512 848a362.752 362.752 0 0 0 95.264-45.6 434.112 434.112 0 0 0 101.76-94.784l0.256-0.256 0.256-0.256a439.488 439.488 0 0 0 66.944-120.48v-0.224c15.84-43.424 23.744-88.8 23.744-134.88V266.496l-145.44-61.44z m22.08 235.712l-185.28 175.904-116.384-100.544a23.968 23.968 0 1 1 31.424-36.256l83.52 72.256 153.6-145.92a23.904 23.904 0 0 1 33.856 0.96 23.424 23.424 0 0 1-0.736 33.6z"
+			fill = "#FFFFFF"
+			p-id = "32846"
+		></path>
+	</svg>
+}
 export { ForestNoteWebsitePage }
