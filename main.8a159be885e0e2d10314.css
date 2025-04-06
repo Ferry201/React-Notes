@@ -3428,6 +3428,7 @@ body {
 
 .forestNote-app-site-page .topbar .nav-item a{
 	font-size: 18px;
+	padding: 16px;
 	text-decoration: none;
 	margin-right: 40px;
 	color: #374146;
@@ -3437,8 +3438,8 @@ body {
 	color: green;
 }
 .forestNote-app-site-page .slogan{
-	margin-top: 14vh;
-	padding-top: 30px;
+	padding-top: 12vh;
+	/*padding-top: 30px;*/
 	font-size: 72px; /* 大字体 */
 	font-weight: bold;
 	color: #2e7d32; /* 深绿色，呼应“Forest”主题 */
@@ -3461,7 +3462,7 @@ body {
 
 .forestNote-app-site-page .home-section-footer-start-button{
 	margin: 20px;
-	margin-top: 14vh;
+	margin-top: 12vh;
 	font-size: 30px; 
 	font-weight: bold;
 	color: #f6f7f5;
@@ -3472,9 +3473,9 @@ body {
 }
 
 .forestNote-app-site-page .get-started-button{
-	padding:20px 40px;
-	border: 2px solid green;
-	background: green;
+	padding:16px 28px;
+	border: 2px solid #3dc23d;
+	background: #3dc23d;
 	/*background: linear-gradient(135deg, #a8e6cf 30%, #36af72 70%);*/
 	width: fit-content;
 	border-radius: 14px;
@@ -3498,14 +3499,91 @@ body {
 html {
 	scroll-behavior: smooth;
 }
+
 .forestNote-app-site-page .section {
-	height: 80vh; 
+	/*height: 80vh; */
 	/*padding: 40px;*/
 	/*border-bottom: 2px solid #ccc;*/
 	margin: 0 auto;
 	max-width: 74vw;
 	box-sizing: border-box;
-	margin-top: 90px;
+	/*margin-top: 90px;*/
+}
+
+.forestNote-app-site-page .section.features-content {
+	
+}
+
+.forestNote-app-site-page .section.features-content .feature-content-item {
+	display: flex;
+	justify-content: space-between;
+	flex-flow: row nowrap;
+	align-items: center;
+	padding-top: 12vh;
+	padding-bottom: 12vh;
+}
+
+.forestNote-app-site-page .section.features-content .feature-content-item .feature-img-container {
+	/*height: 100px;*/
+	width: 50%;
+	position: relative;
+	margin-right: 100px;
+}
+
+.forestNote-app-site-page .section.features-content .feature-content-item .information-text {
+	width: 50%;
+	display: flex;
+	flex-flow: column wrap;
+	align-items: center;
+}
+
+.forestNote-app-site-page .section.features-content .feature-content-item.category-information .feature-img-container img{
+	object-fit: cover;
+	width: 60%;
+	box-shadow: 0px 13px 34px 0px rgba(0,0,0,0.12);
+	padding: 12px;
+	background: #fcfcfc;
+	border-radius: 18px;
+}
+
+
+.forestNote-app-site-page .section.features-content .feature-content-item.category-information .feature-img-container .img-two{
+	position: absolute;
+	transform: rotate(12deg);
+	width: 50%;
+	bottom: 40px;
+	left: 52%;
+}
+
+
+.forestNote-app-site-page .section.features-content .feature-content-item .features-content-item-title{
+	font-size: 44px;
+	font-weight: bold;
+	color: green
+}
+
+.forestNote-app-site-page .section.features-content .feature-content-item .feature-content-item-details{
+	font-size: 26px;
+	width: 70%;
+	/*font-weight: bold;*/
+}
+
+.forestNote-app-site-page .section.features-content .feature-content-item.addImage-information .feature-img-container img{
+	width: 100%;
+	object-fit: cover;
+	box-shadow: 0px 13px 34px 0px rgba(0,0,0,0.12);
+	padding: 12px;
+	background: #ffffff;
+	border-radius: 18px;
+}
+
+.forestNote-app-site-page .section.features-content .feature-content-item.richtext-information .feature-img-container img{
+	width: 100%;
+	object-fit: cover;
+	box-shadow: 0px 13px 34px 0px rgba(0,0,0,0.12);
+	padding: 12px;
+	background: #ffffff;
+	border-radius: 18px;
 }
 
 .forestNote-app-site-page .forestNote-swiperSlide-card {
@@ -3533,6 +3611,42 @@ html {
 	font-weight: bold;
 	margin: 16px;
 	user-select: none;
+}
+
+.forestNote-app-site-page .home-divide-container{
+	position: relative;
+}
+.forestNote-app-site-page .home-divide-container .sub-slogan{
+	text-shadow: 1px 1px 2px black;
+	border-radius: 10px;
+	font-weight: bold;
+	color: white;
+	background: #81e681;
+	font-size: 30px;
+	text-align: center;
+	padding: 20px;
+	z-index: 10;
+	position: relative;
+	width: fit-content;
+	margin: 0 auto;
+}
+.forestNote-app-site-page .home-divide-container::before {
+	position: absolute;
+	content: "";
+	background: #fff;
+	height: 50%;
+	width: 100%;
+	top: 0;
+}
+
+.forestNote-app-site-page .home-divide-container::after {
+	position: absolute;
+	content: "";
+	background: #f0ffe9;
+	height: 50%;
+	width: 100%;
+	bottom: 0;
+	z-index: -1;
 }
 
 body, html {
