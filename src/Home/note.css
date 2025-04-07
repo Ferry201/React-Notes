@@ -4,6 +4,39 @@
 	/*overflow: hidden;*/
 }
 
+@font-face {
+	font-family: 'Lora';
+	src: url('../fonts/lora-regular.woff2') format('woff2'),
+	url('../fonts/lora-regular.woff') format('woff');
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Lora';
+	src: url('../fonts/lora-bold.woff2') format('woff2'),
+	url('../fonts/lora-bold.woff') format('woff');
+	font-weight: 700;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: 'Lora';
+	src: url('../fonts/lora-italic.woff2') format('woff2'),
+	url('../fonts/lora-italic.woff') format('woff');
+	font-weight: 400;
+	font-style: italic;
+	font-display: swap;
+}
+@font-face {
+	font-family: 'Lora';
+	src: url('../fonts/lora-bolditalic.woff2') format('woff2'),
+	url('../fonts/lora-bolditalic.woff') format('woff');
+	font-weight: 700;
+	font-style: italic;
+	font-display: swap;
+}
 /*:root {*/
 /*	--primary-background-color: #fff;*/
 /*	--primary-text-color: #000;*/
@@ -3420,9 +3453,12 @@ body {
 }
 
 .forestNote-app-site-page .topbar .brand-name{
+	font-family: 'Lora',Georgia;
 	font-size: 24px;
 	font-weight: bold;
 	cursor: pointer;
+	text-decoration: none;
+	color: #374146;
 }
 
 .forestNote-app-site-page .topbar .nav-item a{
@@ -3434,15 +3470,17 @@ body {
 }
 .forestNote-app-site-page .topbar .nav-item a:hover{
 	
-	color: green;
+	color: #3dc23d;
 }
 .forestNote-app-site-page .slogan{
+	font-family: 'Lora',Georgia;
 	padding-top: 12vh;
+	/*font-style: italic;*/
 	/*padding-top: 30px;*/
 	font-size: 72px; /* 大字体 */
-	font-weight: bold;
-	color: #2e7d32; /* 深绿色，呼应“Forest”主题 */
-	color: #464947; /* 深绿色，呼应“Forest”主题 */
+	font-weight: 700;
+	/*color: #2e7d32; */
+	color: #464947; 
 	margin-bottom: 20px;
 	text-align: center;
 	white-space: nowrap;
@@ -3504,13 +3542,13 @@ html {
 	/*padding: 40px;*/
 	/*border-bottom: 2px solid #ccc;*/
 	margin: 0 auto;
-	max-width: 74vw;
+	/*max-width: 74vw;*/
 	box-sizing: border-box;
 	/*margin-top: 90px;*/
 }
 
-.forestNote-app-site-page .section.features-content {
-	
+.forestNote-app-site-page .section.features-content .feature-content-item:nth-child(even) .information-text {
+	margin-right: 80px;
 }
 
 .forestNote-app-site-page .section.features-content .feature-content-item {
@@ -3520,25 +3558,29 @@ html {
 	align-items: center;
 	padding-top: 12vh;
 	padding-bottom: 12vh;
+	padding-left: 20vw;
+	padding-right: 20vw;
+	background: #e1fbd5;
 }
 
 .forestNote-app-site-page .section.features-content .feature-content-item .feature-img-container {
 	/*height: 100px;*/
 	width: 50%;
 	position: relative;
-	margin-right: 100px;
+	/*margin-right: 100px;*/
 }
 
 .forestNote-app-site-page .section.features-content .feature-content-item .information-text {
 	width: 50%;
 	display: flex;
 	flex-flow: column wrap;
-	align-items: center;
+	/*align-items: center;*/
+	/*margin-right: 80px;*/
 }
 
 .forestNote-app-site-page .section.features-content .feature-content-item.category-information .feature-img-container img{
 	object-fit: cover;
-	width: 60%;
+	width: 40%;
 	box-shadow: 0px 13px 34px 0px rgba(0,0,0,0.12);
 	padding: 12px;
 	background: #fcfcfc;
@@ -3549,9 +3591,9 @@ html {
 .forestNote-app-site-page .section.features-content .feature-content-item.category-information .feature-img-container .img-two{
 	position: absolute;
 	transform: rotate(12deg);
-	width: 50%;
-	bottom: 40px;
-	left: 52%;
+	width: 32%;
+	bottom: 14px;
+	left: 36%;
 }
 
 
@@ -3563,12 +3605,12 @@ html {
 
 .forestNote-app-site-page .section.features-content .feature-content-item .feature-content-item-details{
 	font-size: 26px;
-	width: 70%;
+	width: 100%;
 	/*font-weight: bold;*/
 }
 
 .forestNote-app-site-page .section.features-content .feature-content-item.addImage-information .feature-img-container img{
-	width: 100%;
+	width: 70%;
 	object-fit: cover;
 	box-shadow: 0px 13px 34px 0px rgba(0,0,0,0.12);
 	padding: 12px;
@@ -3576,8 +3618,12 @@ html {
 	border-radius: 18px;
 }
 
+.forestNote-app-site-page .section.features-content .feature-content-item.addImage-information .information-text{
+	margin-right: 50px;
+}
+
 .forestNote-app-site-page .section.features-content .feature-content-item.richtext-information .feature-img-container img{
-	width: 100%;
+	width: 70%;
 	object-fit: cover;
 	box-shadow: 0px 13px 34px 0px rgba(0,0,0,0.12);
 	padding: 12px;
@@ -3586,6 +3632,7 @@ html {
 }
 
 .forestNote-app-site-page .forestNote-swiperSlide-card {
+	box-sizing: border-box;
 	height: 286px;
 	display: flex;
 	flex-flow: row wrap;
@@ -3616,16 +3663,18 @@ html {
 	position: relative;
 }
 .forestNote-app-site-page .home-divide-container .sub-slogan{
-	text-shadow: 1px 1px 2px black;
+	/*border: 1px solid #f6f667;*/
+	box-shadow: 2px 4px 24px #0000002e;
+	/* text-shadow: 1px 1px 2px black; */
 	border-radius: 10px;
 	font-weight: bold;
-	color: white;
-	background: #81e681;
+	color: #5c5b5b;
+	/*background: #fff8ba;*/
+	background: white;
 	font-size: 30px;
 	text-align: center;
 	padding: 20px;
-	z-index: 10;
-	position: relative;
+	z-index: 1;
 	width: fit-content;
 	margin: 0 auto;
 }
@@ -3636,6 +3685,7 @@ html {
 	height: 50%;
 	width: 100%;
 	top: 0;
+	z-index: -1;
 }
 
 .forestNote-app-site-page .home-divide-container::after {
@@ -3646,4 +3696,114 @@ html {
 	width: 100%;
 	bottom: 0;
 	z-index: -1;
+}
+
+.forestNote-app-site-page .target-group-nav {
+	display: flex;
+	flex-flow: row nowrap;
+	justify-content: space-between;
+	padding: 200px 20vw;
+	background: #f0ffe9;
+	gap: 100px;
+}
+
+.forestNote-app-site-page .target-group-nav .nav-right-bar .nav-image img{
+	object-fit: cover;
+	width: 480px;
+}
+
+
+.forestNote-app-site-page .target-group-nav .nav-left-bar .nav-title{
+	padding: 16px 16px 16px 0;
+	font-size: 24px;
+	display: flex;
+	align-items: center;
+	border-bottom: 2px solid #e6f6c8;
+	background: #f0ffe9;
+	position: relative;
+	user-select: none;
+	cursor: pointer;
+	transition: color 0.5s linear;
+}
+.forestNote-app-site-page .target-group-nav .nav-left-bar .nav-title svg{
+	margin-right: 10px;
+	padding-top: 4px;
+	box-sizing: border-box;
+	transition: transform 0.5s linear;
+}
+.forestNote-app-site-page .target-group-nav .nav-left-bar{
+	width: 48%;
+}
+
+
+.forestNote-app-site-page .target-group-nav .nav-left-bar .tab-content {
+	height: 0;
+	overflow: hidden;
+	transition:height 1s ease;
+	line-height: 1.4;
+	padding-top:10px ;
+	font-size: 16px;
+	box-sizing: border-box;
+}
+
+.forestNote-app-site-page .target-group-nav .nav-left-bar .tab-content.active-tab-content {
+	animation: heightPulse 6s linear;
+}
+@keyframes heightPulse {
+	0% {
+		height: 0; /* 初始高度为 0 */
+	}
+	10% {
+		height: 52px; /* 中间高度为 32px */
+	}
+	30% {
+		height: 52px; /* 中间高度为 32px */
+	}
+	50% {
+		height: 52px; /* 中间高度为 32px */
+	}
+	70% {
+		height: 52px; /* 中间高度为 32px */
+	}
+	90% {
+		height: 52px; /* 中间高度为 32px */
+	}
+	100% {
+		height: 0; /* 最终高度回到 0 */
+	}
+}
+
+@keyframes growWidth {
+	from {
+		width: 0%;
+	}
+	to {
+		width: 100%;
+	}
+}
+
+
+.forestNote-app-site-page .target-group-nav .nav-left-bar .nav-title.active-tab::before{
+	width: 100%;
+	content:'';
+	height: 3px;
+	background: #04d504;
+	position: absolute;
+	left: 0;
+	bottom: -2px;
+	animation: growWidth 6s linear;
+}
+
+.forestNote-app-site-page .target-group-nav .nav-left-bar .nav-title.active-tab {
+	color: #04d504;
+}
+
+.forestNote-app-site-page .target-group-nav .nav-left-bar .nav-title.active-tab svg path{
+	fill: #04d504;
+}
+
+.forestNote-app-site-page .target-group-nav .nav-left-bar .nav-title.active-tab svg{
+	transition: transform 0.3s linear;
+	transform: rotate(90deg);
+	padding-left: 4px;
 }
