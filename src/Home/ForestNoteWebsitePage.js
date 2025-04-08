@@ -350,16 +350,146 @@ const ForestNoteWebsitePage=()=>{
 				
 			</div>
 		</section>
-		<section id = "help" className='section'>Help Q&A</section>
-		<section id = "about" className='section'> About</section>
-		<section id = "contact" className='section'> Contact Us Content</section>
+		<section
+			id = "help"
+			className = "section faq-section"
+		>
+			<section className = "faq-section">
+				<h2 className = "faq-title">💬 Frequently Asked Questions</h2>
+				<div className = "faq-list">
+					<div className = "faq-card">
+						<h3>🌿 What is ForestNote?</h3>
+						<p>A clean and simple note-taking app designed for quick thoughts, deep reflections, and organized notebooks.</p>
+					</div>
+					<div className = "faq-card">
+						<h3>🌟Is ForestNote free to use?</h3>
+						<p>Yes, ForestNote is completely <strong>free</strong> to use. We believe in offering tools that are simple, private, and accessible—without ads or paywalls.</p>
+					</div>
+					<div className = "faq-card">
+						<h3>✅ Does ForestNote support to-do lists?</h3>
+						<p>Absolutely! You can create simple <strong>checklists</strong> within any note—perfect for daily tasks, grocery lists, or project planning.</p>
+					</div>
+					<div className = "faq-card">
+						<h3>📚 Can I create multiple notebooks?</h3>
+						<p>Yes! Notes can be grouped into notebooks, and notebooks can be organized by categories like <em>Work</em>, <em>Travel</em>, or <em>Study</em>.</p>
+					</div>
+					<div className = "faq-card">
+						<h3>🖋️ Does it support rich text?</h3>
+						<p>Absolutely. Add <strong>bold</strong>, <em>italic</em>, <u>underlines</u>, <code>highlight</code>, titles, lists, and more to your notes.</p>
+					</div>
+					<div className = "faq-card">
+						<h3>🌙 Is there a dark mode?</h3>
+						<p>Yup! Switch between light and dark mode anytime to protect your eyes and stay stylish.</p>
+					</div>
+					<div className = "faq-card">
+						<h3>🖼️ Can I insert images into my notes?</h3>
+						<p>Yes! You can embed images to better capture your work ideas, travel moments, or even recipes.</p>
+					</div>
+					
+					<div className = "faq-card">
+						<h3>🔒 How is my data protected?</h3>
+						<p>We never sell your data or show ads. Your notes stay private and secure—always.</p>
+					</div>
+					
+					
+					<div className = "faq-card highlight-card">
+						<h3>❓Still got questions?</h3>
+						<p>Feel free to <a href = "#contact">reach out</a>—we are here to help you grow your note-taking journey 🌿</p>
+					</div>
+				
+				</div>
+			</section>
+		
+		</section>
+		<section
+			id = "about"
+			className = "section about-section"
+		>
+			<h2 style = { { color : '#2e7d32' } }>About ForestNote</h2>
+			<div className = "about-content">
+				<div className = "about-text">
+					<p>
+						ForestNote is a free note-taking app designed to help you capture, organize, and grow your thoughts like a thriving forest. Whether you’re a student, professional, or creative, ForestNote makes it easy to write notes, plan tasks, and stay organized—all in one place.
+					</p>
+					<p>
+						We believe that every idea deserves a place to grow. Our mission is to empower users to build their own thought forests with ease, turning ideas into action.
+					</p>
+					<p>
+						I’m Mia, the creator of ForestNote. Inspired by the beauty of nature, I built this app to help people nurture their ideas and stay productive.
+					</p>
+					
+					<p>Why ForestNote?</p>
+					<p>Because we understand that the best ideas happen in the quiet moments. 
+					   
+					</p>
+					<p>Whether you’re an artist sketching your next project, a student jotting down lecture notes, or someone simply trying to stay organized—ForestNote is here to make it easy.</p>
+					
+					<div className = "cta-buttons">
+						<button
+							className = "start-button"
+							onClick={handleGetStarted}
+						>
+							Start for Free
+						</button>
+					
+					</div>
+				</div>
+			
+			</div>
+		</section>
 		
 		
+		<section
+			id = "contact"
+			className = "section contact-section"
+		>
+			<h2 style = { { color : '#2e7d32' } }>Contact Us</h2>
+			<div className = "contact-content">
+				<div className = "contact-text">
+					<p>
+						Have questions, feedback, or need support? We’d love to hear from you! Reach out to us through the following channels.
+					</p>
+					<div className = "contact-links">
+						<p>
+							<strong>GitHub:</strong>
+							{ ' ' }
+							<a
+								href = "https://ferry201.github.io/React-Notes/"
+								target = "_blank"
+								rel = "noopener noreferrer"
+								className = "contact-link"
+							>
+								https://ferry201.github.io/React-Notes/
+							</a>
+						</p>
+						<p>
+							<strong>Email:</strong>
+							{ ' ' }
+							<a
+								href = "liqunzhang3@gmail.com"
+								className = "contact-link"
+							>
+								liqunzhang3@gmail.com
+							</a>
+						</p>
+					</div>
+				</div>
+				<div className = "contact-decoration">
+					<img
+						src={forestNoteSiteIcon}
+						alt = "Tree Decoration"
+						className = "tree-decoration"
+					/>
+				</div>
+			</div>
+		</section>
+	
+	
 	</div>
 }
 
 
-const PrivacyIcon=()=> {
+const PrivacyIcon = () => {
 	return <svg
 		t = "1743942688533"
 		className = "icon"
@@ -380,10 +510,10 @@ const PrivacyIcon=()=> {
 			fill = "#FFFFFF"
 			p-id = "32846"
 		></path>
-	</svg>
-}
+	</svg>;
+};
 
-const CollapseTabIcon=()=> {
+const CollapseTabIcon = () => {
 	return <svg
 		t = "1744019847375"
 		className = "icon"
