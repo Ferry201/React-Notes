@@ -27,11 +27,11 @@ import { RecoverDeletedNoteConfirm } from './recoverDeletedNoteConfirm';
 const defaultNotebook = {
 	title : 'My Notebook' ,
 	cover : coverDefault ,
-	emoji : '📘' ,
+	emoji : '📗' ,
 	id : 'default-notebook-id' ,
 	createdTime : dayjs().valueOf() ,
 	showMode : 'list-mode' ,//当前笔记显示模式
-	currentTheme : 'blue-theme' ,//列表主题,类名
+	currentTheme : 'green-theme' ,//列表主题,类名
 	belongSortID : 'default-sort-id' ,
 	isTodoMode : false,
 };
@@ -231,7 +231,7 @@ class NotesApp extends Component {
 			const defaultSetting = {
 				themeMode : 'note-light-mode' ,
 				autoSwitch : false ,
-				notebookMode : 'cover-notebook' ,
+				notebookMode : 'plain-notebook' ,
 				language : 'cn' ,
 				listModeGap : 'comfy' ,
 				cardModeColumn : 'cardThreeColumn' ,

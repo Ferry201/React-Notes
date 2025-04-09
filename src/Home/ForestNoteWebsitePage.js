@@ -1,7 +1,6 @@
 import React , { useState , useRef , useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import forestNoteSiteIcon from'./img-collection/forestNote-site-leaf-icon.png'
-import forestNoteSiteNotebookIcon from'./img-collection/forestNote-site-book-img.png'
 import './note.css';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, } from 'swiper/modules';
@@ -174,6 +173,7 @@ const ForestNoteWebsitePage=()=>{
 					/>
 					<a className = "brand-name" href = "#home">ForestNote</a>
 				</div>
+				
 				<nav>
 					
 					<span className = "nav-item">
@@ -405,6 +405,7 @@ const ForestNoteWebsitePage=()=>{
 			id = "about"
 			className = "section about-section"
 		>
+			
 			<h2 style = { { color : '#2e7d32' } }>About ForestNote</h2>
 			<div className = "about-content">
 				<div className = "about-text">
@@ -419,15 +420,15 @@ const ForestNoteWebsitePage=()=>{
 					</p>
 					
 					<p>Why ForestNote?</p>
-					<p>Because we understand that the best ideas happen in the quiet moments. 
-					   
+					<p>Because we understand that the best ideas happen in the quiet moments.
+					
 					</p>
 					<p>Whether you’re an artist sketching your next project, a student jotting down lecture notes, or someone simply trying to stay organized—ForestNote is here to make it easy.</p>
 					
 					<div className = "cta-buttons">
 						<button
 							className = "start-button"
-							onClick={handleGetStarted}
+							onClick = { handleGetStarted }
 						>
 							Start for Free
 						</button>
@@ -446,7 +447,7 @@ const ForestNoteWebsitePage=()=>{
 			<h2 style = { { color : '#2e7d32' } }>Contact Us</h2>
 			<div className = "contact-content">
 				<div className = "contact-text">
-					<p>
+				<p>
 						Have questions, feedback, or need support? We’d love to hear from you! Reach out to us through the following channels.
 					</p>
 					<div className = "contact-links">
@@ -474,13 +475,7 @@ const ForestNoteWebsitePage=()=>{
 						</p>
 					</div>
 				</div>
-				<div className = "contact-decoration">
-					<img
-						src={forestNoteSiteIcon}
-						alt = "Tree Decoration"
-						className = "tree-decoration"
-					/>
-				</div>
+				
 			</div>
 		</section>
 	
