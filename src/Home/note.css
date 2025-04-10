@@ -3465,13 +3465,19 @@ body {
 	font-size: 18px;
 	padding: 16px;
 	text-decoration: none;
-	margin-right: 40px;
 	color: #374146;
+	white-space: nowrap;
+	
 }
 .forestNote-app-site-page .topbar .nav-item a:hover{
-	
 	color: #3dc23d;
 }
+
+.forestNote-app-site-page .topbar .nav{
+	display: flex;
+	justify-content: space-between;
+}
+
 .forestNote-app-site-page .slogan{
 	font-family: 'Lora',Georgia;
 	padding-top: 12vh;

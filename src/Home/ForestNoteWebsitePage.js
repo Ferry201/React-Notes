@@ -1,29 +1,29 @@
 import React , { useState , useRef , useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import forestNoteSiteIcon from'./img-collection/forestNote-site-leaf-icon.png'
+import { useNavigate  , Link } from 'react-router-dom';
+import forestNoteSiteIcon from './img-collection/forestNote-site-leaf-icon.png';
 import './note.css';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, } from 'swiper/modules';
+import { Swiper , SwiperSlide } from 'swiper/react';
+import { Navigation , Pagination  } from 'swiper/modules';
 
 
-import todolistImg from './img-collection/site-swiper-slide-todolist-img.png'
-import journalImg from './img-collection/site-swiper-slide-journal-img.png'
-import thoughtImg from './img-collection/site-swiper-slide-thought-img.png'
-import classNoteImg from './img-collection/site-swiper-slide-classNote-img.png'
-import readingNoteImg from './img-collection/site-swiper-slide-readingNote-img.png'
-import meetingNoteImg from './img-collection/site-swiper-slide-meetingNote-img.png'
-import memoImg from './img-collection/site-swiper-slide-memo-img.png'
+import todolistImg from './img-collection/site-swiper-slide-todolist-img.png';
+import journalImg from './img-collection/site-swiper-slide-journal-img.png';
+import thoughtImg from './img-collection/site-swiper-slide-thought-img.png';
+import classNoteImg from './img-collection/site-swiper-slide-classNote-img.png';
+import readingNoteImg from './img-collection/site-swiper-slide-readingNote-img.png';
+import meetingNoteImg from './img-collection/site-swiper-slide-meetingNote-img.png';
+import memoImg from './img-collection/site-swiper-slide-memo-img.png';
 
-import categoryOneImg from './img-collection/site-feature-category-image-one.jpg'
-import categoryTwoImg from './img-collection/site-feature-category-image-two.png'
-import AddImageImg from './img-collection/site-feature-addImage-img.png'
-import richtextImg from './img-collection/site-feature-richtext-img.png'
+import categoryOneImg from './img-collection/site-feature-category-image-one.jpg';
+import categoryTwoImg from './img-collection/site-feature-category-image-two.png';
+import AddImageImg from './img-collection/site-feature-addImage-img.png';
+import richtextImg from './img-collection/site-feature-richtext-img.png';
 
-import studentsImg from './img-collection/tab-content-students-img.png'
-import professionalImg from './img-collection/tab-content-professionals-image.png'
-import researchersImg from './img-collection/tab-content-researchers-image.png'
-import personalJournalImg from './img-collection/tab-content-personalJournal-image.png'
-import creativesImg from './img-collection/tab-content-creatives-image.png'
+import studentsImg from './img-collection/tab-content-students-img.png';
+import professionalImg from './img-collection/tab-content-professionals-image.png';
+import researchersImg from './img-collection/tab-content-researchers-image.png';
+import personalJournalImg from './img-collection/tab-content-personalJournal-image.png';
+import creativesImg from './img-collection/tab-content-creatives-image.png';
 
 // 引入 Swiper 样式
 import 'swiper/css';
@@ -33,109 +33,123 @@ import 'swiper/css/pagination';
 
 const targetGroupTabs = [
 	{
-		name: 'Students',
-		content: 'Organize class notes, assignments, and projects effortlessly.track your academic progress with ForestNote.',
-		src:studentsImg
-	},
+		name : 'Students' ,
+		content : 'Organize class notes, assignments, and projects effortlessly.track your academic progress with ForestNote.' ,
+		src : studentsImg,
+	} ,
 	{
-		name: 'Professionals',
-		content: 'Manage tasks, meeting notes, and project plans. Stay productive and organized .',
-		src:professionalImg
-	},
+		name : 'Professionals' ,
+		content : 'Manage tasks, meeting notes, and project plans. Stay productive and organized .' ,
+		src : professionalImg,
+	} ,
 	{
-		name: 'Personal Journalers',
-		content: 'Capture your daily thoughts, memories, and personal growth, helping your thoughts flourish like a forest.',
-		src:personalJournalImg
-	},
+		name : 'Personal Journalers' ,
+		content : 'Capture your daily thoughts, memories, and personal growth, helping your thoughts flourish like a forest.' ,
+		src : personalJournalImg,
+	} ,
 	{
-		name: 'Researchers',
-		content: 'Keep your research notes, references, and ideas organized.Helps you stay efficient during your research journey.',
-		src:researchersImg
-	},
+		name : 'Researchers' ,
+		content : 'Keep your research notes, references, and ideas organized.Helps you stay efficient during your research journey.' ,
+		src : researchersImg,
+	} ,
 	{
-		name: 'Creatives',
-		content: 'Jot down ideas, sketches, and creative projects on the go. Let ForestNote nurture your creativity and watch your ideas grow.',
-		src:creativesImg
-	},
+		name : 'Creatives' ,
+		content : 'Jot down ideas, sketches, and creative projects on the go. Let ForestNote nurture your creativity and watch your ideas grow.' ,
+		src : creativesImg,
+	} ,
 ];
 
 const ImageSwiper = () => {
 	
-	const swipleSlideContent=[,
+	const swipleSlideContent = [
+		,
 		{
-			title:'Thoughts',
-			src:thoughtImg
-		},
+			title : 'Thoughts' ,
+			src : thoughtImg,
+		} ,
 		{
-			title:'Journal',
-			src:journalImg
-		},
+			title : 'Journal' ,
+			src : journalImg,
+		} ,
 		{
-			title:'Task List',
-			src:todolistImg
-		},
+			title : 'Task List' ,
+			src : todolistImg,
+		} ,
 		{
-			title:'Reading Notes',
-			src:readingNoteImg
-		},
+			title : 'Reading Notes' ,
+			src : readingNoteImg,
+		} ,
 		{
-			title:'Class Notes',
-			src:classNoteImg
-		},
+			title : 'Class Notes' ,
+			src : classNoteImg,
+		} ,
 		{
-			title:'Meeting Notes',
-			src:meetingNoteImg
-		},
+			title : 'Meeting Notes' ,
+			src : meetingNoteImg,
+		} ,
 		{
-			title:'Memo',
-			src:memoImg
-		},
-	]
+			title : 'Memo' ,
+			src : memoImg,
+		} ,
+	];
 	
 	return (
-		<div style={{ padding: '20px', maxWidth: '1200px', margin: '60px auto' }}>
+		<div
+			style = { {
+				padding : '20px' ,
+				maxWidth : '1200px' ,
+				margin : '60px auto',
+			} }
+		>
 			<Swiper
-				modules={[Navigation, Pagination]}
-				slidesPerView={5}
-				slidesPerGroup={1}
-				loop={true}
+				modules = { [Navigation , Pagination] }
+				slidesPerView = { 5 }
+				slidesPerGroup = { 1 }
+				loop = { true }
 				navigation
 				// pagination={{ clickable: true }}
 				// lazy={true}
-				spaceBetween={20}
+				spaceBetween = { 20 }
 				
-				style={{ padding: '20px', backgroundColor: 'transparent', borderRadius: '10px' }}
+				style = { {
+					padding : '20px' ,
+					backgroundColor : 'transparent' ,
+					borderRadius : '10px',
+				} }
 			>
-				{swipleSlideContent.map((content, index) => (
-					<SwiperSlide key={index} className='forestNote-swiperSlide-card'>
-						<p className='feature-card-title'>{content.title}</p>
+				{ swipleSlideContent.map((content , index) => (
+					<SwiperSlide
+						key = { index }
+						className = "forestNote-swiperSlide-card"
+					>
+						<p className = "feature-card-title">{ content.title }</p>
 						<img
-							src={content.src}
-							className="swiper-lazy"
-							alt={`Slide ${index + 1}`}
-							style={{
-								width: '100%',
-								height: '186px',
-								objectFit: 'cover',
-							}}
+							src = { content.src }
+							className = "swiper-lazy"
+							alt = { `Slide ${ index + 1 }` }
+							style = { {
+								width : '100%' ,
+								height : '186px' ,
+								objectFit : 'cover' ,
+							} }
 						/>
-						<div className="swiper-lazy-preloader"></div>
+						<div className = "swiper-lazy-preloader"></div>
 					</SwiperSlide>
-				))}
+				)) }
 			</Swiper>
 		</div>
 	);
 };
 
 
-const ForestNoteWebsitePage=()=>{
-	const navigate = useNavigate(); 
+const ForestNoteWebsitePage = () => {
+	const navigate = useNavigate();
 	
 	const handleGetStarted = () => {
 		navigate('/ForestNote'); // 点击按钮时跳转
 	};
 	
-	const[activeTab,setActiveTab]=useState('Students');
+	const [activeTab , setActiveTab] = useState('Students');
 	
 	const intervalRef = useRef(null); // 用于清除旧定时器
 	
@@ -146,50 +160,107 @@ const ForestNoteWebsitePage=()=>{
 				const nextIndex = (currentIndex + 1) % targetGroupTabs.length;
 				return targetGroupTabs[nextIndex].name;
 			});
-		}, 6000);
+		} , 6000);
 	};
 	
 	useEffect(() => {
 		startInterval(); // 初始化开启
 		
 		return () => clearInterval(intervalRef.current); // 卸载时清除
-	}, []);
+	} , []);
 	
 	const handleClickTab = (title) => {
-	  setActiveTab(title)
+		setActiveTab(title);
 		clearInterval(intervalRef.current); // 清除旧的
 		startInterval(); // 重新开始计时
-	}
+	};
 	
-	return <div className = 'forestNote-app-site-page'>
-		<div style={{height:"50px",width:'100%',position:"absolute",top:"0"}}></div>
+	return <div className = "forestNote-app-site-page">
+		<div
+			style = { {
+				height : "50px" ,
+				width : '100%' ,
+				position : "absolute" ,
+				top : "0",
+			} }
+		></div>
 		<header className = "topbar">
-			<div className='top-nav-container'>
-				<div className='brand'>
+			<div className = "top-nav-container">
+				<div className = "brand">
 					<img
 						className = "brand-logo"
 						src = { forestNoteSiteIcon }
-						alt = ""
 					/>
-					<a className = "brand-name" href = "#home">ForestNote</a>
+					<a
+						className = "brand-name"
+						href = "#home"
+						onClick = { (event) => {
+							//防止默认的a标签的跳转行为
+							event.preventDefault();
+							anchorIntoView("#home");
+						} }
+					>ForestNote
+					</a>
 				</div>
 				
 				<nav>
 					
 					<span className = "nav-item">
-						<a href = "#home">Home</a>
+						<a
+							href = "#home"
+							onClick = { (event) => {
+								//防止默认的a标签的跳转行为
+								event.preventDefault();
+								anchorIntoView("#home");
+							} }
+						>
+							Home
+						</a>
 					</span>
 					<span className = "nav-item">
-						<a href = "#features">Features</a>
+						<a
+							href = "#features"
+							onClick = { (event) => {
+								//防止默认的a标签的跳转行为
+								event.preventDefault();
+								anchorIntoView("#features");
+							} }
+						>Features
+						</a>
+						{/*<Link to='#features'>Features333</Link>*/ }
 					</span>
 					<span className = "nav-item">
-						<a href = "#help">Help</a>
+						<a
+							href = "#help"
+							onClick = { (event) => {
+								//防止默认的a标签的跳转行为
+								event.preventDefault();
+								anchorIntoView("#help");
+							} }
+						>Help
+						</a>
 					</span>
 					<span className = "nav-item">
-						<a href = "#about">About</a>
+						<a
+							href = "#about"
+							onClick = { (event) => {
+								//防止默认的a标签的跳转行为
+								event.preventDefault();
+								anchorIntoView("#about");
+							} }
+						>About
+						</a>
 					</span>
 					<span className = "nav-item">
-						<a href = "#contact">Contact Us</a>
+						<a
+							href = "#contact"
+							onClick = { (event) => {
+								//防止默认的a标签的跳转行为
+								event.preventDefault();
+								anchorIntoView("#contact");
+							} }
+						>Contact Us
+						</a>
 					</span>
 				</nav>
 			</div>
@@ -225,12 +296,12 @@ const ForestNoteWebsitePage=()=>{
 			
 			<div className = "home-divide-container">
 				<div className = "sub-slogan">
-					{/*ForestNote is designed for every note-taker out there!*/}
-					{/*Designed just for every note-taker, helping you stay perfectly organized*/}
+					{/*ForestNote is designed for every note-taker out there!*/ }
+					{/*Designed just for every note-taker, helping you stay perfectly organized*/ }
 					ForestNote is perfect for all note-takers.
 				
 				</div>
-				
+			
 			</div>
 			
 			<div className = "target-group-nav">
@@ -246,21 +317,21 @@ const ForestNoteWebsitePage=()=>{
 								<span><CollapseTabIcon /></span>
 								<span>{ tab.name }</span>
 							</div>
-							 <div className={`tab-content ${activeTab === tab.name ?'active-tab-content':''}`}>{ tab.content }</div> 
-							
-						</div>
+							<div className = { `tab-content ${ activeTab === tab.name ? 'active-tab-content' : '' }` }>{ tab.content }</div>
+						
+						</div>;
 					}) }
 				</div>
 				<div className = "nav-right-bar">
-						
-						<div
-							className = "nav-image"
-						>
-							 <img
-								src = { targetGroupTabs.find(tab=>tab.name===activeTab).src }
-								alt = ""
-							/> 
-						</div>
+					
+					<div
+						className = "nav-image"
+					>
+						<img
+							src = { targetGroupTabs.find(tab => tab.name === activeTab).src }
+							alt = ""
+						/>
+					</div>
 				</div>
 			</div>
 		</section>
@@ -273,26 +344,26 @@ const ForestNoteWebsitePage=()=>{
 			{/*分类管理*/ }
 			<div className = "feature-content-item category-information">
 				<div className = "feature-img-container">
-				<img
-							src = { categoryOneImg }
-							alt = ""
-						/>
-						<img
-							className='img-two'
-							src = { categoryTwoImg }
-							alt = ""
-						/>
+					<img
+						src = { categoryOneImg }
+						alt = ""
+					/>
+					<img
+						className = "img-two"
+						src = { categoryTwoImg }
+						alt = ""
+					/>
 				</div>
-				<div className='information-text'>
+				<div className = "information-text">
 					<p className = "features-content-item-title">
 						Organize with Ease
 					</p>
 					<div className = "feature-content-item-details">
-						Create categories to group your notebooks. <br/>Inside each category, manage multiple notebooks effortlessly — perfect for keeping work, study, reading, or personal notes neatly separated.
+						Create categories to group your notebooks. <br />Inside each category, manage multiple notebooks effortlessly — perfect for keeping work, study, reading, or personal notes neatly separated.
 					</div>
 				</div>
 			</div>
-			{/*支持图片功能*/}
+			{/*支持图片功能*/ }
 			<div className = "feature-content-item addImage-information">
 				<div className = "information-text">
 					<p className = "features-content-item-title">
@@ -304,11 +375,11 @@ const ForestNoteWebsitePage=()=>{
 				</div>
 				<div className = "feature-img-container">
 					<img
-						className='add-image-feature-display'
+						className = "add-image-feature-display"
 						src = { AddImageImg }
 						alt = ""
 					/>
-					
+				
 				</div>
 			</div>
 			{/*支持富文本编辑*/ }
@@ -321,7 +392,7 @@ const ForestNoteWebsitePage=()=>{
 				
 				</div>
 				
-				<div className='information-text'>
+				<div className = "information-text">
 					<p className = "features-content-item-title">
 						Write Freely with Rich Text
 					</p>
@@ -334,9 +405,9 @@ const ForestNoteWebsitePage=()=>{
 			</div>
 			{/*20种主题以及,文字模式和封面模式切换,24封面*/ }
 			
-			{/*隐私安全*/}
-			<div className='feature-content-item'>
-				<div className='information-text'>
+			{/*隐私安全*/ }
+			<div className = "feature-content-item">
+				<div className = "information-text">
 					<p className = "features-content-item-title">
 						We Respect Your Privacy
 					</p>
@@ -346,8 +417,8 @@ const ForestNoteWebsitePage=()=>{
 						At ForestNote, we highly value your privacy. Our only goal is to give you a safe place to write, store, and remember.
 					</div>
 				</div>
-				<div className = "feature-img-container"><PrivacyIcon/></div>
-				
+				<div className = "feature-img-container"><PrivacyIcon /></div>
+			
 			</div>
 		</section>
 		<section
@@ -447,7 +518,7 @@ const ForestNoteWebsitePage=()=>{
 			<h2 style = { { color : '#2e7d32' } }>Contact Us</h2>
 			<div className = "contact-content">
 				<div className = "contact-text">
-				<p>
+					<p>
 						Have questions, feedback, or need support? We’d love to hear from you! Reach out to us through the following channels.
 					</p>
 					<div className = "contact-links">
@@ -475,14 +546,26 @@ const ForestNoteWebsitePage=()=>{
 						</p>
 					</div>
 				</div>
-				
+			
 			</div>
 		</section>
 	
 	
-	</div>
-}
+	</div>;
+};
 
+/**
+ *
+ * @param id {string}
+ */
+const anchorIntoView = (id) => {
+	const el = document.getElementById(id.replaceAll(/[#\/\\]/g , ''));
+	if ( el ) {
+		el.scrollIntoView();
+	} else {
+		console.warn('没有找到锚点,检查:n2h395n128');
+	}
+};
 
 const PrivacyIcon = () => {
 	return <svg
@@ -523,6 +606,6 @@ const CollapseTabIcon = () => {
 			d = "M746.56 475.904l-396.992-396.992c-19.904-19.904-52.224-19.904-72.192 0-19.904 19.904-19.904 52.224 0 72.192L638.336 512 277.44 872.896c-19.904 19.904-19.904 52.224 0 72.19200001 19.904 19.904 52.224 19.904 72.192-1e-8l396.992-396.99200001C766.528 528.128 766.528 495.872 746.56 475.904z"
 			p-id = "95932"
 		></path>
-	</svg>
-}
-export { ForestNoteWebsitePage }
+	</svg>;
+};
+export { ForestNoteWebsitePage };
