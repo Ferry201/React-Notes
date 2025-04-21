@@ -306,12 +306,12 @@ const RenderContent = ({
 				key = { id }
 				className = { `${ itemClassName } ${ isChecked ? 'checked-note' : '' }` }
 				onClick = { (e) =>{
-					   if(checkedNoteIdArray.length===0){
-						   changeNote(noteTitle , noteContent , id)
-					   }else{
-						   e.stopPropagation();
-						   handleChechedNote(id);
-					   }
+					if(checkedNoteIdArray.length===0){
+						changeNote(noteTitle , noteContent , id)
+					}else{
+						e.stopPropagation();
+						handleChechedNote(id);
+					}
 				} }
 			>
 				{/*<CompleteIcon/>*/}
@@ -347,12 +347,8 @@ const RenderContent = ({
 						  /> :
 						  convertFromRaw(noteContent).getPlainText() }
 					</span>
-					{/*<FormatTime*/}
-					{/*	id = { id }*/}
-					{/*	notes = { notes }*/}
-					{/*/>*/}
-					{/*note details : 时间 ,所属书籍 ,置顶 ,收藏 ,移动 , 删除 */ }
-					<div className = "note-details" style={{display:'none'}}>
+					{/*note details : 时间 ,所属书籍,置顶 ,收藏 ,移动 , 删除 */ }
+					<div className = "note-details">
 						{ showFavoritesOrSearchResults && <div
 							className = "show-note-book-text"
 						>{ notebook }</div> }
@@ -377,6 +373,14 @@ const RenderContent = ({
 									} }
 									currentLanguage = { currentLanguage }
 								/> }
+								
+								{/*收藏*/ }
+								{/*<FavoriteIcon*/ }
+								{/*	isFavorited = { isFavorited }*/ }
+								{/*	handleFavoriteNote = { () => {*/ }
+								{/*		onFavoriteNote(id);*/ }
+								{/*	} }*/ }
+								{/*/>*/ }
 								
 								{/*截止日期选择*/ }
 								{ currentNotebook.isTodoMode && <DeadlinePopConfirm
@@ -421,6 +425,14 @@ const RenderContent = ({
 							</div>
 						}
 						
+						{/*{ !currentNotebook.isTodoMode&&<span className = "time-and-book">*/ }
+						{/*	<FormatTime*/ }
+						{/*		id = { id }*/ }
+						{/*		notes = { notes }*/ }
+						{/*	/>*/ }
+						{/*</span> }*/ }
+						
+						{/*deadline*/ }
 						{ deadlineDate && currentNotebook.isTodoMode && <DeadlineText deadlineDate = { deadlineDate } /> }
 					</div>
 				</div>
@@ -726,35 +738,35 @@ const RenderContent = ({
 				>{currentLanguage.emptyRecycleButton}
 				</span>
 			</div> }
-		{/*{ !showFavoritesOrSearchResults && <div className = "add-new-note-section">*/}
-		{/*	{ isExpandNoteEditSection ? <div*/}
-		{/*		ref = { wrapperRef }*/}
-		{/*		className = { `note-info-input-section` }*/}
-		{/*	>*/}
-		{/*		<div className = "input-and-edit">*/}
-		{/*			*/}
-		{/*			<RichTextEditor*/}
-		{/*				onSave = { onSave }*/}
-		{/*				onCancel = { onCancel }*/}
-		{/*				showAllOptions = { false }*/}
-		{/*				openModal = { openModal }*/}
-		{/*				cancelExpandNoteEditSection = { handleCancelEdit }*/}
-		{/*				changeNoteEdit = { changeNote }*/}
-		{/*				currentNotebook={currentNotebook}*/}
-		{/*				settingItems = { settingItems }*/}
-		{/*			/>*/}
-		{/*		</div>*/}
-		{/*		<div className = "edit-item-cancel-button">*/}
-		{/*			<CancelEditButton handleCancel = { handleCancelEdit } tooltipText={currentLanguage?.cancelEdit}/>*/}
-		{/*		</div>*/}
-		{/*	</div> : <input*/}
-		{/*		  ref = { inputAddNoteRef }*/}
-		{/*		  onClick = { handleExpandNoteEditSection }*/}
-		{/*		  type = "text"*/}
-		{/*		  className = { `add-note-input` }*/}
-		{/*		  placeholder = {currentLanguage?.inputNote}*/}
-		{/*	  /> }*/}
-		{/*</div> }*/}
+		{ !showFavoritesOrSearchResults && <div className = "add-new-note-section">
+			{ isExpandNoteEditSection ? <div
+				ref = { wrapperRef }
+				className = { `note-info-input-section` }
+			>
+				<div className = "input-and-edit">
+					
+					<RichTextEditor
+						onSave = { onSave }
+						onCancel = { onCancel }
+						showAllOptions = { false }
+						openModal = { openModal }
+						cancelExpandNoteEditSection = { handleCancelEdit }
+						changeNoteEdit = { changeNote }
+						currentNotebook={currentNotebook}
+						settingItems = { settingItems }
+					/>
+				</div>
+				<div className = "edit-item-cancel-button">
+					<CancelEditButton handleCancel = { handleCancelEdit } tooltipText={currentLanguage?.cancelEdit}/>
+				</div>
+			</div> : <input
+				  ref = { inputAddNoteRef }
+				  onClick = { handleExpandNoteEditSection }
+				  type = "text"
+				  className = { `add-note-input` }
+				  placeholder = {currentLanguage?.inputNote}
+			  /> }
+		</div> }
 		
 		{ contents.length === 0 ? (<div className = { `empty-container` }>
 			<EmptyIcon />
@@ -867,7 +879,7 @@ const DeadlinePopConfirm = ({
 				/>
 			</div>
 		</Popconfirm>
-		
+	
 	</>;
 };
 
@@ -1039,7 +1051,7 @@ const DeleteConfirm=({onDeleteNote,currentLanguage})=>{
 			okText = {currentLanguage.done}
 			okType = "danger"
 			cancelText = {currentLanguage.cancel}
-			onConfirm = {onDeleteNote} 
+			onConfirm = {onDeleteNote}
 		>
 			<div>
 				<DeleteIcon	currentLanguage={currentLanguage}/>
@@ -1452,7 +1464,6 @@ const CheckNoteIcon = ({
 		>
 			
 			<div
-				style={{display:'none'}}
 				className = "check-note-button"
 				onClick = { onClick }
 			>

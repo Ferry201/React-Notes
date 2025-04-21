@@ -31,6 +31,7 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
 
+
 const targetGroupTabs = [
 	{
 		name : 'Students' ,
@@ -193,7 +194,7 @@ const ForestNoteWebsitePage = () => {
 					/>
 					<a
 						className = "brand-name"
-						href = "#home"
+						href = "javascript:void 0"
 						onClick = { (event) => {
 							//防止默认的a标签的跳转行为
 							event.preventDefault();
@@ -207,7 +208,7 @@ const ForestNoteWebsitePage = () => {
 					
 					<span className = "nav-item">
 						<a
-							href = "#home"
+							href = "javascript:void 0"
 							onClick = { (event) => {
 								//防止默认的a标签的跳转行为
 								event.preventDefault();
@@ -219,7 +220,7 @@ const ForestNoteWebsitePage = () => {
 					</span>
 					<span className = "nav-item">
 						<a
-							href = "#features"
+							href = "javascript:void 0"
 							onClick = { (event) => {
 								//防止默认的a标签的跳转行为
 								event.preventDefault();
@@ -231,7 +232,7 @@ const ForestNoteWebsitePage = () => {
 					</span>
 					<span className = "nav-item">
 						<a
-							href = "#help"
+							href = "javascript:void 0"
 							onClick = { (event) => {
 								//防止默认的a标签的跳转行为
 								event.preventDefault();
@@ -242,7 +243,7 @@ const ForestNoteWebsitePage = () => {
 					</span>
 					<span className = "nav-item">
 						<a
-							href = "#about"
+							href = "javascript:void 0"
 							onClick = { (event) => {
 								//防止默认的a标签的跳转行为
 								event.preventDefault();
@@ -253,7 +254,7 @@ const ForestNoteWebsitePage = () => {
 					</span>
 					<span className = "nav-item">
 						<a
-							href = "#contact"
+							href = "javascript:void 0"
 							onClick = { (event) => {
 								//防止默认的a标签的跳转行为
 								event.preventDefault();
@@ -265,6 +266,10 @@ const ForestNoteWebsitePage = () => {
 				</nav>
 			</div>
 		</header>
+		
+		
+		
+		<h3>Three-Column Layout</h3>
 		
 		<section
 			id = "home"

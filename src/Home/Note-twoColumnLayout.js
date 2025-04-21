@@ -1150,88 +1150,71 @@ class NotesApp extends Component {
 		
 		return <div className = "container">
 			{/*侧边栏*/}
-			
+			<NoteSidebar
+				noteBookArray = { this.state.noteBookData }
+				handleToggleNoteBook = { this.handleToggleNoteBook }
+				selectedNotebookId = { this.state.selectedNotebookId }
+				openModal = { this.handleOpenModal }
+				clickFavorites = { this.handleClickFavorites }
+				currentNotebook = { this.state.currentNotebook }
+				setSearchKeyword = { this.setSearchKeyword }
+				clickRecycleBin = { this.handleClickRecycleBin }
+				sorts = { this.state.allSorts }
+				handleClickDeleteSort = { this.handleClickDeleteSort }
+				handleClickAddNotebook = { this.handleClickAddNotebook }
+				handleClickRenameSort = { this.handleClickRenameSort }
+				renameSort = { this.handlerenameSort }
+				currentSortId = { this.state.currentSortId }
+				handleClickCollapse = { this.handleClickCollapse }
+				settingItems = { this.state.settingItems }
+				handleMoveSort = { this.handleMoveSort }
+			/>
 			{/*笔记操作区*/}
-			
-			{/*richtext area*/}
-			<SplitterLayout
-				leftBar = { <NoteSidebar
-					noteBookArray = { this.state.noteBookData }
-					handleToggleNoteBook = { this.handleToggleNoteBook }
-					selectedNotebookId = { this.state.selectedNotebookId }
-					openModal = { this.handleOpenModal }
-					clickFavorites = { this.handleClickFavorites }
-					currentNotebook = { this.state.currentNotebook }
-					setSearchKeyword = { this.setSearchKeyword }
-					clickRecycleBin = { this.handleClickRecycleBin }
-					sorts = { this.state.allSorts }
-					handleClickDeleteSort = { this.handleClickDeleteSort }
-					handleClickAddNotebook = { this.handleClickAddNotebook }
-					handleClickRenameSort = { this.handleClickRenameSort }
-					renameSort = { this.handlerenameSort }
-					currentSortId = { this.state.currentSortId }
-					handleClickCollapse = { this.handleClickCollapse }
-					settingItems = { this.state.settingItems }
-					handleMoveSort = { this.handleMoveSort }
-				/> }
-				centerBar = { <NoteManagePanel
-					settingItems = { this.state.settingItems }
-					noteList = { this.state.noteListData }
-					notebooks = { this.state.noteBookData }
-					onChangeNote = { this.handleChangeNote }
-					onDeleteNote = { this.handleDeleteNote }
-					handleDeleteCheckedNote = { this.handleDeleteCheckedNote }
-					onToggleSidebar = { this.toggleSidebar }
-					sidebarIsVisible = { this.state.isSidebarVisible }
-					currentNotebook = { this.state.currentNotebook }
-					updateNotebookInfo = { this.updateNotebookInfo }
-					openModal = { this.handleOpenModal }
-					notesAmount = { this.state.notesAmount }
-					pinNote = { this.handlePinNote }
-					completedTodo = { this.handleCompletedTodo }
-					handlePinCheckedNote = { this.handlePinCheckedNote }
-					favoriteNote = { this.handleFavoriteNote }
-					isShowFavorites = { this.state.showFavoritedNotes }
-					onSave = { this.handleSaveNote }
-					onCancel = { this.handleCloseModal }
-					searchKeyword = { this.state.searchKeyword }
-					isShowSearchResults = { this.state.showSearchResults }
-					handleMoveNote = { this.handleMoveNote }
-					handleMoveCheckedNote = { this.handleMoveCheckedNote }
-					isShowRecycleNotes = { this.state.showRecycleNotes }
-					sorts = { this.state.allSorts }
-					handleSetDeadline = { this.handleSetDeadline }
-					handleDeleteDeadline = { this.handleDeleteDeadline }
-				/> }
-				rightBar = { <RichTextEditor
-					showAllOptions = { true }
-					open = { this.state.isModalOpen }
-					onCloseModal = { this.handleCloseModal }
-					onCancel = { this.handleCloseModal }
-					onSave = { this.handleSaveNote }
-					initialTitle = { this.state.currentNoteTitle }
-					initialContent = { this.state.currentContent }
-					currentNotebook = { this.state.currentNotebook }
-					settingItems = { this.state.settingItems }
-					keyword = { this.state.searchKeyword }
-				/> }
+			<NoteManagePanel
+				settingItems = { this.state.settingItems }
+				noteList = { this.state.noteListData }
+				notebooks = { this.state.noteBookData }
+				onChangeNote = { this.handleChangeNote }
+				onDeleteNote = { this.handleDeleteNote }
+				handleDeleteCheckedNote = { this.handleDeleteCheckedNote }
+				onToggleSidebar = { this.toggleSidebar }
+				sidebarIsVisible = { this.state.isSidebarVisible }
+				currentNotebook = { this.state.currentNotebook }
+				updateNotebookInfo = { this.updateNotebookInfo }
+				openModal = { this.handleOpenModal }
+				notesAmount = { this.state.notesAmount }
+				pinNote = { this.handlePinNote }
+				completedTodo={this.handleCompletedTodo}
+				handlePinCheckedNote = { this.handlePinCheckedNote }
+				favoriteNote = { this.handleFavoriteNote }
+				isShowFavorites = { this.state.showFavoritedNotes }
+				onSave = { this.handleSaveNote }
+				onCancel = { this.handleCloseModal }
+				searchKeyword = { this.state.searchKeyword }
+				isShowSearchResults = { this.state.showSearchResults }
+				handleMoveNote = { this.handleMoveNote }
+				handleMoveCheckedNote = { this.handleMoveCheckedNote }
+				isShowRecycleNotes = { this.state.showRecycleNotes }
+				sorts = { this.state.allSorts }
+				handleSetDeadline={this.handleSetDeadline}
+				handleDeleteDeadline={this.handleDeleteDeadline}
 			/>
 			
 			
 			
 			{/*添加新笔记note*/ }
-			{/*{ this.state.activeModal === 'addNewNote' && <AddNewNoteModal*/}
-			{/*	open = { this.state.isModalOpen }*/}
-			{/*	onCloseModal = { this.handleCloseModal }*/}
-			{/*	onCancel = { this.handleCloseModal }*/}
-			{/*	onSave = { this.handleSaveNote }*/}
-			{/*	initialTitle = { this.state.currentNoteTitle }*/}
-			{/*	initialContent = { this.state.currentContent }*/}
-			{/*	currentNotebook = { this.state.currentNotebook }*/}
-			{/*	settingItems = { this.state.settingItems }*/}
-			{/*	keyword = { this.state.searchKeyword }*/}
+			{ this.state.activeModal === 'addNewNote' && <AddNewNoteModal
+				open = { this.state.isModalOpen }
+				onCloseModal = { this.handleCloseModal }
+				onCancel = { this.handleCloseModal }
+				onSave = { this.handleSaveNote }
+				initialTitle = { this.state.currentNoteTitle }
+				initialContent = { this.state.currentContent }
+				currentNotebook = { this.state.currentNotebook }
+				settingItems = { this.state.settingItems }
+				keyword = { this.state.searchKeyword }
 			
-			{/*/> }*/}
+			/> }
 			
 			
 			{/*添加笔记本 Modal*/ }

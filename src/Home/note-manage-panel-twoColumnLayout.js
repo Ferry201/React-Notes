@@ -169,10 +169,11 @@ class NoteManagePanel extends Reaxlass {
 		const {
 			toggleSiderCollapse ,
 			siderCollapsed ,
+			resizing ,
 		} = reaxel_sider();
 		let editInFavoritesOrSearchPageOrRecycle = currentNotebook.id === 'favorites-notes-id' || currentNotebook.id === 'searchResults-notes-id' || currentNotebook.id === 'recycle-notes-id';
 		
-		return <div className = { `note-container ${ settingItems.themeMode === 'note-dark-mode' && 'night-theme'}` }>
+		return <div className = { `note-container${ resizing ? ' resizing' : '' } ${ settingItems.themeMode === 'note-dark-mode' ? 'night-theme' : currentNotebook.currentTheme }` }>
 			{/*顶部工具栏*/ }
 			<div className = { `main-section-header` }>
 				{/*笔记本名称 & dropdown*/ }
@@ -184,17 +185,47 @@ class NoteManagePanel extends Reaxlass {
 						currentLanguage={translations[settingItems?.language]}
 					/> }
 					
+					{/*<div*/ }
+					{/*	onMouseEnter = { this.handleMouseEnter }*/ }
+					{/*	onMouseLeave = { this.handleMouseLeave }*/ }
+					{/*>*/ }
+					{/*	{ !siderCollapsed ? (*/ }
+					{/*		<LeftExpandIcon*/ }
+					{/*			onclick = { () => {*/ }
+					{/*				this.setState({*/ }
+					{/*					isHover : false ,*/ }
+					{/*					isClicked : true ,*/ }
+					{/*				} , () => {*/ }
+					{/*					//点击后，鼠标事件会被 isClicked 屏蔽，避免触发 isHover: true*/ }
+					{/*					toggleSiderCollapse();*/ }
+					{/*					// 延迟重置 isClicked，防止鼠标事件干扰*/ }
+					{/*					setTimeout(() => {*/ }
+					{/*						this.setState({ isClicked : false });*/ }
+					{/*					} , 0);*/ }
+					{/*				});*/ }
+					{/*			} }*/ }
+					{/*		/>) : (this.state.isHover ? (*/ }
+					{/*		<RightExpandIcon*/ }
+					{/*			onclick = { () => {*/ }
+					{/*				toggleSiderCollapse();*/ }
+					{/*			} }*/ }
+					{/*		/>) : (*/ }
+					{/*			       <DefaultExpandIcon />*/ }
+					{/*		       )) }*/ }
+					{/*</div>*/ }
+					{/*当前笔记本*/ }
+					
 					<div className = "emoji-and-title">
 						{ settingItems.notebookMode === 'plain-notebook' &&  <>{ !editInFavoritesOrSearchPageOrRecycle ?
-						      <Popover
-							      trigger = "hover"
-							      arrow = { false }
-							      content = { <EmojisPanel updateEmoji = { updateNotebookInfo } /> }
-							      overlayClassName = { `emoji-popover ${ settingItems.themeMode }` }
-							      placement = "bottomLeft"
-						      >
-							      <span className = "notebook-emoji">{ currentNotebook.emoji }</span>
-						      </Popover> : <span className = "notebook-emoji">{ currentNotebook.emoji }</span>
+						                                                         <Popover
+							                                                         trigger = "hover"
+							                                                         arrow = { false }
+							                                                         content = { <EmojisPanel updateEmoji = { updateNotebookInfo } /> }
+							                                                         overlayClassName = { `emoji-popover ${ settingItems.themeMode }` }
+							                                                         placement = "bottomLeft"
+						                                                         >
+							                                                         <span className = "notebook-emoji">{ currentNotebook.emoji }</span>
+						                                                         </Popover> : <span className = "notebook-emoji">{ currentNotebook.emoji }</span>
 						}</> }
 						
 						{ isRenaming ? <input
@@ -210,8 +241,8 @@ class NoteManagePanel extends Reaxlass {
 							currentNotebook.id === 'recycle-notes-id'?translations[settingItems.language]?.trash:
 							this.state.title
 						}
-						{/*({ notesAmount })*/}
-						</span> }
+							{/*({ notesAmount })*/}
+						  </span> }
 					</div>
 					
 					
@@ -264,18 +295,18 @@ class NoteManagePanel extends Reaxlass {
 						  currentLanguage = { translations[settingItems.language] }
 					  /> }
 					
-					<AddNewNoteIcon currentLanguage = { translations[settingItems.language] }/>
-					{/*<ModeSelector*/}
-					{/*	onSwitchNoteMode = { updateNotebookInfo }*/}
-					{/*	showMode = { currentNotebook.showMode }*/}
-					{/*	settingItems = { settingItems }*/}
-					{/*/>*/}
 					
-					{/*<ThemeColorSelector*/}
-					{/*	selectTheme = { updateNotebookInfo }*/}
-					{/*	theme = { currentNotebook.currentTheme }*/}
-					{/*	settingItems = { settingItems }*/}
-					{/*/>*/}
+					<ModeSelector
+						onSwitchNoteMode = { updateNotebookInfo }
+						showMode = { currentNotebook.showMode }
+						settingItems = { settingItems }
+					/>
+					
+					<ThemeColorSelector
+						selectTheme = { updateNotebookInfo }
+						theme = { currentNotebook.currentTheme }
+						settingItems = { settingItems }
+					/>
 				</div> }
 			</div>
 			
@@ -369,7 +400,7 @@ const ThemeColorPanel = ({
 						selectTheme('currentTheme' , item);
 					} }
 				>
-					
+				
 				</div>;
 			}) }
 		</div>
@@ -635,54 +666,16 @@ class DownOutLinedIcon extends Component {
 	}
 }
 
-const AddNewNoteIcon=({currentLanguage})=> {
-	return <>
-		<Tooltip
-			title = { currentLanguage?.addNewNote }
-			placement = "bottom"
-			arrow = { false }
-			color = "#a6aaad"
-		>
-			<div
-				className = "todo-icon-box notelist-header-icon"
-				
-			>
-				<svg
-					t = "1745232517901"
-					className = "icon"
-					viewBox = "0 0 1024 1024"
-					version = "1.1"
-					xmlns = "http://www.w3.org/2000/svg"
-					p-id = "15788"
-					width = "24"
-					height = "24"
-				>
-					<path
-						d = "M85.43 960c-14.17 0-21.4-7.12-21.4-21.33v-7.12l49.74-256.11 494.48-494.41c13.75-13.75 36.03-13.74 49.78 0.01l177.82 177.87c13.74 13.75 13.74 36.03-0.01 49.77L341.36 903.1 85.43 960z m547.71-704.27L177.83 711.01l-35.57 163.61 163.68-35.57 455.32-455.28-128.12-128.04z m88.91-181.4c13.74-13.76 36.05-13.77 49.8-0.01l177.82 177.87c13.74 13.74 13.74 36.01 0.01 49.76-13.74 13.76-36.05 13.77-49.8 0.01L722.06 124.08c-13.74-13.74-13.74-36.01-0.01-49.75z"
-						p-id = "15789"
-					></path>
-				</svg>
-			</div>
-		</Tooltip></>;
-}
 
-const ToDoIcon = ({
-	onClick ,
-	currentLanguage ,
-}) => {
+const ToDoIcon = ({onClick,currentLanguage}) => {
 	return <>
 		<Tooltip
-			title = { currentLanguage?.switchToToDoModeText }
+			title = {currentLanguage?.switchToToDoModeText}
 			placement = "bottom"
 			arrow = { false }
-			color = "#a6aaad"
+			color = '#a6aaad'
 		>
-			<div
-				className = "todo-icon-box notelist-header-icon"
-				onClick = { () => {
-					onClick('isTodoMode' , true);
-				} }
-			>
+			<div className='todo-icon-box notelist-header-icon' onClick={()=>{onClick('isTodoMode',true)}}>
 				<svg
 					t = "1740405666283"
 					className = "icon"

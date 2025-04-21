@@ -1,3 +1,4 @@
+import { ResizableBox } from 'react-resizable';
 import 'react-resizable/css/styles.css';
 import React , {
 	Component ,
@@ -118,7 +119,7 @@ export class NoteSidebar extends Component {
 			currentLanguage,
 		}) => {
 			return <div
-				className = "notebook-operation-bar menu-item"
+				className = "notebook-operation-bar"
 				onClick = { () => {
 					this.props.handleClickCollapse(id);
 				} }
@@ -129,17 +130,17 @@ export class NoteSidebar extends Component {
 						<SidebarNotebookIcon />
 					</span>
 					{ this.state.isRenameSort && this.props.currentSortId === id ? <input
-						defaultValue = { title }
-						onBlur = { this.handleBlurRenameInput }
-						onKeyDown = { this.handleKeyDown }
-						ref = { this.renameInputRef }
-						maxLength='16'
-						className = "rename-sort-input"                    
-					/> :
-						  <span>{ title }
-							  {/*({ notebooksInSort.length })*/}
-						  </span>
-					   }
+						                                                             defaultValue = { title }
+						                                                             onBlur = { this.handleBlurRenameInput }
+						                                                             onKeyDown = { this.handleKeyDown }
+						                                                             ref = { this.renameInputRef }
+						                                                             maxLength='16'
+						                                                             className = "rename-sort-input"
+					                                                             /> :
+					  <span>{ title }
+						  {/*({ notebooksInSort.length })*/}
+					  </span>
+					}
 				</div>
 				
 				
@@ -183,10 +184,41 @@ export class NoteSidebar extends Component {
 		return <div
 			style = { {
 				height : '100%' , // width : siderCollapsed ? '0px' : 'unset' ,
-				
+				display : 'inline-block' , // position:"relative",
+				transform : `translateX(-${ (siderCollapsed ? this.state.siderbarWidth + 100 : 0) }px)` ,
+				transition : resizing ? 'unset' : 'all ease .3s 0s' ,
 			} }
 		>
-			
+			<ResizableBox
+				width = { siderCollapsed ? 0 : this.state.siderbarWidth }
+				axis = "x" // 只允许水平拖动
+				minConstraints = { [
+					356 ,
+					0 ,
+				] } // 设置最小宽度
+				maxConstraints = { [
+					566 ,
+					0 ,
+				] } // 设置最大宽度
+				resizeHandles = { ['e'] } // 右边缘 east
+				onResizeStart = { (e , data) => {
+					toggleResizing(true);
+					
+				} }
+				onResizeStop = { (e , data) => {
+					toggleResizing(false);
+					this.handleSetWidth(data.size.width);
+				} }
+				style = { {
+					overflow : 'auto' ,
+					position : 'relative' ,
+					height : '100%' ,
+				} }
+				className = { `resizable-box ${ siderCollapsed ? 'collpased' : '' } ${ resizing ? 'resizing' : '' } ${this.props.settingItems.themeMode} ${this.props.currentNotebook.currentTheme}`}
+				handle = { <div className = "resize-handle-container">
+					<div className = "custom-resize-handle" />
+				</div> }
+			>
 				
 				<div className = "sidebar-container">
 					{/*sidebar主要功能菜单列表*/ }
@@ -247,8 +279,7 @@ export class NoteSidebar extends Component {
 							</Tooltip>
 						</span>
 					</div>
-					
-					{/*<Divider style = { { borderColor : '#e4e4e4' } } />*/}
+					<Divider style = { { borderColor : '#e4e4e4' } } />
 					
 					<div
 						onClick = { () => {
@@ -373,6 +404,7 @@ export class NoteSidebar extends Component {
 				
 				
 				</div>
+			</ResizableBox>
 		</div>;
 	}
 }
@@ -425,8 +457,8 @@ const VisualNotebookList = ({
 						} }
 					/>
 					{ isSelected && <span className='current-editing-icon'><EditingIcon/></span> }
-						{/*<span className = { `notebook-title ${ isSelected ? 'selected-notebook-title' : '' } ` }>{ book.title }</span>*/ }
-						<span className = "notebook-title">{ book.title }</span>
+					{/*<span className = { `notebook-title ${ isSelected ? 'selected-notebook-title' : '' } ` }>{ book.title }</span>*/ }
+					<span className = "notebook-title">{ book.title }</span>
 				</div>);
 			}) }
 		</div>
@@ -452,7 +484,7 @@ const SidebarMenu = ({
 			label : <div>{currentLanguage.trash}</div> ,
 			key : 'dropdown-recycle-bin' ,
 		} ,
-		
+	
 	];
 	return (<Dropdown
 		destroyTooltipOnHide = { true }
@@ -546,26 +578,26 @@ const ListSortOptions = ({
 			selectable : true ,
 			// defaultSelectedKeys : [showMode] ,
 			onClick : ({ key }) => {
-			 if(key==='delete-sort'){
-				 handleClickDeleteSort(id)
-			 }
-			 
-			 if(key==='rename-sort'){
-				 handleClickRename(id)
-			 }
-			 
-			 if(key==='collapse-sort'){
-				 handleClickCollapse(id)
-			 }
-			 
-			 if(key==='move-up-direction'){
-				 handleMoveSort(index,-1)
-			 }
-			 
-			 if(key==='move-down-direction'){
-				 handleMoveSort(index,1)
-			 }
-				 
+				if(key==='delete-sort'){
+					handleClickDeleteSort(id)
+				}
+				
+				if(key==='rename-sort'){
+					handleClickRename(id)
+				}
+				
+				if(key==='collapse-sort'){
+					handleClickCollapse(id)
+				}
+				
+				if(key==='move-up-direction'){
+					handleMoveSort(index,-1)
+				}
+				
+				if(key==='move-down-direction'){
+					handleMoveSort(index,1)
+				}
+				
 			} ,
 		} }
 		trigger = { ['click'] }
@@ -590,7 +622,7 @@ const ListSortOptions = ({
 const ArchiveIcon=()=> {
 	return <svg
 		t = "1743415882197"
-		className = "sidebar-menu-item-icon"
+		className = "icon"
 		viewBox = "0 0 1024 1024"
 		version = "1.1"
 		xmlns = "http://www.w3.org/2000/svg"
@@ -608,7 +640,7 @@ const ArchiveIcon=()=> {
 const RecycleIcon=()=> {
 	return <svg
 		t = "1743491655150"
-		className = "sidebar-menu-item-icon"
+		className = "icon"
 		viewBox = "0 0 1024 1024"
 		version = "1.1"
 		xmlns = "http://www.w3.org/2000/svg"
@@ -811,7 +843,7 @@ class RecycleBinIcon extends Component {
 	render () {
 		return <svg
 			t = "1734470387204"
-			className = "sidebar-menu-item-icon"
+			className = "icon"
 			viewBox = "0 0 1024 1024"
 			version = "1.1"
 			xmlns = "http://www.w3.org/2000/svg"
@@ -835,7 +867,7 @@ class SearchIcon extends Component {
 	render () {
 		return <svg
 			t = "1743503560733"
-			className = "sidebar-menu-item-icon"
+			className = "icon"
 			viewBox = "0 0 1024 1024"
 			version = "1.1"
 			xmlns = "http://www.w3.org/2000/svg"
@@ -881,7 +913,7 @@ const SidebarTagIcon=()=> {
 const SidebarNotebookIcon=()=> {
 	return <svg
 		t = "1743511883425"
-		className = "sidebar-menu-item-icon"
+		className = "icon"
 		viewBox = "0 0 1024 1024"
 		version = "1.1"
 		xmlns = "http://www.w3.org/2000/svg"

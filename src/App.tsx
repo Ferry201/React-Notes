@@ -11,7 +11,9 @@ export const App = () => {
 	if( location.pathname === '/lottie' ) {
 		return <TestLottie />;
 	}
-	
+	if( location.pathname === '/notes' ) {
+		console.log('notes');
+	}
 	return <>
 		<Router>
 			<div>

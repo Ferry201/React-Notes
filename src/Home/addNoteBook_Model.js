@@ -75,7 +75,7 @@ const NoteBookModal = ({
 				onOk({
 					title : titlePreview ,
 					cover : coverDefault ,
-					emoji : emoji || '📘' ,
+					emoji : emoji || '📗' ,
 				});
 				handleCancel();
 			}
@@ -89,7 +89,7 @@ const NoteBookModal = ({
 				onOk({
 					title : titlePreview ,
 					cover : imagePreview ,
-					emoji : '📘' ,
+					emoji : '📗' ,
 				});
 				handleCancel();//关闭Modal并重置状态
 			}

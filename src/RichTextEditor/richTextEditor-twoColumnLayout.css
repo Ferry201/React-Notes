@@ -11,14 +11,14 @@ body, html {
 	height: 4px;
 }
 .public-DraftEditor-content::-webkit-scrollbar-thumb {
-	background: lightgray;
+	background: #9c9a9a;
 	border-radius: 4px;
 	width: 2px;
 	height: 4px;
 }
 
 .public-DraftEditor-content::-webkit-scrollbar-thumb:hover {
-	background: darkgray;
+	background: #555;
 }
 .editor-container{
 	background: transparent;
@@ -30,74 +30,32 @@ body, html {
 	width: 6px;
 	height: 4px;
 }
-.custom-block {
-	margin: 0;
-	padding: 0;
-	line-height: 1.5; /* 与容器一致 */
-	font-size: 16px; /* 与容器一致 */
-}
 .rich-text-input{
 	white-space: pre-wrap;
 	word-wrap: break-word;
 	word-break: break-word;
 }
-.rich-text-input {
-	
-	font-size: 16px; /* 统一字体大小 */
-	line-height: 1.5; /* 统一行高，推荐 1.5 倍字体大小 */
-	padding: 8px; /* 统一内边距 */
-	min-height: 100%; /* 确保足够高度 */
-	border: 1px solid #ccc;
-}
-
-.rich-text-input .public-DraftStyleDefault-block {
-	margin: 0; /* 移除块默认外边距 */
-	padding: 0; /* 移除块内边距 */
-	line-height: 1.5; /* 与容器保持一致 */
-}
-
-/* 调整 placeholder 样式 */
-.rich-text-input .public-DraftEditorPlaceholder-root {
-	color: #999;
-	font-size: 16px; /* 与内容一致 */
-	line-height: 1.5; /* 与内容一致 */
-	position: absolute; /* 确保定位不偏移 */
-	top: 8px; /* 与 padding 对齐 */
-	left: 8px;
-	pointer-events: none; /* 防止点击干扰 */
-}
-
-/* 确保光标和文本对齐 */
-.rich-text-input .public-DraftEditor-content {
-	line-height: 1.5;
-	font-size: 16px;
-}
 .rich-text-input::placeholder{
 	color: #b3b7bf;
 }
 .editor-container::-webkit-scrollbar-thumb {
-	background: lightgray;
+	background: #9c9a9a;
 	border-radius: 4px;
 	width: 2px;
 	height: 4px;
-}
-.editor-container::-webkit-scrollbar-thumb:hover {
-	background: darkgray;
-}
-.editor-container::-webkit-scrollbar-track {
-	background: transparent;
 }
 .rich-text-options{
 	padding-right: 40px;
 	display: flex;
 	flex-flow: row nowrap;
 	justify-content: space-around;
-	height: 50px;
+	height: 40px;
 	width: 100%;
 	align-items: center;
+	border-top-left-radius: 6px;
+	border-top-right-radius: 6px;
 	box-sizing: border-box;
-	/*border-bottom: 1px solid #d0d0d0;*/
-	/*border-top: 1px solid #d0d0d0;*/
+	border-bottom: 1px solid #d0d0d0;
 }
 .rich-text-options button{
 	border-radius: 100%;
@@ -180,10 +138,10 @@ body, html {
 	border-radius: 100%;
 	margin-right: 10px;
 	margin-bottom: 10px;
-	width: 30px; 
-	height: 30px; 
+	width: 30px;
+	height: 30px;
 	text-align: center;
-	box-sizing: border-box; 
+	box-sizing: border-box;
 	cursor: pointer;
 	transition: transform .2s ease;
 	border: 1px solid;
@@ -329,64 +287,3 @@ body, html {
 .font-size-popover.ant-popover .ant-popover-inner{
 	padding: 4px;
 }
-.note-editor-container{
-	/*background: var(--primary-background-color);*/
-}
-.editor-container {
-	font-size: 16px;
-	line-height: 1.5;
-	/*margin: 10px 0;*/
-	min-height: 100%;
-	background-color: transparent; /* 默认背景色 */
-	position: relative;
-}
-
-/* 米黄纸张背景 */
-.editor-container.beige-paper {
-	background:url("../Home/img-collection/beigePaperBackground.png") no-repeat center top;
-	background-size: 100% 100%;
-}
-/* 小波点背景 */
-.editor-container.polka-dots {
-	background: radial-gradient(
-		circle,
-		#ccc 1px,
-		transparent 1px
-	);
-	background-size: 16px 16px;
-}
-
-/* 横线背景 */
-.editor-container.horizontal-lines {
-	background: linear-gradient(
-		to bottom,
-		transparent 23px,
-		#ddd 23px,
-		#ddd 24px,
-		transparent 24px
-	);
-	background-size: 100% 24px;
-}
-
-/* 格子背景 */
-.editor-container.grid-lines {
-	background: linear-gradient(
-		to bottom,
-		transparent 19px,
-		#ddd 19px,
-		#ddd 20px,
-		transparent 20px
-	),
-	linear-gradient(
-		to right,
-		transparent 19px,
-		#ddd 19px,
-		#ddd 20px,
-		transparent 20px
-	);
-	background-size: 24px 24px;
-}
-
-
-
-

@@ -153,7 +153,9 @@ export const translations = {
 		sidebarArchivedText:'Archived',
 		sidebarNotebookText:'All Notebooks',
 		archiveThisBook:'Archive this Notebook',
-		setting:'Setting'
+		setting:'Setting',
+		editorBackgroundStyle:'Background Style',
+		addNewNote:'Add New Note',
 	} ,
 	
 	cn : {
@@ -309,6 +311,8 @@ export const translations = {
 		sidebarArchivedText:'归档',
 		sidebarNotebookText:'所有笔记本',
 		archiveThisBook:'归档此笔记本',
-		setting:'设置'
+		setting:'设置',
+		editorBackgroundStyle:'背景样式',
+		addNewNote:'添加新笔记',
 	} ,
 };

@@ -1,0 +1,33 @@
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+.container {
+	display: flex;
+	height: 100vh;
+	width: 100%;
+}
+
+.panel {
+	flex: 1;
+	min-width: 300px; /* 最小宽度 */
+	
+}
+
+.panel:nth-child(5) {
+	background: #fff;
+	padding-right: 10px;
+}
+.splitter {
+	width: 2px;
+	background: #f2f3f7;
+	cursor: col-resize;
+	user-select: none;
+	flex-shrink: 0; /* 防止分隔线被压缩 */
+}
+
+.splitter:hover {
+	background: #dad9d9;
+}

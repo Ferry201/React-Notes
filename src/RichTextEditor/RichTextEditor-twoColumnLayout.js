@@ -155,39 +155,39 @@ const AddNewNoteModal = ({
 	}
 	return <div>
 		
-			<Modal
-				open = { open }
-				onOk = { handleOk }
-				// centered={true}
-				style = { { top : 100 } }
-				onCancel = { handleCancel }
-				cancelText = "取消"
-				okText = "创建"
-				width = { `74vh` }
-				height = { 300 }
-				destroyOnClose = { true }
-				keyboard = { true }
-				wrapClassName = {`edit-note-modal ${ settingItems.themeMode==='note-dark-mode'?'night-theme':currentNotebook.currentTheme }`}
-				closable = { false }
-				// maskClosable={false}
-				footer={null}
-				
-			>
-				<RichTextEditor
-					onSave = { onSave }
-					initialTitle={initialTitle}
-					initialContent = { initialContent }
-					onCancel = { onCancel }
-					showAllOptions = { true }
-					richtextInModal={true}
-					currentNotebook={currentNotebook}
-					keyword={keyword}
-					settingItems={settingItems}
-					getContent={getContent}
-					getTitle={getTitle}
-				/>
-			</Modal>
+		<Modal
+			open = { open }
+			onOk = { handleOk }
+			// centered={true}
+			style = { { top : 100 } }
+			onCancel = { handleCancel }
+			cancelText = "取消"
+			okText = "创建"
+			width = { `74vh` }
+			height = { 300 }
+			destroyOnClose = { true }
+			keyboard = { true }
+			wrapClassName = {`edit-note-modal ${ settingItems.themeMode==='note-dark-mode'?'night-theme':currentNotebook.currentTheme }`}
+			closable = { false }
+			// maskClosable={false}
+			footer={null}
 		
+		>
+			<RichTextEditor
+				onSave = { onSave }
+				initialTitle={initialTitle}
+				initialContent = { initialContent }
+				onCancel = { onCancel }
+				showAllOptions = { true }
+				richtextInModal={true}
+				currentNotebook={currentNotebook}
+				keyword={keyword}
+				settingItems={settingItems}
+				getContent={getContent}
+				getTitle={getTitle}
+			/>
+		</Modal>
+	
 	</div>;
 };
 
@@ -225,13 +225,12 @@ const RichTextEditor = ({
 		if ( initialContent) {
 			setEditorState(EditorState.moveFocusToEnd(EditorState.createWithContent(convertFromRaw(initialContent))));
 		}
-		if (initialTitle) {
-			setNoteTitle(initialTitle); // 每次 initialTitle 变化时重置 noteTitle
-		} else {
-			setNoteTitle(''); // 如果 initialTitle 为空，重置为 ''
+		if(initialTitle){
+			setNoteTitle(initialTitle)
 		}
 	} , [initialTitle,initialContent]);
 	const [textAlignment , setTextAlignment] = useState('left');//对齐
+	
 	
 	
 	useEffect(()=>{
@@ -245,38 +244,6 @@ const RichTextEditor = ({
 		}
 		
 	},[noteTitle,editorState])
-	
-	const handleEditorClick = (e) => {
-		// 检查点击目标是否是块元素
-		const target = e.target;
-		const isBlockElement = target.closest('.public-DraftStyleDefault-block');
-		
-		// 如果点击的不是块元素（即未创建的空白区域），聚焦最后一个块
-		if (!isBlockElement) {
-			e.preventDefault(); // 阻止默认行为，避免焦点丢失
-			
-			const currentContent = editorState.getCurrentContent();
-			const blockMap = currentContent.getBlockMap();
-			const lastBlock = blockMap.last(); // 获取最后一个块
-			const lastBlockKey = lastBlock.getKey();
-			
-			// 创建 SelectionState，聚焦最后一个块的末尾
-			const newSelection = SelectionState.createEmpty(lastBlockKey).merge({
-				anchorOffset: lastBlock.getLength(),
-				focusOffset: lastBlock.getLength(),
-			});
-			
-			// 更新 EditorState，设置焦点
-			const newEditorState = EditorState.forceSelection(editorState, newSelection);
-			setEditorState(EditorState.moveFocusToEnd(newEditorState));
-			
-			// 确保 DOM 焦点
-			if (editorRef.current) {
-				editorRef.current.focus();
-			}
-		}
-		// 点击块元素时，Draft.js 默认行为自动处理，无需干预
-	};
 	
 	const keywordDecorator = (keyword) => {
 		return new CompositeDecorator([
@@ -442,13 +409,7 @@ const RichTextEditor = ({
 		if (type === 'blockquote') {
 			return 'superFancyBlockquote';
 		}
-		if (type === 'unstyled') {
-			return 'custom-block'; // 返回类名
-		}
-		return '';
 	}
-	
-	
 	const handleBlockquote=() => {
 		setEditorState(RichUtils.toggleBlockType(editorState, 'blockquote'))
 	}
@@ -553,177 +514,132 @@ const RichTextEditor = ({
 		</div>
 	);
 	
-	
 	// h1
 	const onBlockTypeChange = (header) => {
 		setEditorState(RichUtils.toggleBlockType(editorState , header));
 	};
 	
-	const [editorBackgroundStyle, setEditorBackgroundStyle] = useState('default'); // 默认背景
-	// 处理背景样式切换
-	const handleBackgroundChange = (e) => {
-		setEditorBackgroundStyle(e.target.value);
-	};
-	
-	const EditorbackgroundStyleContent=()=>{
-		const allThemeColors = [
-			'blue-theme' , 'purple-theme' , 'red-theme' , 'green-theme' , 'gray-theme' , 'orange-theme' , 'pink-theme' , 'yellow-theme' ,
-			'gradient-theme-blue-cyan' , 'gradient-theme-green-blue' , 'gradient-theme-blue-yellow' , 'gradient-theme-blue-pink' , 'image-background-wheat' ,
-			'image-background-sunset','image-background-blueSky','image-background-windmill' , 'image-background-dragonfly' , 'image-background-tower' , 'image-background-field' , 'image-background-mountain' ,
-		];
-		return (<div>
-			<div className = "themecolor-popover-title">{currentLanguage?.editorBackgroundStyle}</div>
-			<div className = "theme-color-panel">
-				{ allThemeColors.map((item) => {
-					return <div
-						className = { `color-little-box ${ item }` }
-						key = { item }
-						// onClick = {}
-					>
-					
-					</div>;
-				}) }
-			</div>
-		</div>);
-	}
-	
 	
 	
 	return (
 		<div
-			className={`note-editor-container ${editorBackgroundStyle} ${ settingItems.themeMode==='note-dark-mode'?'night-theme':currentNotebook.currentTheme }`}
+			className={`${ settingItems.themeMode==='note-dark-mode'?'night-theme':currentNotebook.currentTheme }`}
 			style = { {
 				// maxHeight:'calc( 100vh - 230px )',
 				width : '100%' ,
 				boxSizing : 'border-box' ,
-				height:'100%',
 			} }
 		>
 			
-		
+			{/*笔记标题输入区*/ }
+			<div className = "note-title-section">
+				{ (currentNotebook?.id === "searchResults-notes-id" && keyword && noteTitle) &&
+					<div className = "highlight-note-title">
+						<HighlightedTitle
+							title = { noteTitle }
+							keyword = { keyword }
+						/>
+					</div>}
+				<input
+					type = "text"
+					className = "note-item-title-input"
+					placeholder = {currentLanguage?.noteTitle}
+					maxLength={16}
+					value={noteTitle}
+					onChange = { (e) => {
+						setNoteTitle(e.target.value);
+					} }
+				/>
+			</div>
 			
 			
 			{ showAllOptions && <div>
-				{/*<div className = "modal-top-bar">*/ }
-				{/*	<Tooltip*/ }
-				{/*		title = {currentLanguage?.exit_without_saving_changes}*/ }
-				{/*		color='#a6aaad'*/ }
-				{/*		arrow = { false }*/ }
-				{/*	>*/ }
-				{/*		<div*/ }
-				{/*			className = "cancel-edit-icon"*/ }
-				{/*			onClick = { onCancel }*/ }
-				{/*		><CancelEditIcon />*/ }
-				{/*		</div>*/ }
-				{/*	</Tooltip>*/ }
-				{/*	*/ }
-				{/*	<Tooltip*/ }
-				{/*		title = { currentLanguage?.save }*/ }
-				{/*		color = "#a6aaad"*/ }
-				{/*		arrow = { false }*/ }
-				{/*	>*/ }
-				{/*		<div*/ }
-				{/*			onClick = { () => {*/ }
-				{/*				GetNoteContent(editorState , noteTitle , onSave);*/ }
-				{/*			} }*/ }
-				{/*		><SaveIcon /></div>*/ }
-				{/*	</Tooltip>*/ }
-				{/*		*/ }
-				{/*</div>*/ }
+				{/*<div className = "modal-top-bar">*/}
+				{/*	<Tooltip*/}
+				{/*		title = {currentLanguage?.exit_without_saving_changes}*/}
+				{/*		color='#a6aaad'*/}
+				{/*		arrow = { false }*/}
+				{/*	>*/}
+				{/*		<div*/}
+				{/*			className = "cancel-edit-icon"*/}
+				{/*			onClick = { onCancel }*/}
+				{/*		><CancelEditIcon />*/}
+				{/*		</div>*/}
+				{/*	</Tooltip>*/}
+				{/*	*/}
+				{/*	<Tooltip*/}
+				{/*		title = { currentLanguage?.save }*/}
+				{/*		color = "#a6aaad"*/}
+				{/*		arrow = { false }*/}
+				{/*	>*/}
+				{/*		<div*/}
+				{/*			onClick = { () => {*/}
+				{/*				GetNoteContent(editorState , noteTitle , onSave);*/}
+				{/*			} }*/}
+				{/*		><SaveIcon /></div>*/}
+				{/*	</Tooltip>*/}
+				{/*		*/}
+				{/*</div>*/}
+				
 				<div className = "rich-text-options">
-					
-					{/* 背景选择控件 */}
-					
-					<Popover
-						trigger = "hover"
-						arrow = { false }
-						content = { <EditorbackgroundStyleContent/> }
-						overlayClassName = { `colors-popover` }
-					>
-							<button><EditAreaBackgroundIcon /></button>
-					</Popover>
-					
-					
-					<span style={{ marginBottom: '10px' }}>
-						<label htmlFor="background-select"></label>
-						<select
-							id="background-select"
-							value={editorBackgroundStyle}
-							onChange={handleBackgroundChange}
-						>
-							<option value="default">默认（纯白）</option>
-							<option value="beige-paper">纸张（复古）</option>
-							<option value="polka-dots">小波点</option>
-							<option value="horizontal-lines">横线</option>
-							<option value="grid-lines">格子</option>
-						</select>
-					</span>
-					
-					<button
-						onClick = { () => {
-							GetNoteContent(editorState , noteTitle , onSave);
-						} }
-					>save
-					</button>
-					
 					<Tooltip
-						title = { currentLanguage?.undo }
+						title = {currentLanguage?.undo}
 						color = "#a6aaad"
 						arrow = { false }
 					>
 						<button onClick = { onUndo }><FaUndo /></button>
 					</Tooltip>
 					<Tooltip
-						title = { currentLanguage?.redo }
+						title = {currentLanguage?.redo}
 						color = "#a6aaad"
 						arrow = { false }
 					>
 						<button onClick = { onRedo }><FaRedo /></button>
 					</Tooltip>
 					<Tooltip
-						title = { currentLanguage?.bold }
+						title = {currentLanguage?.bold}
 						color = "#a6aaad"
 						arrow = { false }
 					>
 						<button onClick = { onBoldClick }><FaBold /></button>
 					</Tooltip>
 					<Tooltip
-						title = { currentLanguage?.italic }
+						title = {currentLanguage?.italic}
 						color = "#a6aaad"
 						arrow = { false }
 					>
 						<button onClick = { onItalicClick }><FaItalic /></button>
 					</Tooltip>
 					<Tooltip
-						title = { currentLanguage?.underline }
+						title = {currentLanguage?.underline}
 						color = "#a6aaad"
 						arrow = { false }
 					>
 						<button onClick = { onUnderlineClick }><FaUnderline /></button>
 					</Tooltip>
 					<Tooltip
-						title = { currentLanguage?.strikethrough }
+						title = {currentLanguage?.strikethrough}
 						color = "#a6aaad"
 						arrow = { false }
 					>
 						<button onClick = { onStrikethroughClick }><FaStrikethrough /></button>
 					</Tooltip>
 					<Tooltip
-						title = { currentLanguage?.align_left }
+						title = {currentLanguage?.align_left}
 						color = "#a6aaad"
 						arrow = { false }
 					>
 						<button onClick = { onAlignLeft }><FaAlignLeft /></button>
 					</Tooltip>
 					<Tooltip
-						title = { currentLanguage?.align_center }
+						title = {currentLanguage?.align_center}
 						color = "#a6aaad"
 						arrow = { false }
 					>
 						<button onClick = { onAlignCenter }><FaAlignCenter /></button>
 					</Tooltip>
 					<Tooltip
-						title = { currentLanguage?.align_right }
+						title = {currentLanguage?.align_right}
 						color = "#a6aaad"
 						arrow = { false }
 					>
@@ -732,7 +648,7 @@ const RichTextEditor = ({
 					
 					
 					<Tooltip
-						title = { currentLanguage?.add_image }
+						title = {currentLanguage?.add_image}
 						color = "#a6aaad"
 						arrow = { false }
 					>
@@ -751,21 +667,21 @@ const RichTextEditor = ({
 					
 					
 					<Tooltip
-						title = { currentLanguage?.ordered_list }
+						title = {currentLanguage?.ordered_list}
 						color = "#a6aaad"
 						arrow = { false }
 					>
 						<button onClick = { onOrderedList }><FaListOl /></button>
 					</Tooltip>
 					<Tooltip
-						title = { currentLanguage?.unordered_list }
+						title ={currentLanguage?.unordered_list}
 						color = "#a6aaad"
 						arrow = { false }
 					>
 						<button onClick = { onUnorderedList }><FaListUl /></button>
 					</Tooltip>
 					<Tooltip
-						title = { currentLanguage?.quote }
+						title = {currentLanguage?.quote}
 						color = "#a6aaad"
 						arrow = { false }
 					>
@@ -779,7 +695,7 @@ const RichTextEditor = ({
 						overlayClassName = "font-size-popover"
 					>
 						<Tooltip
-							title = { currentLanguage?.font_size }
+							title = {currentLanguage?.font_size}
 							color = "#a6aaad"
 							arrow = { false }
 						>
@@ -795,7 +711,7 @@ const RichTextEditor = ({
 						overlayClassName = "font-size-popover"
 					>
 						<Tooltip
-							title = { currentLanguage?.heading }
+							title = {currentLanguage?.heading}
 							color = "#a6aaad"
 							arrow = { false }
 						>
@@ -832,45 +748,23 @@ const RichTextEditor = ({
 			</div> }
 			
 			
-			{/*笔记标题输入区*/ }
-			<div className = "note-title-section">
-				{ (currentNotebook?.id === "searchResults-notes-id" && keyword && noteTitle) &&
-					<div className = "highlight-note-title">
-						<HighlightedTitle
-							title = { noteTitle }
-							keyword = { keyword }
-						/>
-					</div>}
-				<input
-					type = "text"
-					className = "note-item-title-input"
-					placeholder = {currentLanguage?.noteTitle}
-					maxLength={16}
-					value={noteTitle}
-					onChange = { (e) => {
-						setNoteTitle(e.target.value);
-					} }
-				/>
-			</div>
-			
 			
 			<div
 				style = { {
-					whiteSpace : 'pre-wrap' ,
-					wordWrap : 'break-word',
+					whiteSpace: 'pre-wrap',
+					wordWrap: 'break-word',
 					wordBreak: 'break-word',
 					fontSize : "16px" ,
 					borderBottomLeftRadius : '6px' ,
 					borderBottomRightRadius : '6px' ,
 					maxHeight : showAllOptions ? 'calc(100vh - 84px)' : '100%' ,
-					minHeight : showAllOptions ? 'calc(100vh - 84px)' : '0' ,
-					padding:'0 14px',
+					minHeight : showAllOptions ? '20vh' : '0' ,
+					padding : '10px' ,
 					overflowY : 'scroll' ,
 					width : '100%' ,
 					boxSizing : 'border-box' ,
 				} }
-				className={`editor-container ${editorBackgroundStyle}`}
-				onClick={handleEditorClick}
+				className = "editor-container"
 			>
 				<Editor
 					ref = { editorRef }
@@ -889,7 +783,7 @@ const RichTextEditor = ({
 					handleKeyCommand = { handleKeyCommand }
 					onChange = { setEditorState }
 					placeholder = {currentLanguage?.inputNote}
-					className={`rich-text-input`}
+					className = "rich-text-input"
 					textAlignment = { textAlignment }
 				/>
 			</div>
@@ -904,8 +798,8 @@ const RichTextEditor = ({
 						} }
 						currentLanguage={currentLanguage}
 					/>
-						<div onClick = { onUndo }><UndoIcon currentLanguage={currentLanguage}/></div>
-						<div onClick = { onRedo }><RedoIcon currentLanguage={currentLanguage}/></div>
+					<div onClick = { onUndo }><UndoIcon currentLanguage={currentLanguage}/></div>
+					<div onClick = { onRedo }><RedoIcon currentLanguage={currentLanguage}/></div>
 				</div>
 				
 				
@@ -938,26 +832,7 @@ const RichTextEditor = ({
 	);
 };
 
-const EditAreaBackgroundIcon=()=> {
-	return <svg
-		t = "1745223085090"
-		className = "icon"
-		viewBox = "0 0 1024 1024"
-		version = "1.1"
-		xmlns = "http://www.w3.org/2000/svg"
-		p-id = "8899"
-		width = "20"
-		height = "20"
-	>
-		<path
-			d = "M384 128a128 128 0 1 0 256 0h256a42.6496 42.6496 0 0 1 42.6496 42.6496v298.7008A42.6496 42.6496 0 0 1 896 512h-85.4016l0.0512 341.3504A42.6496 42.6496 0 0 1 768 896H256a42.6496 42.6496 0 0 1-42.6496-42.6496l-0.0512-341.4016L128 512a42.6496 42.6496 0 0 1-42.6496-42.6496V170.6496A42.6496 42.6496 0 0 1 128 128h256z m469.3504 85.2992h-145.8176l-0.7168 1.7408a213.4016 213.4016 0 0 1-185.6 126.0544l-9.216 0.256A213.3504 213.3504 0 0 1 317.184 215.04l-0.768-1.6896H170.6496v213.2992h128v384h426.7008l-0.0512-384h128V213.248z"
-			fill = "#2c2c2c"
-			p-id = "8900"
-		></path>
-	</svg>;
-}
-
-const QuotoBlockIcon = () => {
+const QuotoBlockIcon=()=> {
 	return <>
 		<svg
 			t = "1739354400128"
@@ -975,8 +850,8 @@ const QuotoBlockIcon = () => {
 				fill = "#515151"
 			></path>
 		</svg>
-	</>;
-};
+	</>
+}
 const RichTextIcon = ({ onClick ,currentLanguage}) => {
 	return <>
 		<Tooltip
@@ -1092,37 +967,37 @@ const RedoIcon = ({currentLanguage}) => {
 };
 
 const AddNewNotebtn=({onClick,currentLanguage})=>{
-		return <div>
-			<Tooltip
-				color='#a6aaad'
-				title = {currentLanguage?.add_note}
-				placement = "bottom"
-				zIndex = "1"
-				arrow={false}
+	return <div>
+		<Tooltip
+			color='#a6aaad'
+			title = {currentLanguage?.add_note}
+			placement = "bottom"
+			zIndex = "1"
+			arrow={false}
+		>
+			<div
+				className = "add-new-button"
+				onClick = { onClick }
 			>
-				<div
-					className = "add-new-button"
-					onClick = { onClick }
+				<svg
+					t = "1736084509838"
+					className = "icon"
+					viewBox = "0 0 1024 1024"
+					version = "1.1"
+					xmlns = "http://www.w3.org/2000/svg"
+					p-id = "128954"
+					width = "16"
+					height = "16"
 				>
-					<svg
-						t = "1736084509838"
-						className = "icon"
-						viewBox = "0 0 1024 1024"
-						version = "1.1"
-						xmlns = "http://www.w3.org/2000/svg"
-						p-id = "128954"
-						width = "16"
-						height = "16"
-					>
-						<path
-							d = "M482 481.3V130.1c0-17.6 14.3-31.9 31.9-31.9 17.6 0 31.9 14.3 31.9 31.9v351.2H897c17.6 0 31.9 14.3 31.9 31.9 0 17.6-14.3 31.9-31.9 31.9H545.8v351.2c0 17.6-14.3 31.9-31.9 31.9-17.6 0-31.9-14.3-31.9-31.9V545.1H130.8c-17.6 0-31.9-14.3-31.9-31.9 0-17.6 14.3-31.9 31.9-31.9H482z"
-							p-id = "128955"
-							fill = "#515151"
-						></path>
-					</svg>
-				</div>
-			</Tooltip>
-		</div>;
+					<path
+						d = "M482 481.3V130.1c0-17.6 14.3-31.9 31.9-31.9 17.6 0 31.9 14.3 31.9 31.9v351.2H897c17.6 0 31.9 14.3 31.9 31.9 0 17.6-14.3 31.9-31.9 31.9H545.8v351.2c0 17.6-14.3 31.9-31.9 31.9-17.6 0-31.9-14.3-31.9-31.9V545.1H130.8c-17.6 0-31.9-14.3-31.9-31.9 0-17.6 14.3-31.9 31.9-31.9H482z"
+						p-id = "128955"
+						fill = "#515151"
+					></path>
+				</svg>
+			</div>
+		</Tooltip>
+	</div>;
 }
 const EraserIcon=()=> {
 	return <svg
