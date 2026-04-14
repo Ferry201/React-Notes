@@ -1,6 +1,6 @@
 ## React-Notes 项目介绍
 
-**react-webpack-typescript-2023** 是一个使用 React + TypeScript + Webpack 构建的现代化前端笔记应用，支持完整的开发和生产环境配置。 [youtube](https://www.youtube.com/watch?v=_3ooazcK4TI)
+**react-webpack-typescript-2023** 是一个使用 React + TypeScript + Webpack 构建的现代化前端笔记应用，支持完整的开发和生产环境配置。
 
 ## 🎯 项目特性
 - **现代技术栈**：React 17+、TypeScript、Webpack 5 自定义配置
