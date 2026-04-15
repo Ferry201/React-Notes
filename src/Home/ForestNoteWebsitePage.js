@@ -269,7 +269,6 @@ const ForestNoteWebsitePage = () => {
 		
 		
 		
-		<h3>Three-Column Layout</h3>
 		
 		<section
 			id = "home"
